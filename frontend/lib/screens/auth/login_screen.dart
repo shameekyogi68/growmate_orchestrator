@@ -14,9 +14,9 @@ class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _phoneCtrl = TextEditingController();
-  final _passwordCtrl = TextEditingController();
+  final _pinCtrl = TextEditingController();
   bool _loading = false;
-  bool _obscurePassword = true;
+  bool _obscurePin = true;
   String? _errorMessage;
   late AnimationController _fadeCtrl;
   late Animation<double> _fadeAnim;
@@ -35,7 +35,7 @@ class _LoginScreenState extends State<LoginScreen>
   void dispose() {
     _fadeCtrl.dispose();
     _phoneCtrl.dispose();
-    _passwordCtrl.dispose();
+    _pinCtrl.dispose();
     super.dispose();
   }
 
@@ -48,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen>
     try {
       await ApiService.instance.login(
         phoneNumber: _phoneCtrl.text.trim(),
-        password: _passwordCtrl.text,
+        pin: _pinCtrl.text.trim(),
       );
       if (mounted) {
         Navigator.of(context).pushReplacementNamed('/home');
@@ -85,10 +85,10 @@ class _LoginScreenState extends State<LoginScreen>
                         _LoginCard(
                           formKey: _formKey,
                           phoneCtrl: _phoneCtrl,
-                          passwordCtrl: _passwordCtrl,
-                          obscurePassword: _obscurePassword,
+                          pinCtrl: _pinCtrl,
+                          obscurePin: _obscurePin,
                           onToggleObscure: () =>
-                              setState(() => _obscurePassword = !_obscurePassword),
+                              setState(() => _obscurePin = !_obscurePin),
                           errorMessage: _errorMessage,
                           loading: _loading,
                           onLogin: _login,
@@ -149,8 +149,8 @@ class _Logo extends StatelessWidget {
 class _LoginCard extends StatelessWidget {
   final GlobalKey<FormState> formKey;
   final TextEditingController phoneCtrl;
-  final TextEditingController passwordCtrl;
-  final bool obscurePassword;
+  final TextEditingController pinCtrl;
+  final bool obscurePin;
   final bool loading;
   final String? errorMessage;
   final VoidCallback onToggleObscure;
@@ -161,8 +161,8 @@ class _LoginCard extends StatelessWidget {
   const _LoginCard({
     required this.formKey,
     required this.phoneCtrl,
-    required this.passwordCtrl,
-    required this.obscurePassword,
+    required this.pinCtrl,
+    required this.obscurePin,
     required this.loading,
     required this.onToggleObscure,
     required this.onLogin,
@@ -221,20 +221,24 @@ class _LoginCard extends StatelessWidget {
             const SizedBox(height: 16),
             TextFormField(
               
-              controller: passwordCtrl,
-              obscureText: obscurePassword,
+              controller: pinCtrl,
+              obscureText: obscurePin,
+              keyboardType: TextInputType.number,
+              maxLength: 4,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               decoration: InputDecoration(
-                labelText: 'Password',
+                labelText: '4-Digit PIN',
                 prefixIcon: const Icon(Icons.lock_outline),
+                counterText: '',
                 suffixIcon: IconButton(
-                  icon: Icon(obscurePassword
+                  icon: Icon(obscurePin
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined),
                   onPressed: onToggleObscure,
                 ),
               ),
               validator: (v) =>
-                  (v == null || v.isEmpty) ? 'Password required' : null,
+                  (v == null || v.length != 4) ? 'Enter 4-digit PIN' : null,
             ),
             if (errorMessage != null) ...[
               const SizedBox(height: 14),
@@ -257,25 +261,6 @@ class _LoginCard extends StatelessWidget {
                       )
                     : const Text('Sign In'),
               ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(child: Divider(color: GrowMateTheme.borderLight)),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12),
-                  child: Text('or',
-                      style: TextStyle(color: GrowMateTheme.textSecondary, fontSize: 12)),
-                ),
-                Expanded(child: Divider(color: GrowMateTheme.borderLight)),
-              ],
-            ),
-            const SizedBox(height: 12),
-            OutlinedButton.icon(
-              
-              onPressed: onQuickPin,
-              icon: const Icon(Icons.pin_outlined, size: 18),
-              label: const Text('Quick PIN Login'),
             ),
             const SizedBox(height: 20),
             Row(

@@ -80,7 +80,6 @@ class ApiService {
 
   Future<AuthResponse> register({
     required String phoneNumber,
-    String? password,
     String? fullName,
     String language = 'en',
     double? latitude,
@@ -95,7 +94,6 @@ class ApiService {
           headers: _headers(),
           body: jsonEncode({
             'phone_number': phoneNumber,
-            if (password != null) 'password': password,
             if (fullName != null) 'full_name': fullName,
             'language': language,
             if (latitude != null) 'latitude': latitude,
@@ -106,6 +104,7 @@ class ApiService {
           }),
         )
         .timeout(ApiConfig.receiveTimeout);
+    final data = await _handleResponse(res);
     final auth = AuthResponse.fromJson(data);
     await saveAuthData(auth);
     return auth;
@@ -113,18 +112,9 @@ class ApiService {
 
   Future<AuthResponse> login({
     required String phoneNumber,
-    required String password,
+    required String pin,
   }) async {
-    final res = await http
-        .post(
-          _uri(ApiConfig.login),
-          headers: _headers(),
-          body: jsonEncode({'phone_number': phoneNumber, 'password': password}),
-        )
-        .timeout(ApiConfig.receiveTimeout);
-    final auth = AuthResponse.fromJson(data);
-    await saveAuthData(auth);
-    return auth;
+    return quickLogin(phoneNumber: phoneNumber, pin: pin);
   }
 
   Future<AuthResponse> quickLogin({
@@ -138,6 +128,7 @@ class ApiService {
           body: jsonEncode({'phone_number': phoneNumber, 'pin': pin}),
         )
         .timeout(ApiConfig.receiveTimeout);
+    final data = await _handleResponse(res);
     final auth = AuthResponse.fromJson(data);
     await saveAuthData(auth);
     return auth;

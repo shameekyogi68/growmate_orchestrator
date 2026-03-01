@@ -16,25 +16,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _phoneCtrl = TextEditingController();
   final _nameCtrl = TextEditingController();
-  final _passwordCtrl = TextEditingController();
   final _pinCtrl = TextEditingController();
+  bool _obscurePin = true;
   String _language = 'en';
   LatLng? _selectedLocation;
   bool _loading = false;
-  bool _obscurePassword = true;
   String? _errorMessage;
 
   @override
   void dispose() {
     _phoneCtrl.dispose();
     _nameCtrl.dispose();
-    _passwordCtrl.dispose();
     _pinCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_selectedLocation == null) {
+      setState(() => _errorMessage = 'Please set your farm location within Udupi District.');
+      return;
+    }
     setState(() {
       _loading = true;
       _errorMessage = null;
@@ -42,12 +44,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     try {
       await ApiService.instance.register(
         phoneNumber: _phoneCtrl.text.trim(),
-        password: _passwordCtrl.text,
         fullName: _nameCtrl.text.trim(),
         language: _language,
         latitude: _selectedLocation?.latitude,
         longitude: _selectedLocation?.longitude,
-        quickPin: _pinCtrl.text.isNotEmpty ? _pinCtrl.text : null,
+        quickPin: _pinCtrl.text.trim(),
       );
       if (mounted) Navigator.of(context).pushReplacementNamed('/home');
     } on ApiException catch (e) {
@@ -148,26 +149,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 ),
                               ),
                               const SizedBox(height: 14),
+                              const SizedBox(height: 14),
                               TextFormField(
                                 
-                                controller: _passwordCtrl,
-                                obscureText: _obscurePassword,
+                                controller: _pinCtrl,
+                                obscureText: _obscurePin,
+                                keyboardType: TextInputType.number,
+                                maxLength: 4,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly
+                                ],
                                 decoration: InputDecoration(
-                                  labelText: 'Password *',
-                                  prefixIcon:
-                                      const Icon(Icons.lock_outline),
+                                  labelText: '4-Digit PIN *',
+                                  prefixIcon: const Icon(Icons.lock_outline),
+                                  counterText: '',
                                   suffixIcon: IconButton(
-                                    icon: Icon(_obscurePassword
+                                    icon: Icon(_obscurePin
                                         ? Icons.visibility_off_outlined
                                         : Icons.visibility_outlined),
                                     onPressed: () => setState(() =>
-                                        _obscurePassword = !_obscurePassword),
+                                        _obscurePin = !_obscurePin),
                                   ),
                                 ),
-                                validator: (v) =>
-                                    (v == null || v.length < 6)
-                                        ? 'Min 6 characters'
-                                        : null,
+                                validator: (v) {
+                                  if (v == null || v.length != 4) {
+                                    return 'PIN must be exactly 4 digits';
+                                  }
+                                  return null;
+                                },
                               ),
                               const SizedBox(height: 14),
                               DropdownButtonFormField<String>(
@@ -206,29 +215,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   },
                                 ),
                               ),
-                              const SizedBox(height: 14),
-                              TextFormField(
-                                
-                                controller: _pinCtrl,
-                                keyboardType: TextInputType.number,
-                                maxLength: 4,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly
-                                ],
-                                decoration: const InputDecoration(
-                                  labelText: 'Quick PIN (4 digits, optional)',
-                                  prefixIcon: Icon(Icons.pin_outlined),
-                                  counterText: '',
-                                ),
-                                validator: (v) {
-                                  if (v != null &&
-                                      v.isNotEmpty &&
-                                      v.length != 4) {
-                                    return 'PIN must be exactly 4 digits';
-                                  }
-                                  return null;
-                                },
-                              ),
+                              // Quick PIN field removed, merged to top
                               if (_errorMessage != null) ...[
                                 const SizedBox(height: 14),
                                 Container(

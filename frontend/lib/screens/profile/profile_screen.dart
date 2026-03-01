@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:latlong2/latlong.dart';
 import '../../core/theme/growmate_theme.dart';
 import '../../core/services/api_service.dart';
 import '../../core/models/api_models.dart';
+import '../../shared/location_picker_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -18,6 +20,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? _error;
   late TextEditingController _nameCtrl;
   String _language = 'en';
+  LatLng? _selectedLocation;
 
   @override
   void initState() {
@@ -40,6 +43,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _profile = p;
         _nameCtrl.text = p.fullName ?? '';
         _language = p.language;
+        if (p.latitude != null && p.longitude != null) {
+          _selectedLocation = LatLng(p.latitude!, p.longitude!);
+        }
       });
     } on ApiException catch (e) {
       if (e.isUnauthorized) {
@@ -61,6 +67,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       await ApiService.instance.updateProfile(
         fullName: _nameCtrl.text.trim(),
         language: _language,
+        latitude: _selectedLocation?.latitude,
+        longitude: _selectedLocation?.longitude,
       );
       // Persist language locally for advisory calls
       final prefs = await SharedPreferences.getInstance();
@@ -80,7 +88,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _logout() async {
-    await ApiService.instance.clearToken();
+    await ApiService.instance.clearAuthData();
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
     if (mounted) Navigator.of(context).pushReplacementNamed('/login');
@@ -169,6 +177,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       DropdownMenuItem(value: 'kn', child: Text('ಕನ್ನಡ (Kannada)')),
                     ],
                     onChanged: (v) => setState(() => _language = v ?? 'en'),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Location Picker
+                  const _SectionLabel('Farm Location'),
+                  const SizedBox(height: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: GrowMateTheme.borderLight),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ListTile(
+                      leading: const Icon(Icons.location_on_outlined, color: GrowMateTheme.primaryGreen),
+                      title: Text(_selectedLocation == null ? 'Set Farm Location' : 'Location Set'),
+                      subtitle: _selectedLocation != null 
+                          ? Text('${_selectedLocation!.latitude.toStringAsFixed(4)}, ${_selectedLocation!.longitude.toStringAsFixed(4)}')
+                          : const Text('Tap to open map'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () async {
+                        final loc = await Navigator.of(context).push<LatLng>(
+                          MaterialPageRoute(builder: (_) => LocationPickerScreen(initialLocation: _selectedLocation)),
+                        );
+                        if (loc != null) setState(() => _selectedLocation = loc);
+                      },
+                    ),
                   ),
                   const SizedBox(height: 16),
 

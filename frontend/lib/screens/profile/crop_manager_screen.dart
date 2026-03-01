@@ -238,11 +238,38 @@ class _AddCropSheetState extends State<_AddCropSheet> {
   LatLng? _selectedLocation;
   bool _isPrimary = false;
   bool _saving = false;
+  bool _loadingCrops = true;
   String? _error;
 
-  final List<String> _crops = [
-    'Paddy', 'Coconut', 'Areca Nut', 'Banana', 'Pepper', 'Cashew', 'Maize'
-  ];
+  List<String> _crops = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchSupportedCrops();
+  }
+
+  Future<void> _fetchSupportedCrops() async {
+    try {
+      final supportedMap = await ApiService.instance.getSupportedCrops();
+      final List<dynamic> cropsList = supportedMap['crops'] ?? [];
+      final List<String> supported = cropsList.map((c) => c['name'].toString()).toList();
+      
+      if (mounted) {
+        setState(() {
+          _crops = supported;
+          _loadingCrops = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = 'Failed to load supported crops. Check connection.';
+          _loadingCrops = false;
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -291,7 +318,9 @@ class _AddCropSheetState extends State<_AddCropSheet> {
             const Text('Add New Crop',
                 style: TextStyle(fontFamily: 'Inter', fontSize: 18, fontWeight: FontWeight.w700)),
             const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
+            _loadingCrops
+               ? const Center(child: CircularProgressIndicator())
+               : DropdownButtonFormField<String>(
               value: _crop,
               hint: const Text('Select Crop *'),
               decoration: const InputDecoration(prefixIcon: Icon(Icons.grass_outlined)),

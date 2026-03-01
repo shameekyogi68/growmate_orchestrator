@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:geolocator/geolocator.dart';
 import '../../core/theme/growmate_theme.dart';
 
 class LocationPickerScreen extends StatefulWidget {
@@ -18,11 +19,72 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   // Default to Udupi, Karnataka if no initial location provided
   static const _defaultLocation = LatLng(13.3409, 74.7421);
 
+  bool _isLoadingLocation = true;
+
   @override
   void initState() {
     super.initState();
     _selectedLocation = widget.initialLocation ?? _defaultLocation;
     _mapController = MapController();
+    if (widget.initialLocation == null) {
+      _determinePosition();
+    } else {
+      _isLoadingLocation = false;
+    }
+  }
+
+  Future<void> _determinePosition() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        setState(() => _isLoadingLocation = false);
+        return;
+      }
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied ||
+            permission == LocationPermission.deniedForever) {
+          setState(() => _isLoadingLocation = false);
+          return;
+        }
+      }
+      final pos = await Geolocator.getCurrentPosition();
+      final userLatLong = LatLng(pos.latitude, pos.longitude);
+      
+      // Auto-snap to user location if within Udupi bounds
+      if (_isWithinUdupiBounds(userLatLong)) {
+        setState(() => _selectedLocation = userLatLong);
+      }
+      _mapController.move(_selectedLocation, 12);
+    } catch (_) {
+    } finally {
+      if (mounted) setState(() => _isLoadingLocation = false);
+    }
+  }
+
+  bool _isWithinUdupiBounds(LatLng pos) {
+    // Orchestrator validation bounds
+    return pos.latitude >= 12.5 &&
+        pos.latitude <= 14.5 &&
+        pos.longitude >= 74.4 &&
+        pos.longitude <= 75.3;
+  }
+
+  void _onConfirm() {
+    if (_isWithinUdupiBounds(_selectedLocation)) {
+      Navigator.of(context).pop(_selectedLocation);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Farm must be within Udupi District bounds'),
+          backgroundColor: GrowMateTheme.dangerRed,
+        ),
+      );
+      // Snap map back to center
+      _mapController.move(_defaultLocation, 10);
+      setState(() => _selectedLocation = _defaultLocation);
+    }
   }
 
   @override
@@ -41,7 +103,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
         elevation: 1,
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(_selectedLocation),
+            onPressed: _onConfirm,
             child: const Text('Confirm', style: TextStyle(color: GrowMateTheme.primaryGreen, fontWeight: FontWeight.w700, fontSize: 16)),
           ),
           const SizedBox(width: 8),
@@ -107,11 +169,14 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _mapController.move(_selectedLocation, 12);
+        onPressed: () async {
+          setState(() => _isLoadingLocation = true);
+          await _determinePosition();
         },
         backgroundColor: GrowMateTheme.surfaceWhite,
-        child: const Icon(Icons.my_location, color: GrowMateTheme.primaryGreen),
+        child: _isLoadingLocation 
+            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+            : const Icon(Icons.my_location, color: GrowMateTheme.primaryGreen),
       ),
     );
   }

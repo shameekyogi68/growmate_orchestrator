@@ -40,6 +40,12 @@ class _AdvisoryScreenState extends State<AdvisoryScreen> {
       final userId = prefs.getString('user_id') ?? 'local-user';
       final language = prefs.getString('language') ?? 'en';
       final crop = prefs.getString('active_crop');
+
+      if (crop == null || crop.isEmpty) {
+        if (mounted) Navigator.of(context).pushReplacementNamed('/crops');
+        return;
+      }
+
       final sowingDate = prefs.getString('active_sowing_date');
       final lat = prefs.getDouble('latitude') ?? 13.8;
       final lon = prefs.getDouble('longitude') ?? 74.6;
