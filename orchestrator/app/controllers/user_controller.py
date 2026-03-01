@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional
+from datetime import date
 from app.utils.auth import create_access_token, hash_password, verify_password, verify_token
 from app.utils.database import fetch_one, execute, fetch_all, get_pool
 from app.utils.logger import logger
@@ -23,7 +24,7 @@ class RegisterRequest(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     active_crop: Optional[str] = None
-    active_sowing_date: Optional[str] = None
+    active_sowing_date: Optional[date] = None
     quick_pin: Optional[str] = None
 
 
@@ -35,7 +36,7 @@ class LoginRequest(BaseModel):
 class CropRequest(BaseModel):
     crop_name: str
     variety: Optional[str] = None
-    sowing_date: str
+    sowing_date: date
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     is_primary: bool = False
@@ -90,7 +91,6 @@ async def register(req: RegisterRequest):
                 
                 # SEEDING: If active_crop is provided, insert it into user_crops table
                 if req.active_crop:
-                    from datetime import date
                     sowing_date = req.active_sowing_date if req.active_sowing_date else date.today()
                     await execute(
                         """INSERT INTO user_crops (user_id, crop_name, sowing_date, latitude, longitude, is_primary)
