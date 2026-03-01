@@ -1,15 +1,11 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
-from app.utils.auth import create_access_token, hash_password, verify_password
+from typing import Optional
+from app.utils.auth import create_access_token, hash_password, verify_password, verify_token
 from app.utils.database import fetch_one, execute, fetch_all, get_pool
 from app.utils.logger import logger
 
 router = APIRouter(prefix="/user", tags=["User"])
-
-
-from pydantic import BaseModel, Field, field_validator, model_validator
-from typing import Optional, List
-import re
 
 
 class ProfileUpdate(BaseModel):
@@ -20,6 +16,35 @@ class ProfileUpdate(BaseModel):
 
 
 class RegisterRequest(BaseModel):
+    phone_number: str
+    password: Optional[str] = None
+    full_name: Optional[str] = None
+    language: str = "en"
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    active_crop: Optional[str] = None
+    active_sowing_date: Optional[str] = None
+    quick_pin: Optional[str] = None
+
+
+class LoginRequest(BaseModel):
+    phone_number: str
+    password: str
+
+
+class CropRequest(BaseModel):
+    crop_name: str
+    variety: Optional[str] = None
+    sowing_date: str
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    is_primary: bool = False
+
+
+class PinLoginRequest(BaseModel):
+    phone_number: str
+    pin: str
+
 
 
 @router.post("/register")
@@ -219,9 +244,6 @@ async def update_profile(req: ProfileUpdate, token_data: dict = Depends(verify_t
     await execute(query, *params)
     return {"status": "success", "updated_fields": [u.split(' = ')[0] for u in updates]}
 
-
-from app.utils.auth import verify_token
-from fastapi import Depends
 
 
 @router.get("/crops")
