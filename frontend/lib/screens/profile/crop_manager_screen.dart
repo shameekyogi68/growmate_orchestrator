@@ -247,7 +247,21 @@ class _AddCropSheetState extends State<_AddCropSheet> {
   @override
   void initState() {
     super.initState();
-    _fetchSupportedCrops();
+    _initDefaults();
+  }
+
+  Future<void> _initDefaults() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lat = prefs.getDouble('latitude');
+    final lon = prefs.getDouble('longitude');
+    if (lat != null && lon != null && mounted) {
+      setState(() {
+        _selectedLocation = LatLng(lat, lon);
+      });
+      _fetchSupportedCrops();
+    } else {
+      _fetchSupportedCrops();
+    }
   }
 
   Future<void> _fetchSupportedCrops() async {
@@ -375,7 +389,35 @@ class _AddCropSheetState extends State<_AddCropSheet> {
             ],
             TextFormField(
               controller: _sowingCtrl,
-              decoration: const InputDecoration(labelText: 'Sowing Date * (YYYY-MM-DD)', prefixIcon: Icon(Icons.calendar_today_outlined)),
+              readOnly: true,
+              onTap: () async {
+                final date = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime(2100),
+                  builder: (context, child) => Theme(
+                    data: Theme.of(context).copyWith(
+                      colorScheme: const ColorScheme.light(
+                        primary: GrowMateTheme.primaryGreen,
+                        onPrimary: Colors.white,
+                      ),
+                    ),
+                    child: child!,
+                  ),
+                );
+                if (date != null && mounted) {
+                  setState(() {
+                    // Force ISO format for database compliance
+                    _sowingCtrl.text = date.toIso8601String().split('T')[0];
+                  });
+                }
+              },
+              decoration: const InputDecoration(
+                labelText: 'Sowing Date *',
+                hintText: 'Select Date',
+                prefixIcon: Icon(Icons.calendar_today_outlined),
+              ),
               validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
             ),
             const SizedBox(height: 12),

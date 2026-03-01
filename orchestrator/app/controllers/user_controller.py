@@ -321,7 +321,7 @@ async def add_crop(req: CropRequest, token_data: dict = Depends(verify_token)):
         return {"status": "success", "crop_id": row["id"]}
     except Exception as e:
         logger.error(f"Failed to add crop: {e}")
-        raise HTTPException(status_code=500, detail="Database failure")
+        raise HTTPException(status_code=500, detail=f"Database failure: {str(e)}")
 
 
 @router.delete("/crops/{crop_id}")

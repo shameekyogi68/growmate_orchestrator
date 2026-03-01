@@ -36,8 +36,8 @@ htmlcov/
 .mypy_cache/
 
 # Frontend & Secrets
-frontend/
-.dart_tool/
-build/
 .env
 .env.*
+build/
+.dart_tool/
+
