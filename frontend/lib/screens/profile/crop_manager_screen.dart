@@ -234,14 +234,15 @@ class _AddCropSheetState extends State<_AddCropSheet> {
   final _formKey = GlobalKey<FormState>();
   final _sowingCtrl = TextEditingController();
   final _varietyCtrl = TextEditingController();
-  String? _crop;
   LatLng? _selectedLocation;
   bool _isPrimary = false;
   bool _saving = false;
-  bool _loadingCrops = true;
+  bool _loadingCrops = false;
   String? _error;
 
-  List<String> _crops = [];
+  List<Map<String, dynamic>> _allCropsData = [];
+  String? _selectedCropName;
+  String? _selectedVariety;
 
   @override
   void initState() {
@@ -250,21 +251,38 @@ class _AddCropSheetState extends State<_AddCropSheet> {
   }
 
   Future<void> _fetchSupportedCrops() async {
+    setState(() {
+      _loadingCrops = true;
+      _error = null;
+      _selectedCropName = null;
+      _selectedVariety = null;
+      _allCropsData = [];
+    });
     try {
-      final supportedMap = await ApiService.instance.getSupportedCrops();
-      final List<dynamic> cropsList = supportedMap['crops'] ?? [];
-      final List<String> supported = cropsList.map((c) => c['name'].toString()).toList();
+      final supportedMap = await ApiService.instance.getSupportedCrops(
+        latitude: _selectedLocation?.latitude ?? 13.3409,
+        longitude: _selectedLocation?.longitude ?? 74.7421,
+      );
+      
+      final List<dynamic> groups = supportedMap['seasonal_groups'] ?? [];
+      final List<Map<String, dynamic>> flattened = [];
+      for (var group in groups) {
+        final List<dynamic> crops = group['crops'] ?? [];
+        for (var c in crops) {
+          flattened.add(c as Map<String, dynamic>);
+        }
+      }
       
       if (mounted) {
         setState(() {
-          _crops = supported;
+          _allCropsData = flattened;
           _loadingCrops = false;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'Failed to load supported crops. Check connection.';
+          _error = 'Discovery Error. Try another location.';
           _loadingCrops = false;
         });
       }
@@ -283,8 +301,8 @@ class _AddCropSheetState extends State<_AddCropSheet> {
     setState(() { _saving = true; _error = null; });
     try {
       await ApiService.instance.addCrop(
-        cropName: _crop!,
-        variety: _varietyCtrl.text.isNotEmpty ? _varietyCtrl.text : null,
+        cropName: _selectedCropName!,
+        variety: _selectedVariety,
         sowingDate: _sowingCtrl.text,
         latitude: _selectedLocation?.latitude,
         longitude: _selectedLocation?.longitude,
@@ -319,21 +337,42 @@ class _AddCropSheetState extends State<_AddCropSheet> {
                 style: TextStyle(fontFamily: 'Inter', fontSize: 18, fontWeight: FontWeight.w700)),
             const SizedBox(height: 16),
             _loadingCrops
-               ? const Center(child: CircularProgressIndicator())
+               ? Container(
+                   height: 50,
+                   alignment: Alignment.center,
+                   child: const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+                 )
                : DropdownButtonFormField<String>(
-              value: _crop,
-              hint: const Text('Select Crop *'),
+              value: _selectedCropName,
+              hint: const Text('Discovery: Select Crop *'),
               decoration: const InputDecoration(prefixIcon: Icon(Icons.grass_outlined)),
-              items: _crops.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-              onChanged: (v) => setState(() => _crop = v),
+              items: _allCropsData.map((c) => DropdownMenuItem(
+                value: c['name'].toString(), 
+                child: Text(c['name'].toString())
+              )).toList(),
+              onChanged: (v) {
+                setState(() {
+                  _selectedCropName = v;
+                  final cropData = _allCropsData.firstWhere((c) => c['name'] == v);
+                  _selectedVariety = cropData['variety_name']?.toString();
+                });
+              },
               validator: (v) => v == null ? 'Please select a crop' : null,
             ),
             const SizedBox(height: 12),
-            TextFormField(
-              controller: _varietyCtrl,
-              decoration: const InputDecoration(labelText: 'Variety (optional)', prefixIcon: Icon(Icons.category_outlined)),
-            ),
-            const SizedBox(height: 12),
+            if (_selectedCropName != null) ...[
+              DropdownButtonFormField<String>(
+                value: _selectedVariety,
+                hint: const Text('Variety Selection *'),
+                decoration: const InputDecoration(prefixIcon: Icon(Icons.category_outlined)),
+                items: [
+                   DropdownMenuItem(value: _selectedVariety, child: Text(_selectedVariety ?? 'General')),
+                ],
+                onChanged: (v) => setState(() => _selectedVariety = v),
+                validator: (v) => v == null ? 'Please select a variety' : null,
+              ),
+              const SizedBox(height: 12),
+            ],
             TextFormField(
               controller: _sowingCtrl,
               decoration: const InputDecoration(labelText: 'Sowing Date * (YYYY-MM-DD)', prefixIcon: Icon(Icons.calendar_today_outlined)),
@@ -356,7 +395,10 @@ class _AddCropSheetState extends State<_AddCropSheet> {
                   final loc = await Navigator.of(context).push<LatLng>(
                     MaterialPageRoute(builder: (_) => LocationPickerScreen(initialLocation: _selectedLocation)),
                   );
-                  if (loc != null) setState(() => _selectedLocation = loc);
+                  if (loc != null) {
+                    setState(() => _selectedLocation = loc);
+                    _fetchSupportedCrops();
+                  }
                 },
               ),
             ),
