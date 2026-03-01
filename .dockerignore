@@ -1,0 +1,31 @@
+# Exclude Flutter frontend — never included in backend Docker image
+frontend/
+.dart_tool/
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Secrets
+.env
+.env.*
+
+# Dev tools
+.idea/
+.vscode/
+.git/
+*.swp
+
+# Docs and meta
+docs/
+README.md
+render.yaml
+.gitignore
