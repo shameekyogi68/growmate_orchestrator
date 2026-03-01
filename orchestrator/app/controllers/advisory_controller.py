@@ -13,6 +13,9 @@ from app.services.rainfall_service import get_rainfall_advisory as raw_rainfall_
 from app.services.soil_service import get_soil_advisory as raw_soil_advisory
 from app.services.calendar_service import get_calendar_advisory as raw_calendar_advisory
 from app.services.pest_service import get_pest_advisory as raw_pest_advisory
+from app.external.weather_api import fetch_weather_data as raw_weather_api
+from app.external.market_api import fetch_market_prices as raw_market_api
+from app.services.recommendation_service import get_crop_recommendations as raw_recommendations
 
 router = APIRouter(tags=["Advisory"])
 
@@ -52,6 +55,21 @@ async def get_isolated_calendar(req: AdvisoryRequest, token_data: dict = Depends
 async def get_isolated_pest(req: AdvisoryRequest, token_data: dict = Depends(verify_token)):
     """Fetch only the pest intelligence stream."""
     return await raw_pest_advisory(req.crop, req.variety, req.sowing_date, req.language, request_date=req.date)
+
+@router.post("/farmer-advisory/weather")
+async def get_isolated_weather(req: AdvisoryRequest, token_data: dict = Depends(verify_token)):
+    """Fetch only live weather data stream."""
+    return await raw_weather_api(req.latitude, req.longitude, req.language, request_date=req.date)
+
+@router.post("/farmer-advisory/market")
+async def get_isolated_market(req: AdvisoryRequest, token_data: dict = Depends(verify_token)):
+    """Fetch only market prices stream."""
+    return await raw_market_api(req.crop, req.variety, language=req.language)
+
+@router.post("/farmer-advisory/recommendations")
+async def get_isolated_recommendations(req: AdvisoryRequest, token_data: dict = Depends(verify_token)):
+    """Fetch isolated recommendations stream."""
+    return await raw_recommendations(req.latitude, req.longitude, req.date, req.language)
 
 @router.post("/farmer-advisory", response_model=AdvisoryResponse)
 async def get_farmer_advisory(
