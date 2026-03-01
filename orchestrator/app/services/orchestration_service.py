@@ -92,7 +92,7 @@ async def orchestrate_farmer_advisory(req_data: dict):
         "recommendations": get_crop_recommendations(lat, lon, req_date, language),
     }
 
-    raw_results = await execute_parallel(services, timeout=30.0)
+    raw_results = await execute_parallel(services, timeout=80.0)
 
     # 4. Partial Data & Cache Strategy
     partial_data = any(val == "unavailable" for val in raw_results.values())
