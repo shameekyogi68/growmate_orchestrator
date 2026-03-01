@@ -9,6 +9,10 @@ from app.services.discovery_service import get_intelligent_crops
 from app.utils.concurrency import advisory_flight
 from app.utils.resilience import REGISTRY as circuit_registry
 
+from app.services.rainfall_service import get_rainfall_advisory as raw_rainfall_advisory
+from app.services.soil_service import get_soil_advisory as raw_soil_advisory
+from app.services.calendar_service import get_calendar_advisory as raw_calendar_advisory
+
 router = APIRouter(tags=["Advisory"])
 
 
@@ -25,6 +29,23 @@ async def get_supported_crops(
     crops_data = await get_intelligent_crops(latitude, longitude, date, language)
     return CropListResponse(**crops_data)
 
+
+@router.post("/farmer-advisory/rainfall")
+async def get_isolated_rainfall(req: AdvisoryRequest, token_data: dict = Depends(verify_token)):
+    """Fetch only the rainfall intelligence stream."""
+    return await raw_rainfall_advisory(req.latitude, req.longitude, req.date, req.language)
+
+@router.post("/farmer-advisory/soil")
+async def get_isolated_soil(req: AdvisoryRequest, token_data: dict = Depends(verify_token)):
+    """Fetch only the soil intelligence stream."""
+    return await raw_soil_advisory(req.latitude, req.longitude, req.language, req.crop, req.sowing_date)
+
+@router.post("/farmer-advisory/calendar")
+async def get_isolated_calendar(req: AdvisoryRequest, token_data: dict = Depends(verify_token)):
+    """Fetch only the crop calendar schedule stream."""
+    month = datetime.strptime(req.date, "%Y-%m-%d").month if req.date else datetime.now().month
+    season = "kharif" if month in [6, 7, 8, 9, 10] else ("rabi" if month in [11, 12, 1, 2] else "summer")
+    return await raw_calendar_advisory(season, req.crop, req.variety, req.language, req.sowing_date)
 
 @router.post("/farmer-advisory", response_model=AdvisoryResponse)
 async def get_farmer_advisory(
