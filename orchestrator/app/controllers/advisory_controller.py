@@ -12,6 +12,7 @@ from app.utils.resilience import REGISTRY as circuit_registry
 from app.services.rainfall_service import get_rainfall_advisory as raw_rainfall_advisory
 from app.services.soil_service import get_soil_advisory as raw_soil_advisory
 from app.services.calendar_service import get_calendar_advisory as raw_calendar_advisory
+from app.services.pest_service import get_pest_advisory as raw_pest_advisory
 
 router = APIRouter(tags=["Advisory"])
 
@@ -46,6 +47,11 @@ async def get_isolated_calendar(req: AdvisoryRequest, token_data: dict = Depends
     month = datetime.strptime(req.date, "%Y-%m-%d").month if req.date else datetime.now().month
     season = "kharif" if month in [6, 7, 8, 9, 10] else ("rabi" if month in [11, 12, 1, 2] else "summer")
     return await raw_calendar_advisory(season, req.crop, req.variety, req.language, req.sowing_date)
+
+@router.post("/farmer-advisory/pest")
+async def get_isolated_pest(req: AdvisoryRequest, token_data: dict = Depends(verify_token)):
+    """Fetch only the pest intelligence stream."""
+    return await raw_pest_advisory(req.crop, req.variety, req.sowing_date, req.language, request_date=req.date)
 
 @router.post("/farmer-advisory", response_model=AdvisoryResponse)
 async def get_farmer_advisory(
