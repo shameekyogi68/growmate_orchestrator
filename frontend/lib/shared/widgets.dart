@@ -17,9 +17,9 @@ class ConfidenceBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.4)),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -74,7 +74,7 @@ class AlertCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: borderColor.withOpacity(0.1),
+                color: borderColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(_mapIcon(alert.icon), size: 18, color: borderColor),
@@ -157,7 +157,7 @@ class _PriorityBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
@@ -214,7 +214,7 @@ class _SkeletonCardState extends State<SkeletonCard>
         height: widget.height,
         margin: const EdgeInsets.symmetric(vertical: 5),
         decoration: BoxDecoration(
-          color: Colors.grey.withOpacity(_anim.value),
+          color: Colors.grey.withValues(alpha: _anim.value),
           borderRadius: BorderRadius.circular(14),
         ),
       ),
@@ -238,9 +238,9 @@ class DegradedBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: GrowMateTheme.dangerRed.withOpacity(0.08),
+        color: GrowMateTheme.dangerRed.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: GrowMateTheme.dangerRed.withOpacity(0.3)),
+        border: Border.all(color: GrowMateTheme.dangerRed.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [

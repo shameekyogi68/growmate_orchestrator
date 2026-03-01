@@ -34,42 +34,63 @@ async def get_supported_crops(
     return CropListResponse(**crops_data)
 
 
-@router.post("/farmer-advisory/rainfall")
-async def get_isolated_rainfall(req: AdvisoryRequest, token_data: dict = Depends(verify_token)):
+@router.api_route("/farmer-advisory/rainfall", methods=["GET", "POST"])
+async def get_isolated_rainfall(
+    user_id: str, latitude: float, longitude: float, date: str, 
+    language: str = "en", token_data: dict = Depends(verify_token)
+):
     """Fetch only the rainfall intelligence stream."""
-    return await raw_rainfall_advisory(req.latitude, req.longitude, req.date, req.language)
+    return await raw_rainfall_advisory(latitude, longitude, date, language)
 
-@router.post("/farmer-advisory/soil")
-async def get_isolated_soil(req: AdvisoryRequest, token_data: dict = Depends(verify_token)):
+@router.api_route("/farmer-advisory/soil", methods=["GET", "POST"])
+async def get_isolated_soil(
+    latitude: float, longitude: float, language: str = "en", 
+    crop: str = None, sowing_date: str = None, token_data: dict = Depends(verify_token)
+):
     """Fetch only the soil intelligence stream."""
-    return await raw_soil_advisory(req.latitude, req.longitude, req.language, req.crop, req.sowing_date)
+    return await raw_soil_advisory(latitude, longitude, language, crop, sowing_date)
 
-@router.post("/farmer-advisory/calendar")
-async def get_isolated_calendar(req: AdvisoryRequest, token_data: dict = Depends(verify_token)):
+@router.api_route("/farmer-advisory/calendar", methods=["GET", "POST"])
+async def get_isolated_calendar(
+    date: str = None, crop: str = None, variety: str = None, 
+    language: str = "en", sowing_date: str = None, token_data: dict = Depends(verify_token)
+):
     """Fetch only the crop calendar schedule stream."""
-    month = datetime.strptime(req.date, "%Y-%m-%d").month if req.date else datetime.now().month
+    month = datetime.strptime(date, "%Y-%m-%d").month if date else datetime.now().month
     season = "kharif" if month in [6, 7, 8, 9, 10] else ("rabi" if month in [11, 12, 1, 2] else "summer")
-    return await raw_calendar_advisory(season, req.crop, req.variety, req.language, req.sowing_date)
+    return await raw_calendar_advisory(season, crop, variety, language, sowing_date)
 
-@router.post("/farmer-advisory/pest")
-async def get_isolated_pest(req: AdvisoryRequest, token_data: dict = Depends(verify_token)):
+@router.api_route("/farmer-advisory/pest", methods=["GET", "POST"])
+async def get_isolated_pest(
+    crop: str = None, variety: str = None, sowing_date: str = None, 
+    language: str = "en", date: str = None, token_data: dict = Depends(verify_token)
+):
     """Fetch only the pest intelligence stream."""
-    return await raw_pest_advisory(req.crop, req.variety, req.sowing_date, req.language, request_date=req.date)
+    return await raw_pest_advisory(crop, variety, sowing_date, language, request_date=date)
 
-@router.post("/farmer-advisory/weather")
-async def get_isolated_weather(req: AdvisoryRequest, token_data: dict = Depends(verify_token)):
+@router.api_route("/farmer-advisory/weather", methods=["GET", "POST"])
+async def get_isolated_weather(
+    latitude: float, longitude: float, language: str = "en", 
+    date: str = None, token_data: dict = Depends(verify_token)
+):
     """Fetch only live weather data stream."""
-    return await raw_weather_api(req.latitude, req.longitude, req.language, request_date=req.date)
+    return await raw_weather_api(latitude, longitude, language, request_date=date)
 
-@router.post("/farmer-advisory/market")
-async def get_isolated_market(req: AdvisoryRequest, token_data: dict = Depends(verify_token)):
+@router.api_route("/farmer-advisory/market", methods=["GET", "POST"])
+async def get_isolated_market(
+    crop: str = None, variety: str = None, language: str = "en", 
+    token_data: dict = Depends(verify_token)
+):
     """Fetch only market prices stream."""
-    return await raw_market_api(req.crop, req.variety, language=req.language)
+    return await raw_market_api(crop, variety, language=language)
 
-@router.post("/farmer-advisory/recommendations")
-async def get_isolated_recommendations(req: AdvisoryRequest, token_data: dict = Depends(verify_token)):
+@router.api_route("/farmer-advisory/recommendations", methods=["GET", "POST"])
+async def get_isolated_recommendations(
+    latitude: float, longitude: float, date: str, 
+    language: str = "en", token_data: dict = Depends(verify_token)
+):
     """Fetch isolated recommendations stream."""
-    return await raw_recommendations(req.latitude, req.longitude, req.date, req.language)
+    return await raw_recommendations(latitude, longitude, date, language)
 
 @router.post("/farmer-advisory", response_model=AdvisoryResponse)
 async def get_farmer_advisory(

@@ -298,9 +298,9 @@ class _ErrorBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: GrowMateTheme.dangerRed.withOpacity(0.08),
+        color: GrowMateTheme.dangerRed.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: GrowMateTheme.dangerRed.withOpacity(0.3)),
+        border: Border.all(color: GrowMateTheme.dangerRed.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [

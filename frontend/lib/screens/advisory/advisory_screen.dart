@@ -221,10 +221,10 @@ class _AdvisoryScreenState extends State<AdvisoryScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: GrowMateTheme.warningAmber.withOpacity(0.08),
+                color: GrowMateTheme.warningAmber.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                    color: GrowMateTheme.warningAmber.withOpacity(0.3)),
+                    color: GrowMateTheme.warningAmber.withValues(alpha: 0.3)),
               ),
               child: const Row(children: [
                 Icon(Icons.info_outline,

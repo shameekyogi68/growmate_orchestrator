@@ -19,7 +19,7 @@ class RainfallCard extends StatelessWidget {
         color: GrowMateTheme.surfaceWhite,
         borderRadius: BorderRadius.circular(16),
         boxShadow: GrowMateTheme.cardShadow,
-        border: Border.all(color: GrowMateTheme.skyBlue.withOpacity(0.2)),
+        border: Border.all(color: GrowMateTheme.skyBlue.withValues(alpha: 0.2)),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -30,7 +30,7 @@ class RainfallCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: GrowMateTheme.skyBlue.withOpacity(0.1),
+                  color: GrowMateTheme.skyBlue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.water_drop_outlined,
@@ -122,13 +122,13 @@ class _IrrigationChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
       decoration: BoxDecoration(
         color: needed
-            ? GrowMateTheme.warningAmber.withOpacity(0.1)
-            : GrowMateTheme.successGreen.withOpacity(0.1),
+            ? GrowMateTheme.warningAmber.withValues(alpha: 0.1)
+            : GrowMateTheme.successGreen.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: needed
-              ? GrowMateTheme.warningAmber.withOpacity(0.4)
-              : GrowMateTheme.successGreen.withOpacity(0.4),
+              ? GrowMateTheme.warningAmber.withValues(alpha: 0.4)
+              : GrowMateTheme.successGreen.withValues(alpha: 0.4),
         ),
       ),
       child: Text(

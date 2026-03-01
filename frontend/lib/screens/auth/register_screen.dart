@@ -180,7 +180,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                               const SizedBox(height: 14),
                               DropdownButtonFormField<String>(
-                                value: _language,
+                                initialValue: _language,
                                 decoration: const InputDecoration(
                                   labelText: 'Language',
                                   prefixIcon: Icon(Icons.translate_outlined),
@@ -222,11 +222,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
                                     color: GrowMateTheme.dangerRed
-                                        .withOpacity(0.08),
+                                        .withValues(alpha: 0.08),
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
                                         color: GrowMateTheme.dangerRed
-                                            .withOpacity(0.3)),
+                                            .withValues(alpha: 0.3)),
                                   ),
                                   child: Text(
                                     _errorMessage!,

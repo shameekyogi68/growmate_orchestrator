@@ -29,7 +29,7 @@ class _AppShellState extends State<AppShell> {
         selectedIndex: _currentIndex,
         onDestinationSelected: (i) => setState(() => _currentIndex = i),
         backgroundColor: GrowMateTheme.surfaceWhite,
-        indicatorColor: GrowMateTheme.primaryGreen.withOpacity(0.15),
+        indicatorColor: GrowMateTheme.primaryGreen.withValues(alpha: 0.15),
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.dashboard_outlined),

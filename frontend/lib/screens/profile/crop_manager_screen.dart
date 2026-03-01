@@ -155,7 +155,7 @@ class _CropTile extends StatelessWidget {
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: crop.isPrimary
-                ? GrowMateTheme.primaryGreen.withOpacity(0.1)
+                ? GrowMateTheme.primaryGreen.withValues(alpha: 0.1)
                 : GrowMateTheme.borderLight,
             borderRadius: BorderRadius.circular(10),
           ),
@@ -181,7 +181,7 @@ class _CropTile extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: GrowMateTheme.primaryGreen.withOpacity(0.1),
+                    color: GrowMateTheme.primaryGreen.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Text('Primary',
@@ -358,7 +358,7 @@ class _AddCropSheetState extends State<_AddCropSheet> {
                    child: const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
                  )
                : DropdownButtonFormField<String>(
-              value: _selectedCropName,
+              initialValue: _selectedCropName,
               hint: const Text('Discovery: Select Crop *'),
               decoration: const InputDecoration(prefixIcon: Icon(Icons.grass_outlined)),
               items: _allCropsData.map((c) => DropdownMenuItem(
@@ -377,7 +377,7 @@ class _AddCropSheetState extends State<_AddCropSheet> {
             const SizedBox(height: 12),
             if (_selectedCropName != null) ...[
               DropdownButtonFormField<String>(
-                value: _selectedVariety,
+                initialValue: _selectedVariety,
                 hint: const Text('Variety Selection *'),
                 decoration: const InputDecoration(prefixIcon: Icon(Icons.category_outlined)),
                 items: [
@@ -450,7 +450,7 @@ class _AddCropSheetState extends State<_AddCropSheet> {
               value: _isPrimary,
               onChanged: (v) => setState(() => _isPrimary = v),
               title: const Text('Set as Primary Crop', style: TextStyle(fontSize: 14)),
-              activeColor: GrowMateTheme.primaryGreen,
+              activeThumbColor: GrowMateTheme.primaryGreen,
               contentPadding: EdgeInsets.zero,
             ),
             if (_error != null)

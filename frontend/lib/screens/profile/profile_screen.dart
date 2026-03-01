@@ -166,7 +166,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const _SectionLabel('Language'),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
-                    value: _language,
+                    initialValue: _language,
                     decoration: const InputDecoration(
                       prefixIcon: Icon(Icons.translate_outlined),
                       filled: true,
@@ -244,7 +244,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: GrowMateTheme.dangerRed.withOpacity(0.08),
+                        color: GrowMateTheme.dangerRed.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(_error!,
