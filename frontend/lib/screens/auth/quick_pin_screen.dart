@@ -81,12 +81,14 @@ class _QuickPinScreenState extends State<QuickPinScreen> {
                       TextField(
                         controller: _phoneCtrl,
                         keyboardType: TextInputType.phone,
+                        maxLength: 10,
                         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                         decoration: const InputDecoration(
                           labelText: 'Phone Number',
                           prefixIcon: Icon(Icons.phone_outlined),
                           filled: true,
                           fillColor: GrowMateTheme.surfaceWhite,
+                          counterText: '',
                         ),
                       ),
                       const SizedBox(height: 28),

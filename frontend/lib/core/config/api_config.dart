@@ -6,7 +6,7 @@ class ApiConfig {
 
   // ─── Base URL ─────────────────────────────────────────────────────────────
   // Update this to your live Render URL before going to production.
-  static const String baseUrl = 'https://growmate-backend.onrender.com';
+  static const String baseUrl = 'https://growmate-orchestrator.onrender.com';
 
   // ─── Timeouts ──────────────────────────────────────────────────────────────
   // Backend orchestration timeout is 12s. We give 15s client-side buffer.

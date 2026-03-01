@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/growmate_theme.dart';
 import '../../core/services/api_service.dart';
-import '../../core/config/api_config.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -209,10 +208,12 @@ class _LoginCard extends StatelessWidget {
               
               controller: phoneCtrl,
               keyboardType: TextInputType.phone,
+              maxLength: 10,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               decoration: const InputDecoration(
                 labelText: 'Phone Number',
                 prefixIcon: Icon(Icons.phone_outlined),
+                counterText: '',
               ),
               validator: (v) =>
                   (v == null || v.length < 10) ? 'Enter valid phone number' : null,

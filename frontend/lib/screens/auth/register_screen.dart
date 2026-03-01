@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/growmate_theme.dart';
 import '../../core/services/api_service.dart';
+import '../../shared/location_picker_screen.dart';
+import 'package:latlong2/latlong.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -17,14 +19,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordCtrl = TextEditingController();
   final _pinCtrl = TextEditingController();
   String _language = 'en';
-  String? _selectedCrop;
+  LatLng? _selectedLocation;
   bool _loading = false;
   bool _obscurePassword = true;
   String? _errorMessage;
-
-  final List<String> _crops = [
-    'Paddy', 'Coconut', 'Areca Nut', 'Banana', 'Pepper', 'Cashew', 'Maize'
-  ];
 
   @override
   void dispose() {
@@ -47,7 +45,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         password: _passwordCtrl.text,
         fullName: _nameCtrl.text.trim(),
         language: _language,
-        activeCrop: _selectedCrop,
+        latitude: _selectedLocation?.latitude,
+        longitude: _selectedLocation?.longitude,
         quickPin: _pinCtrl.text.isNotEmpty ? _pinCtrl.text : null,
       );
       if (mounted) Navigator.of(context).pushReplacementNamed('/home');
@@ -126,12 +125,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 
                                 controller: _phoneCtrl,
                                 keyboardType: TextInputType.phone,
+                                maxLength: 10,
                                 inputFormatters: [
                                   FilteringTextInputFormatter.digitsOnly
                                 ],
                                 decoration: const InputDecoration(
                                   labelText: 'Phone Number *',
                                   prefixIcon: Icon(Icons.phone_outlined),
+                                  counterText: '',
                                 ),
                                 validator: (v) => (v == null || v.length < 10)
                                     ? 'Enter valid phone number'
@@ -185,19 +186,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     setState(() => _language = v ?? 'en'),
                               ),
                               const SizedBox(height: 14),
-                              DropdownButtonFormField<String>(
-                                value: _selectedCrop,
-                                decoration: const InputDecoration(
-                                  labelText: 'Primary Crop (optional)',
-                                  prefixIcon: Icon(Icons.grass_outlined),
+                              Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: GrowMateTheme.borderLight),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                                hint: const Text('Select your main crop'),
-                                items: _crops
-                                    .map((c) => DropdownMenuItem(
-                                        value: c, child: Text(c)))
-                                    .toList(),
-                                onChanged: (v) =>
-                                    setState(() => _selectedCrop = v),
+                                child: ListTile(
+                                  leading: const Icon(Icons.location_on_outlined, color: GrowMateTheme.primaryGreen),
+                                  title: Text(_selectedLocation == null ? 'Set Farm Location' : 'Location Selected'),
+                                  subtitle: _selectedLocation != null 
+                                      ? Text('${_selectedLocation!.latitude.toStringAsFixed(4)}, ${_selectedLocation!.longitude.toStringAsFixed(4)}')
+                                      : const Text('Tap to open map'),
+                                  trailing: const Icon(Icons.chevron_right),
+                                  onTap: () async {
+                                    final loc = await Navigator.of(context).push<LatLng>(
+                                      MaterialPageRoute(builder: (_) => LocationPickerScreen(initialLocation: _selectedLocation)),
+                                    );
+                                    if (loc != null) setState(() => _selectedLocation = loc);
+                                  },
+                                ),
                               ),
                               const SizedBox(height: 14),
                               TextFormField(

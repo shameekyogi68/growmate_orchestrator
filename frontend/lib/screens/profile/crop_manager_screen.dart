@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../core/theme/growmate_theme.dart';
 import '../../core/services/api_service.dart';
 import '../../core/models/api_models.dart';
+import '../../shared/location_picker_screen.dart';
+import 'package:latlong2/latlong.dart';
 
 class CropManagerScreen extends StatefulWidget {
   const CropManagerScreen({super.key});
@@ -233,6 +235,7 @@ class _AddCropSheetState extends State<_AddCropSheet> {
   final _sowingCtrl = TextEditingController();
   final _varietyCtrl = TextEditingController();
   String? _crop;
+  LatLng? _selectedLocation;
   bool _isPrimary = false;
   bool _saving = false;
   String? _error;
@@ -256,6 +259,8 @@ class _AddCropSheetState extends State<_AddCropSheet> {
         cropName: _crop!,
         variety: _varietyCtrl.text.isNotEmpty ? _varietyCtrl.text : null,
         sowingDate: _sowingCtrl.text,
+        latitude: _selectedLocation?.latitude,
+        longitude: _selectedLocation?.longitude,
         isPrimary: _isPrimary,
       );
       widget.onAdded();
@@ -304,6 +309,27 @@ class _AddCropSheetState extends State<_AddCropSheet> {
               controller: _sowingCtrl,
               decoration: const InputDecoration(labelText: 'Sowing Date * (YYYY-MM-DD)', prefixIcon: Icon(Icons.calendar_today_outlined)),
               validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+            ),
+            const SizedBox(height: 12),
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: GrowMateTheme.borderLight),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ListTile(
+                leading: const Icon(Icons.location_on_outlined, color: GrowMateTheme.primaryGreen),
+                title: Text(_selectedLocation == null ? 'Set Farm Location' : 'Location Selected'),
+                subtitle: _selectedLocation != null 
+                    ? Text('${_selectedLocation!.latitude.toStringAsFixed(4)}, ${_selectedLocation!.longitude.toStringAsFixed(4)}')
+                    : const Text('Tap to open map'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () async {
+                  final loc = await Navigator.of(context).push<LatLng>(
+                    MaterialPageRoute(builder: (_) => LocationPickerScreen(initialLocation: _selectedLocation)),
+                  );
+                  if (loc != null) setState(() => _selectedLocation = loc);
+                },
+              ),
             ),
             const SizedBox(height: 8),
             SwitchListTile.adaptive(
