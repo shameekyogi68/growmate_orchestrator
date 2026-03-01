@@ -31,7 +31,7 @@ async def get_rainfall_advisory(
             logger.error(f"Error fetching live rainfall advisory: {e}")
             return {
                 "status": "DEGRADED",
-                "message": "Rainfall data unavailable",
+                "message": f"Rainfall data unavailable: {str(e)}",
                 "confidence_score": 0.5,
                 "source": "rainfall"
             }

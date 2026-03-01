@@ -44,8 +44,8 @@ class Settings(BaseSettings):
     )
 
     # --- Timeouts ---
-    default_timeout_seconds: float = 10.0
-    advisory_orchestration_timeout: float = 10.0
+    default_timeout_seconds: float = 30.0
+    advisory_orchestration_timeout: float = 30.0
     market_max_concurrency: int = 3
 
     # --- Scheduler ---
