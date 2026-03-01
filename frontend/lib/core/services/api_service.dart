@@ -18,10 +18,20 @@ class ApiService {
     return _token;
   }
 
-  Future<void> saveToken(String token) async {
-    _token = token;
+  Future<void> saveAuthData(AuthResponse auth) async {
+    _token = auth.token;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('auth_token', token);
+    await prefs.setString('auth_token', auth.token);
+    await prefs.setString('user_id', auth.userId);
+    await prefs.setString('language', auth.profile.language);
+    if (auth.profile.activeCrop != null) await prefs.setString('active_crop', auth.profile.activeCrop!);
+    else await prefs.remove('active_crop');
+    if (auth.profile.activeSowingDate != null) await prefs.setString('active_sowing_date', auth.profile.activeSowingDate!);
+    else await prefs.remove('active_sowing_date');
+    if (auth.profile.latitude != null) await prefs.setDouble('latitude', auth.profile.latitude!);
+    else await prefs.remove('latitude');
+    if (auth.profile.longitude != null) await prefs.setDouble('longitude', auth.profile.longitude!);
+    else await prefs.remove('longitude');
   }
 
   Future<String?> _loadToken() async {
@@ -29,10 +39,16 @@ class ApiService {
     return prefs.getString('auth_token');
   }
 
-  Future<void> clearToken() async {
+  Future<void> clearAuthData() async {
     _token = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token');
+    await prefs.remove('user_id');
+    await prefs.remove('language');
+    await prefs.remove('active_crop');
+    await prefs.remove('active_sowing_date');
+    await prefs.remove('latitude');
+    await prefs.remove('longitude');
   }
 
   // ─── Private Helpers ──────────────────────────────────────────────────────
@@ -90,9 +106,8 @@ class ApiService {
           }),
         )
         .timeout(ApiConfig.receiveTimeout);
-    final data = await _handleResponse(res);
     final auth = AuthResponse.fromJson(data);
-    await saveToken(auth.token);
+    await saveAuthData(auth);
     return auth;
   }
 
@@ -107,9 +122,8 @@ class ApiService {
           body: jsonEncode({'phone_number': phoneNumber, 'password': password}),
         )
         .timeout(ApiConfig.receiveTimeout);
-    final data = await _handleResponse(res);
     final auth = AuthResponse.fromJson(data);
-    await saveToken(auth.token);
+    await saveAuthData(auth);
     return auth;
   }
 
@@ -124,9 +138,8 @@ class ApiService {
           body: jsonEncode({'phone_number': phoneNumber, 'pin': pin}),
         )
         .timeout(ApiConfig.receiveTimeout);
-    final data = await _handleResponse(res);
     final auth = AuthResponse.fromJson(data);
-    await saveToken(auth.token);
+    await saveAuthData(auth);
     return auth;
   }
 

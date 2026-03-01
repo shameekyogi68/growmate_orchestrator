@@ -43,7 +43,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       });
     } on ApiException catch (e) {
       if (e.isUnauthorized) {
-        await ApiService.instance.clearToken();
+        await ApiService.instance.clearAuthData();
         if (mounted) Navigator.of(context).pushReplacementNamed('/login');
         return;
       }

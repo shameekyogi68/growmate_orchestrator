@@ -59,7 +59,7 @@ class _AdvisoryScreenState extends State<AdvisoryScreen> {
       if (mounted) setState(() => _advisory = result);
     } on ApiException catch (e) {
       if (e.isUnauthorized) {
-        await ApiService.instance.clearToken();
+        await ApiService.instance.clearAuthData();
         if (mounted) Navigator.of(context).pushReplacementNamed('/login');
         return;
       }

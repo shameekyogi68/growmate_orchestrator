@@ -110,7 +110,14 @@ async def register(req: RegisterRequest):
                     "status": "registered",
                     "user_id": user_id_str,
                     "token": token,
-                    "profile": {"full_name": req.full_name, "language": req.language},
+                    "profile": {
+                        "full_name": req.full_name, 
+                        "language": req.language,
+                        "latitude": req.latitude,
+                        "longitude": req.longitude,
+                        "active_crop": req.active_crop,
+                        "active_sowing_date": str(req.active_sowing_date) if req.active_sowing_date else None
+                    },
                 }
         except Exception as e:
             logger.error(f"Registration failed: {e}")
@@ -125,7 +132,14 @@ async def register(req: RegisterRequest):
         "status": "registered (DB-less)",
         "user_id": "local-user",
         "token": token,
-        "profile": {"full_name": req.full_name, "language": req.language},
+        "profile": {
+            "full_name": req.full_name, 
+            "language": req.language,
+            "latitude": req.latitude,
+            "longitude": req.longitude,
+            "active_crop": req.active_crop,
+            "active_sowing_date": str(req.active_sowing_date) if req.active_sowing_date else None
+        },
     }
 
 
@@ -140,7 +154,7 @@ async def login(req: LoginRequest):
     if pool:
         try:
             user = await fetch_one(
-                "SELECT id, phone_number, password_hash, full_name, language, active_crop, active_sowing_date FROM users WHERE phone_number = $1",
+                "SELECT id, phone_number, password_hash, full_name, language, latitude, longitude, active_crop, active_sowing_date FROM users WHERE phone_number = $1",
                 req.phone_number,
             )
             if not user:
@@ -165,6 +179,8 @@ async def login(req: LoginRequest):
                 "profile": {
                     "full_name": user["full_name"],
                     "language": user["language"],
+                    "latitude": user["latitude"],
+                    "longitude": user["longitude"],
                     "active_crop": user["active_crop"],
                     "active_sowing_date": (
                         user["active_sowing_date"].isoformat()
@@ -189,6 +205,8 @@ async def login(req: LoginRequest):
         "profile": {
             "full_name": "Mock User",
             "language": "en",
+            "latitude": 13.8,
+            "longitude": 74.6,
             "active_crop": "Paddy",
             "active_sowing_date": "2026-02-01",
         },
