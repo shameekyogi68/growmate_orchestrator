@@ -432,6 +432,7 @@ class _AddCropSheetState extends State<_AddCropSheet> {
 
   Widget _buildCropList() {
     return ListView.builder(
+      padding: const EdgeInsets.only(bottom: 24),
       itemCount: _allCropsData.length,
       itemBuilder: (ctx, i) {
         final c = _allCropsData[i];
@@ -441,83 +442,100 @@ class _AddCropSheetState extends State<_AddCropSheet> {
         final category = identity?['crop_category']?.toString() ?? '';
         final statusColor = _parseColor(c['status_color']?.toString(), GrowMateTheme.primaryGreen);
         final market = c['financial_intelligence'] as Map<String, dynamic>?;
-        final price = market?['modal_price']?.toString() ?? 'N/A';
+        final price = market?['modal_price']?.toString();
         final tags = c['ui_tags'] as List<dynamic>? ?? [];
+        final showPrice = price != null && price != 'N/A' && price.isNotEmpty;
 
-        return GestureDetector(
-          onTap: () => setState(() => _selectedCropData = c),
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: GrowMateTheme.surfaceWhite,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4))],
-              border: Border.all(color: GrowMateTheme.borderLight),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-                      child: CropIcon(icon: c['icon']?.toString(), color: statusColor, size: 24),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('$cropName - $variety', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                          if (category.isNotEmpty)
-                            Text(category, style: const TextStyle(fontSize: 12, color: GrowMateTheme.textSecondary)),
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
-                                child: Text(c['status_label']?.toString() ?? 'Verified', 
-                                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: statusColor)),
-                              ),
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(color: const Color(0xFF8B5CF6).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
-                                child: Text('Price: $price', 
-                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF8B5CF6))),
-                              ),
-                            ],
-                          ),
-                        ],
+        return TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0.0, end: 1.0),
+          duration: Duration(milliseconds: 400 + (i * 100)),
+          curve: Curves.easeOutCubic,
+          builder: (context, value, child) {
+            return Opacity(
+              opacity: value,
+              child: Transform.translate(
+                offset: Offset(0, 20 * (1 - value)),
+                child: child,
+              ),
+            );
+          },
+          child: GestureDetector(
+            onTap: () => setState(() => _selectedCropData = c),
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: GrowMateTheme.surfaceWhite,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4))],
+                border: Border.all(color: GrowMateTheme.borderLight),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+                        child: CropIcon(icon: c['icon']?.toString(), color: statusColor, size: 22),
                       ),
-                    ),
-                    const Icon(Icons.chevron_right, color: GrowMateTheme.textSecondary),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                if (tags.isNotEmpty)
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: tags.map((t) {
-                      final tagText = t['text']?.toString() ?? '';
-                      final tColor = _parseColor(t['color']?.toString(), GrowMateTheme.textSecondary);
-                      String displayText = tagText;
-                      if (tagText == 'Low' || tagText == 'Medium' || tagText == 'High') {
-                        displayText = 'Stress: $tagText';
-                      }
-                      return Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(border: Border.all(color: tColor.withValues(alpha: 0.3)), borderRadius: BorderRadius.circular(12)),
-                        child: Text(displayText, style: TextStyle(fontSize: 10, color: tColor)),
-                      );
-                    }).toList(),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('$cropName - $variety', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold), maxLines: 2, overflow: TextOverflow.ellipsis),
+                            if (category.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2),
+                                child: Text(category, style: const TextStyle(fontSize: 11, color: GrowMateTheme.textSecondary)),
+                              ),
+                            const SizedBox(height: 6),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 4,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
+                                  child: Text(c['status_label']?.toString() ?? 'Verified', 
+                                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: statusColor)),
+                                ),
+                                if (showPrice)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(color: const Color(0xFF8B5CF6).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
+                                    child: Text('Price: $price', 
+                                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Color(0xFF8B5CF6))),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right, color: GrowMateTheme.textSecondary, size: 20),
+                    ],
                   ),
-              ],
+                  if (tags.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      children: tags.map((t) {
+                        final tagText = t['text']?.toString() ?? '';
+                        final tColor = _parseColor(t['color']?.toString(), GrowMateTheme.textSecondary);
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(border: Border.all(color: tColor.withValues(alpha: 0.3)), borderRadius: BorderRadius.circular(12)),
+                          child: Text(tagText, style: TextStyle(fontSize: 10, color: tColor)),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
         );

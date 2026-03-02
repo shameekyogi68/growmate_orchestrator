@@ -36,9 +36,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadProfile() async {
+    if (!mounted) return;
     setState(() { _loading = true; _error = null; });
     try {
       final p = await ApiService.instance.getProfile();
+      if (!mounted) return;
       setState(() {
         _profile = p;
         _nameCtrl.text = p.fullName ?? '';
@@ -53,15 +55,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (mounted) Navigator.of(context).pushReplacementNamed('/login');
         return;
       }
-      setState(() => _error = e.detail);
+      if (mounted) setState(() => _error = e.detail);
     } catch (_) {
-      setState(() => _error = 'Could not load profile.');
+      if (mounted) setState(() => _error = 'Could not load profile.');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
   }
 
   Future<void> _saveProfile() async {
+    if (!mounted) return;
     setState(() { _saving = true; _error = null; });
     try {
       await ApiService.instance.updateProfile(
@@ -70,7 +73,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         latitude: _selectedLocation?.latitude,
         longitude: _selectedLocation?.longitude,
       );
-      // Persist language locally for advisory calls
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('language', _language);
       if (mounted) {
@@ -79,9 +81,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       }
     } on ApiException catch (e) {
-      setState(() => _error = e.detail);
+      if (mounted) setState(() => _error = e.detail);
     } catch (_) {
-      setState(() => _error = 'Save failed. Check your connection.');
+      if (mounted) setState(() => _error = 'Save failed. Check your connection.');
     } finally {
       if (mounted) setState(() => _saving = false);
     }
