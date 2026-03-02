@@ -236,7 +236,6 @@ class _AddCropSheet extends StatefulWidget {
 class _AddCropSheetState extends State<_AddCropSheet> {
   final _formKey = GlobalKey<FormState>();
   final _sowingCtrl = TextEditingController();
-  final _varietyCtrl = TextEditingController();
   LatLng? _selectedLocation;
   bool _isPrimary = false;
   bool _saving = false;
@@ -245,8 +244,7 @@ class _AddCropSheetState extends State<_AddCropSheet> {
   String? _detectedPlace;
 
   List<Map<String, dynamic>> _allCropsData = [];
-  String? _selectedCropName;
-  String? _selectedVariety;
+  Map<String, dynamic>? _selectedCropData;
 
   @override
   void initState() {
@@ -272,19 +270,24 @@ class _AddCropSheetState extends State<_AddCropSheet> {
     setState(() {
       _loadingCrops = true;
       _error = null;
-      _selectedCropName = null;
-      _selectedVariety = null;
+      _selectedCropData = null;
       _allCropsData = [];
     });
     try {
+      final now = DateTime.now();
+      final dateStr = now.toIso8601String().split('T')[0];
+      
       final supportedMap = await ApiService.instance.getSupportedCrops(
-        latitude: _selectedLocation?.latitude,
-        longitude: _selectedLocation?.longitude,
+        latitude: _selectedLocation?.latitude ?? 13.8,
+        longitude: _selectedLocation?.longitude ?? 74.6,
+        date: dateStr,
       );
       
       final String? locationName = supportedMap['location']?.toString();
       final List<Map<String, dynamic>> flattened = [];
-      for (var group in groups) {
+      final seasonalGroups = supportedMap['seasonal_groups'] as List<dynamic>? ?? [];
+      
+      for (var group in seasonalGroups) {
         final List<dynamic> crops = group['crops'] ?? [];
         for (var c in crops) {
           flattened.add(c as Map<String, dynamic>);
@@ -310,7 +313,6 @@ class _AddCropSheetState extends State<_AddCropSheet> {
   @override
   void dispose() {
     _sowingCtrl.dispose();
-    _varietyCtrl.dispose();
     super.dispose();
   }
 
@@ -318,9 +320,10 @@ class _AddCropSheetState extends State<_AddCropSheet> {
     if (!_formKey.currentState!.validate()) return;
     setState(() { _saving = true; _error = null; });
     try {
+      final identity = _selectedCropData?['identity'] as Map<String, dynamic>?;
       await ApiService.instance.addCrop(
-        cropName: _selectedCropName!,
-        variety: _selectedVariety,
+        cropName: identity?['crop_name']?.toString() ?? _selectedCropData?['name']?.toString() ?? 'Unknown',
+        variety: identity?['variety_name']?.toString(),
         sowingDate: _sowingCtrl.text,
         latitude: _selectedLocation?.latitude,
         longitude: _selectedLocation?.longitude,
@@ -337,154 +340,333 @@ class _AddCropSheetState extends State<_AddCropSheet> {
     }
   }
 
+  Color _parseColor(String? colorStr, Color fallback) {
+    if (colorStr == null || !colorStr.startsWith('#')) return fallback;
+    try {
+      return Color(int.parse(colorStr.substring(1, 7), radix: 16) + 0xFF000000);
+    } catch (_) {
+      return fallback;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    final sheetHeight = MediaQuery.of(context).size.height * 0.85;
+
+    return Container(
+      height: sheetHeight,
       padding: EdgeInsets.only(
-          left: 24, right: 24, top: 24,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 24),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(color: GrowMateTheme.borderLight, borderRadius: BorderRadius.circular(2))),
-            const Text('Add New Crop',
-                style: TextStyle(fontFamily: 'Inter', fontSize: 18, fontWeight: FontWeight.w700)),
+          left: 20, right: 20, top: 20,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Center(
+            child: Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(color: GrowMateTheme.borderLight, borderRadius: BorderRadius.circular(2))),
+          ),
+          
+          if (_selectedCropData == null) ...[
+            const Text('Discover Verified Crops',
+                style: TextStyle(fontFamily: 'Inter', fontSize: 20, fontWeight: FontWeight.w700)),
             const SizedBox(height: 16),
-            _loadingCrops
-               ? Container(
-                   height: 100,
-                   decoration: BoxDecoration(
-                     color: GrowMateTheme.primaryGreen.withValues(alpha: 0.05),
-                     borderRadius: BorderRadius.circular(16),
-                   ),
-                   child: Column(
-                     mainAxisAlignment: MainAxisAlignment.center,
-                     children: [
-                       const SizedBox(
-                         width: 24,
-                         height: 24,
-                         child: CircularProgressIndicator(strokeWidth: 2.5, color: GrowMateTheme.primaryGreen),
-                       ),
-                       const SizedBox(height: 12),
-                       Text('Analyzing soil & weather for $_detectedPlace...', 
-                         style: const TextStyle(fontSize: 12, color: GrowMateTheme.primaryGreen, fontWeight: FontWeight.w500)),
-                     ],
-                   ),
-                 )
-               : DropdownButtonFormField<String>(
-              initialValue: _selectedCropName,
-              hint: const Text('Select Verified Crop *'),
-              decoration: const InputDecoration(prefixIcon: Icon(Icons.grass_outlined)),
-              items: _allCropsData.map((c) => DropdownMenuItem(
-                value: c['name'].toString(), 
+            if (_detectedPlace != null) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: GrowMateTheme.primaryGreen.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: GrowMateTheme.primaryGreen.withValues(alpha: 0.2)),
+                ),
                 child: Row(
                   children: [
-                    CropIcon(icon: c['icon']?.toString(), color: GrowMateTheme.primaryGreen, size: 18),
-                    const SizedBox(width: 10),
-                    Text(c['name'].toString()),
+                    const Icon(Icons.location_on, color: GrowMateTheme.primaryGreen, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text('Location: $_detectedPlace',
+                          style: const TextStyle(fontWeight: FontWeight.w600, color: GrowMateTheme.textPrimary)),
+                    ),
+                    const Icon(Icons.verified, color: GrowMateTheme.primaryGreen, size: 18),
                   ],
-                )
-              )).toList(),
-              onChanged: (v) {
-                setState(() {
-                  _selectedCropName = v;
-                  final cropData = _allCropsData.firstWhere((c) => c['name'] == v);
-                  _selectedVariety = cropData['variety_name']?.toString();
-                });
-              },
-              validator: (v) => v == null ? 'Please select a crop' : null,
-            ),
-            const SizedBox(height: 12),
-            if (_selectedCropName != null) ...[
-              DropdownButtonFormField<String>(
-                initialValue: _selectedVariety,
-                hint: const Text('Variety Selection *'),
-                decoration: const InputDecoration(prefixIcon: Icon(Icons.category_outlined)),
-                items: [
-                   DropdownMenuItem(value: _selectedVariety, child: Text(_selectedVariety ?? 'General')),
-                ],
-                onChanged: (v) => setState(() => _selectedVariety = v),
-                validator: (v) => v == null ? 'Please select a variety' : null,
+                ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
             ],
-            TextFormField(
-              controller: _sowingCtrl,
-              readOnly: true,
-              onTap: () async {
-                final date = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime(2020),
-                  lastDate: DateTime(2100),
-                  builder: (context, child) => Theme(
-                    data: Theme.of(context).copyWith(
-                      colorScheme: const ColorScheme.light(
-                        primary: GrowMateTheme.primaryGreen,
-                        onPrimary: Colors.white,
+            Expanded(
+              child: _loadingCrops
+                  ? _buildLoadingState()
+                  : _error != null
+                      ? Center(child: Text(_error!, style: const TextStyle(color: GrowMateTheme.dangerRed)))
+                      : _allCropsData.isEmpty
+                          ? const Center(child: Text("No crops found for this region.", style: TextStyle(color: GrowMateTheme.textSecondary)))
+                          : _buildCropList(),
+            ),
+          ] else
+             Expanded(child: _buildCropDetails()),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const SizedBox(width: 40, height: 40, child: CircularProgressIndicator(color: GrowMateTheme.primaryGreen, strokeWidth: 3)),
+        const SizedBox(height: 20),
+        Text('Analyzing soil & weather for ${_detectedPlace ?? "your area"}...', 
+            style: const TextStyle(fontSize: 14, color: GrowMateTheme.primaryGreen, fontWeight: FontWeight.w500)),
+      ],
+    );
+  }
+
+  Widget _buildCropList() {
+    return ListView.builder(
+      itemCount: _allCropsData.length,
+      itemBuilder: (ctx, i) {
+        final c = _allCropsData[i];
+        final identity = c['identity'] as Map<String, dynamic>?;
+        final cropName = identity?['crop_name']?.toString() ?? c['name']?.toString() ?? 'Crop';
+        final variety = identity?['variety_name']?.toString() ?? 'General';
+        final category = identity?['crop_category']?.toString() ?? '';
+        final statusColor = _parseColor(c['status_color']?.toString(), GrowMateTheme.primaryGreen);
+        final market = c['financial_intelligence'] as Map<String, dynamic>?;
+        final price = market?['modal_price']?.toString() ?? 'N/A';
+        final tags = c['ui_tags'] as List<dynamic>? ?? [];
+
+        return GestureDetector(
+          onTap: () => setState(() => _selectedCropData = c),
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: GrowMateTheme.surfaceWhite,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4))],
+              border: Border.all(color: GrowMateTheme.borderLight),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+                      child: CropIcon(icon: c['icon']?.toString(), color: statusColor, size: 24),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('$cropName - $variety', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          if (category.isNotEmpty)
+                            Text(category, style: const TextStyle(fontSize: 12, color: GrowMateTheme.textSecondary)),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
+                                child: Text(c['status_label']?.toString() ?? 'Verified', 
+                                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: statusColor)),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(color: const Color(0xFF8B5CF6).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
+                                child: Text('Price: $price', 
+                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF8B5CF6))),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                    child: child!,
+                    const Icon(Icons.chevron_right, color: GrowMateTheme.textSecondary),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                if (tags.isNotEmpty)
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: tags.map((t) {
+                      final tagText = t['text']?.toString() ?? '';
+                      final tColor = _parseColor(t['color']?.toString(), GrowMateTheme.textSecondary);
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(border: Border.all(color: tColor.withValues(alpha: 0.3)), borderRadius: BorderRadius.circular(12)),
+                        child: Text(tagText, style: TextStyle(fontSize: 10, color: tColor)),
+                      );
+                    }).toList(),
                   ),
-                );
-                if (date != null && mounted) {
-                  setState(() {
-                    // Force ISO format for database compliance
-                    _sowingCtrl.text = date.toIso8601String().split('T')[0];
-                  });
-                }
-              },
-              decoration: const InputDecoration(
-                labelText: 'Sowing Date *',
-                hintText: 'Select Date',
-                prefixIcon: Icon(Icons.calendar_today_outlined),
-              ),
-              validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+              ],
             ),
-            const SizedBox(height: 12),
-            Container(
-              decoration: BoxDecoration(
-                color: GrowMateTheme.primaryGreen.withValues(alpha: 0.05),
-                border: Border.all(color: GrowMateTheme.primaryGreen.withValues(alpha: 0.2)),
-                borderRadius: BorderRadius.circular(12),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCropDetails() {
+    final c = _selectedCropData!;
+    final identity = c['identity'] as Map<String, dynamic>?;
+    final cropName = identity?['crop_name']?.toString() ?? c['name']?.toString() ?? 'Crop';
+    final variety = identity?['variety_name']?.toString() ?? 'General';
+    final statusColor = _parseColor(c['status_color']?.toString(), GrowMateTheme.primaryGreen);
+    final desc = c['description']?.toString() ?? '';
+    
+    final yieldPot = c['yield_potential'] as Map<String, dynamic>?;
+    final avgYield = yieldPot?['average_yield_per_acre']?.toString() ?? 'N/A';
+    
+    final morph = c['morphological_characteristics'] as Map<String, dynamic>?;
+    final duration = morph?['maturity_duration_range']?.toString() ?? 'N/A';
+
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => setState(() => _selectedCropData = null),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
               ),
-              child: ListTile(
-                leading: const Icon(Icons.location_on_outlined, color: GrowMateTheme.primaryGreen),
-                title: Text(_detectedPlace ?? 'Identifying Location...', 
-                    style: const TextStyle(fontWeight: FontWeight.w600, color: GrowMateTheme.primaryGreen)),
-                subtitle: _selectedLocation != null 
-                    ? Text('${_selectedLocation!.latitude.toStringAsFixed(4)}, ${_selectedLocation!.longitude.toStringAsFixed(4)}')
-                    : const Text('Fetching farm coordinates...'),
-                trailing: const Icon(Icons.verified_user_outlined, color: GrowMateTheme.primaryGreen, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text('$cropName ($variety)', 
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.info_outline, color: statusColor, size: 20),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(c['status_label']?.toString() ?? 'Notice', style: TextStyle(fontWeight: FontWeight.bold, color: statusColor)),
+                              const SizedBox(height: 4),
+                              Text(desc, style: const TextStyle(fontSize: 13, height: 1.4)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      _buildMetricCard(Icons.agriculture, 'Yield/Acre', avgYield),
+                      const SizedBox(width: 12),
+                      _buildMetricCard(Icons.timer_outlined, 'Duration', duration),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  const Text('Sowing Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _sowingCtrl,
+                    readOnly: true,
+                    onTap: () async {
+                      final date = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime(2100),
+                        builder: (context, child) => Theme(
+                          data: Theme.of(context).copyWith(
+                            colorScheme: const ColorScheme.light(primary: GrowMateTheme.primaryGreen, onPrimary: Colors.white),
+                          ),
+                          child: child!,
+                        ),
+                      );
+                      if (date != null && mounted) {
+                        setState(() => _sowingCtrl.text = date.toIso8601String().split('T')[0]);
+                      }
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Sowing Date *',
+                      hintText: 'Select when you plan to sow',
+                      prefixIcon: const Icon(Icons.calendar_today_outlined),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    validator: (v) => (v == null || v.isEmpty) ? 'Sowing date is mandatory' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  SwitchListTile.adaptive(
+                    value: _isPrimary,
+                    onChanged: (v) => setState(() => _isPrimary = v),
+                    title: const Text('Set as Primary Crop', style: TextStyle(fontSize: 14)),
+                    activeThumbColor: GrowMateTheme.primaryGreen,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ],
               ),
             ),
+          ),
+          if (_error != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Text(_error!, style: const TextStyle(color: GrowMateTheme.dangerRed, fontSize: 13)),
+            ),
+          SizedBox(
+            height: 56,
+            child: ElevatedButton(
+              onPressed: _saving ? null : _save,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: GrowMateTheme.harvestOrange,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              child: _saving
+                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                  : const Text('Add to My Farm', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMetricCard(IconData icon, String title, String value) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: GrowMateTheme.surfaceWhite,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: GrowMateTheme.borderLight),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 20, color: GrowMateTheme.textSecondary),
             const SizedBox(height: 8),
-            SwitchListTile.adaptive(
-              value: _isPrimary,
-              onChanged: (v) => setState(() => _isPrimary = v),
-              title: const Text('Set as Primary Crop', style: TextStyle(fontSize: 14)),
-              activeThumbColor: GrowMateTheme.primaryGreen,
-              contentPadding: EdgeInsets.zero,
-            ),
-            if (_error != null)
-              Text(_error!, style: const TextStyle(color: GrowMateTheme.dangerRed, fontSize: 12)),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _saving ? null : _save,
-                child: _saving
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Text('Add Crop'),
-              ),
-            ),
+            Text(title, style: const TextStyle(fontSize: 12, color: GrowMateTheme.textSecondary)),
+            const SizedBox(height: 4),
+            Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: GrowMateTheme.textPrimary)),
           ],
         ),
       ),
     );
   }
 }
+
