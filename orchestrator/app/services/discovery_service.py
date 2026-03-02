@@ -51,7 +51,7 @@ async def get_intelligent_crops(
     try:
         # 1. Fetch ALL external intelligence concurrently
         raw_data, weather, rainfall, soil = await asyncio.gather(
-            get_crop_recommendations(latitude, longitude, request_date, language, lite=True),
+            get_crop_recommendations(latitude, longitude, request_date, language, lite=False),
             fetch_weather_data(latitude, longitude, language, request_date),
             get_rainfall_advisory(latitude, longitude, request_date, language),
             get_soil_advisory(latitude, longitude, language),

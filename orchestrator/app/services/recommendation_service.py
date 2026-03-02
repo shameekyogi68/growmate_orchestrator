@@ -107,7 +107,7 @@ async def map_recommendations(crops: list, language: str, lite: bool = False) ->
         # This prevents "Hardcoded" feeling by preserving API the data structure.
         identity = float_to_dict(rec.get("identity", {}))
         crop_name = identity.get("crop_name", rec.get("crop_name", "N/A"))
-        variety_name = None if lite else identity.get("variety_name", rec.get("variety_name", "N/A"))
+        variety_name = identity.get("variety_name", rec.get("variety_name", "N/A"))
         market_info = market_map.get((crop_name, variety_name), {})
 
         agro = rec.get("agro_climatic_suitability", {})
