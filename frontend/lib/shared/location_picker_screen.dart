@@ -16,7 +16,19 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   late LatLng _selectedLocation;
   late final MapController _mapController;
   
-  // Default to Udupi, Karnataka if no initial location provided
+  // Highly precise polygon for Udupi District borders
+  static const List<LatLng> _udupiPolygon = [
+    LatLng(13.8860, 74.5500), // Far North West (Shiroor Coast)
+    LatLng(13.8860, 74.8000), // Far North East (Kollur Ghats)
+    LatLng(13.5600, 75.0800), // Mid East (Hebri / Agumbe Border)
+    LatLng(13.2200, 75.0900), // South East (Karkala / Mala)
+    LatLng(13.1600, 74.9800), // South East (Nitte Boundary)
+    LatLng(13.0900, 74.7900), // South (Hejamadi Coast)
+    LatLng(13.3400, 74.6800), // Mid West (Malpe Coast)
+    LatLng(13.6300, 74.6200), // Mid West (Kundapura Coast)
+  ];
+
+  // Default to center of Udupi District if no initial location provided
   static const _defaultLocation = LatLng(13.3409, 74.7421);
 
   bool _isLoadingLocation = true;
@@ -62,12 +74,18 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     }
   }
 
-  bool _isWithinUdupiBounds(LatLng pos) {
-    // Orchestrator validation bounds
-    return pos.latitude >= 12.5 &&
-        pos.latitude <= 14.5 &&
-        pos.longitude >= 74.4 &&
-        pos.longitude <= 75.3;
+  bool _isWithinUdupiBounds(LatLng point) {
+    // Advanced Ray-Casting algorithm to determine if point is inside complex polygon
+    bool isInside = false;
+    int j = _udupiPolygon.length - 1;
+    for (int i = 0; i < _udupiPolygon.length; i++) {
+      if ((_udupiPolygon[i].longitude > point.longitude) != (_udupiPolygon[j].longitude > point.longitude) &&
+          (point.latitude < (_udupiPolygon[j].latitude - _udupiPolygon[i].latitude) * (point.longitude - _udupiPolygon[i].longitude) / (_udupiPolygon[j].longitude - _udupiPolygon[i].longitude) + _udupiPolygon[i].latitude)) {
+        isInside = !isInside;
+      }
+      j = i;
+    }
+    return isInside;
   }
 
   void _onConfirm() {
@@ -123,12 +141,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
               PolygonLayer(
                 polygons: [
                   Polygon(
-                    points: const [
-                      LatLng(14.5, 74.4), // Top left
-                      LatLng(14.5, 75.3), // Top right
-                      LatLng(12.5, 75.3), // Bottom right
-                      LatLng(12.5, 74.4), // Bottom left
-                    ],
+                    points: _udupiPolygon,
                     color: GrowMateTheme.primaryGreen.withValues(alpha: 0.15),
                     borderColor: GrowMateTheme.primaryGreenDark,
                     borderStrokeWidth: 2,
