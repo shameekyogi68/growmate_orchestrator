@@ -4,6 +4,7 @@ import '../../core/theme/growmate_theme.dart';
 import '../../core/services/api_service.dart';
 import '../../core/models/api_models.dart';
 import '../../shared/location_picker_screen.dart';
+import '../../shared/widgets.dart';
 import 'package:latlong2/latlong.dart';
 
 class CropManagerScreen extends StatefulWidget {
@@ -159,7 +160,8 @@ class _CropTile extends StatelessWidget {
                 : GrowMateTheme.borderLight,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(Icons.grass_outlined,
+          child: CropIcon(
+              icon: crop.icon,
               color: crop.isPrimary
                   ? GrowMateTheme.primaryGreen
                   : GrowMateTheme.textSecondary,
@@ -363,7 +365,13 @@ class _AddCropSheetState extends State<_AddCropSheet> {
               decoration: const InputDecoration(prefixIcon: Icon(Icons.grass_outlined)),
               items: _allCropsData.map((c) => DropdownMenuItem(
                 value: c['name'].toString(), 
-                child: Text(c['name'].toString())
+                child: Row(
+                  children: [
+                    CropIcon(icon: c['icon']?.toString(), color: GrowMateTheme.primaryGreen, size: 18),
+                    const SizedBox(width: 10),
+                    Text(c['name'].toString()),
+                  ],
+                )
               )).toList(),
               onChanged: (v) {
                 setState(() {

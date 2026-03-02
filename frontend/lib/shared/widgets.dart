@@ -278,3 +278,57 @@ class DegradedBanner extends StatelessWidget {
     );
   }
 }
+
+/// CropIcon — handles both Material Icons and custom image assets.
+/// If 'icon' contains '.' (e.g. 'paddy.png'), it looks in 'assets/icons/'.
+/// Otherwise, it maps to a standard Material Design icon.
+class CropIcon extends StatelessWidget {
+  final String? icon;
+  final Color color;
+  final double size;
+
+  const CropIcon({this.icon, required this.color, this.size = 20, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    if (icon == null || icon!.isEmpty) {
+      return Icon(Icons.grass_outlined, color: color, size: size);
+    }
+
+    if (icon!.contains('.')) {
+      final path = icon!.startsWith('assets/') ? icon! : 'assets/icons/$icon';
+      return Image.asset(
+        path,
+        width: size,
+        height: size,
+        errorBuilder: (context, error, stackTrace) =>
+            Icon(Icons.grass_outlined, color: color, size: size),
+      );
+    }
+
+    return Icon(_mapMaterialIcon(icon!), color: color, size: size);
+  }
+
+  IconData _mapMaterialIcon(String icon) {
+    switch (icon) {
+      case 'eco':
+        return Icons.eco_outlined;
+      case 'agriculture':
+        return Icons.agriculture_outlined;
+      case 'grass':
+        return Icons.grass_outlined;
+      case 'grain':
+        return Icons.grain_outlined;
+      case 'shopping_basket':
+        return Icons.shopping_basket_outlined;
+      case 'check_circle':
+        return Icons.check_circle_outlined;
+      case 'warning':
+        return Icons.warning_amber_rounded;
+      case 'report_problem':
+        return Icons.report_problem_outlined;
+      default:
+        return Icons.grass_outlined;
+    }
+  }
+}

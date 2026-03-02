@@ -116,12 +116,12 @@ class _Logo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(Icons.eco_rounded, color: Colors.white, size: 48),
-        SizedBox(height: 12),
-        Text(
+        Image.asset('assets/icons/logo.png', width: 48, height: 48, color: Colors.white),
+        const SizedBox(height: 12),
+        const Text(
           'GrowMate',
           style: TextStyle(
             fontFamily: 'Inter',
@@ -131,8 +131,8 @@ class _Logo extends StatelessWidget {
             letterSpacing: -0.5,
           ),
         ),
-        SizedBox(height: 4),
-        Text(
+        const SizedBox(height: 4),
+        const Text(
           'Intelligent Farming Platform',
           style: TextStyle(
             fontFamily: 'Inter',

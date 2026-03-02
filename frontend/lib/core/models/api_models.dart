@@ -188,6 +188,7 @@ class UserCrop {
   final String? sowingDate;
   final double? latitude;
   final double? longitude;
+  final String? icon;
   final bool isPrimary;
 
   const UserCrop({
@@ -197,6 +198,7 @@ class UserCrop {
     this.sowingDate,
     this.latitude,
     this.longitude,
+    this.icon,
     required this.isPrimary,
   });
 
@@ -207,6 +209,7 @@ class UserCrop {
         sowingDate: json['sowing_date'] as String?,
         latitude: (json['latitude'] as num?)?.toDouble(),
         longitude: (json['longitude'] as num?)?.toDouble(),
+        icon: json['icon'] as String?,
         isPrimary: json['is_primary'] as bool? ?? false,
       );
 }
