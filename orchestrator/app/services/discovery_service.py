@@ -149,6 +149,29 @@ async def validate_crops(
         ui_style = STATUS_UI_MAP.get(fusion_status, STATUS_UI_MAP["Verified"])
         market = rec.get("financial_intelligence", {})
 
+        # SENSITIVITY PROFILE TO UI TAGS
+        sensitivity = rec.get("sensitivity_profile", {})
+        ui_tags = []
+        if "drought_sensitivity_level" in sensitivity:
+            level = sensitivity["drought_sensitivity_level"]
+            col = "#10B981" if level == "Low" else ("#F59E0B" if level == "Medium" else "#EF4444")
+            ui_tags.append({"text": f"Drought Risk: {level}", "color": col})
+        if "waterlogging_sensitivity_level" in sensitivity:
+            level = sensitivity["waterlogging_sensitivity_level"]
+            col = "#10B981" if level == "Low" else ("#F59E0B" if level == "Medium" else "#EF4444")
+            ui_tags.append({"text": f"Waterlogging Risk: {level}", "color": col})
+        if "heat_tolerance_level" in sensitivity:
+            level = sensitivity["heat_tolerance_level"]
+            col = "#10B981" if level == "High" else ("#F59E0B" if level == "Medium" else "#EF4444")
+            ui_tags.append({"text": f"Heat Tolerance: {level}", "color": col})
+
+        # FALLBACK IF EMPTY
+        if not ui_tags:
+            ui_tags = [
+                {"text": variety, "color": "#3B82F6"},
+                {"text": fusion_status, "color": ui_style["color"]}
+            ]
+
         farmer_data = {
             "id": rec.get("crop_id", rec.get("id", "N/A")),
             # IDENTITY (Preserved Exactly)
@@ -176,11 +199,7 @@ async def validate_crops(
             
             # UI METADATA (Rich Aesthetics)
             "icon": "agriculture",
-            "ui_tags": [
-                {"text": variety, "color": "#3B82F6"},
-                {"text": fusion_status, "color": ui_style["color"]},
-                {"text": f"₹{market.get('modal_price', 'N/A')}", "color": "#8B5CF6"}
-            ],
+            "ui_tags": ui_tags,
             "fusion_status": fusion_status
         }
         
