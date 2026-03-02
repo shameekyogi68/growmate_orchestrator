@@ -124,7 +124,7 @@ class _CropManagerScreenState extends State<CropManagerScreen> {
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (_) => _AddCropSheet(onAdded: _loadCrops),
+      builder: (_) => _AddCropSheet(onAdded: _loadCrops, existingCrops: _crops),
     );
   }
 }
@@ -227,7 +227,8 @@ class _CropTile extends StatelessWidget {
 
 class _AddCropSheet extends StatefulWidget {
   final VoidCallback onAdded;
-  const _AddCropSheet({required this.onAdded});
+  final List<UserCrop> existingCrops;
+  const _AddCropSheet({required this.onAdded, required this.existingCrops});
 
   @override
   State<_AddCropSheet> createState() => _AddCropSheetState();
@@ -287,10 +288,19 @@ class _AddCropSheetState extends State<_AddCropSheet> {
       final List<Map<String, dynamic>> flattened = [];
       final seasonalGroups = supportedMap['seasonal_groups'] as List<dynamic>? ?? [];
       
+      final existingNames = widget.existingCrops.map((e) => '${e.cropName}-${e.variety ?? "General"}').toSet();
+
       for (var group in seasonalGroups) {
         final List<dynamic> crops = group['crops'] ?? [];
         for (var c in crops) {
-          flattened.add(c as Map<String, dynamic>);
+          final identity = c['identity'] as Map<String, dynamic>?;
+          final cName = identity?['crop_name']?.toString() ?? c['name']?.toString() ?? '';
+          final cVariety = identity?['variety_name']?.toString() ?? 'General';
+          final uniqueKey = '$cName-$cVariety';
+          
+          if (!existingNames.contains(uniqueKey)) {
+            flattened.add(c as Map<String, dynamic>);
+          }
         }
       }
       if (mounted) {
@@ -496,10 +506,14 @@ class _AddCropSheetState extends State<_AddCropSheet> {
                     children: tags.map((t) {
                       final tagText = t['text']?.toString() ?? '';
                       final tColor = _parseColor(t['color']?.toString(), GrowMateTheme.textSecondary);
+                      String displayText = tagText;
+                      if (tagText == 'Low' || tagText == 'Medium' || tagText == 'High') {
+                        displayText = 'Stress: $tagText';
+                      }
                       return Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(border: Border.all(color: tColor.withValues(alpha: 0.3)), borderRadius: BorderRadius.circular(12)),
-                        child: Text(tagText, style: TextStyle(fontSize: 10, color: tColor)),
+                        child: Text(displayText, style: TextStyle(fontSize: 10, color: tColor)),
                       );
                     }).toList(),
                   ),
@@ -524,6 +538,13 @@ class _AddCropSheetState extends State<_AddCropSheet> {
     
     final morph = c['morphological_characteristics'] as Map<String, dynamic>?;
     final duration = morph?['maturity_duration_range']?.toString() ?? 'N/A';
+
+    final agroInfo = c['agro_climatic_suitability'] as Map<String, dynamic>?;
+    final tempRange = agroInfo?['suitable_temperature_range']?.toString() ?? 'N/A';
+    final soilType = agroInfo?['suitable_soil_types']?.toString() ?? 'N/A';
+
+    final seedSpecs = c['seed_specifications'] as Map<String, dynamic>?;
+    final seedRate = seedSpecs?['seed_rate_per_acre']?.toString() ?? 'N/A';
 
     return Form(
       key: _formKey,
@@ -579,6 +600,32 @@ class _AddCropSheetState extends State<_AddCropSheet> {
                       const SizedBox(width: 12),
                       _buildMetricCard(Icons.timer_outlined, 'Duration', duration),
                     ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      _buildMetricCard(Icons.thermostat_outlined, 'Temp Range', tempRange),
+                      const SizedBox(width: 12),
+                      _buildMetricCard(Icons.eco_outlined, 'Seed Rate', seedRate),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: GrowMateTheme.surfaceWhite,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: GrowMateTheme.borderLight),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.layers_outlined, size: 20, color: GrowMateTheme.textSecondary),
+                        const SizedBox(width: 12),
+                        const Text('Ideal Soil:', style: TextStyle(fontSize: 12, color: GrowMateTheme.textSecondary)),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text(soilType, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: GrowMateTheme.textPrimary))),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 20),
                   const Text('Sowing Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
