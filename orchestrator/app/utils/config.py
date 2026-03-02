@@ -32,6 +32,7 @@ class Settings(BaseSettings):
 
     # --- External API Base URLs ---
     recommendation_api_url: str = 'https://crop-advisory-api.onrender.com'
+    discovery_api_url: str = 'https://crop-discovery-api.onrender.com'
     soil_api_url: str = "https://soil-advisory-api.onrender.com"
     rainfall_api_url: str = "https://rainfall-advisory-api-1.onrender.com"
     calendar_api_url: str = "https://crop-calendar-api-tq0m.onrender.com"

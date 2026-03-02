@@ -268,7 +268,7 @@ class _AdvisoryAppBar extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Row(children: [
-                    Image.asset('assets/icons/logo.png', width: 22, height: 22, color: Colors.white),
+                    Image.asset('assets/icons/logo.png', width: 22, height: 22),
                     const SizedBox(width: 8),
                     Text('GrowMate',
                         style: TextStyle(

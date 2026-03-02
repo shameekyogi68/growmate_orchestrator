@@ -242,6 +242,7 @@ class _AddCropSheetState extends State<_AddCropSheet> {
   bool _saving = false;
   bool _loadingCrops = false;
   String? _error;
+  String? _detectedPlace;
 
   List<Map<String, dynamic>> _allCropsData = [];
   String? _selectedCropName;
@@ -277,11 +278,11 @@ class _AddCropSheetState extends State<_AddCropSheet> {
     });
     try {
       final supportedMap = await ApiService.instance.getSupportedCrops(
-        latitude: _selectedLocation?.latitude ?? 13.3409,
-        longitude: _selectedLocation?.longitude ?? 74.7421,
+        latitude: _selectedLocation?.latitude,
+        longitude: _selectedLocation?.longitude,
       );
       
-      final List<dynamic> groups = supportedMap['seasonal_groups'] ?? [];
+      final String? locationName = supportedMap['location']?.toString();
       final List<Map<String, dynamic>> flattened = [];
       for (var group in groups) {
         final List<dynamic> crops = group['crops'] ?? [];
@@ -289,10 +290,10 @@ class _AddCropSheetState extends State<_AddCropSheet> {
           flattened.add(c as Map<String, dynamic>);
         }
       }
-      
       if (mounted) {
         setState(() {
           _allCropsData = flattened;
+          _detectedPlace = locationName;
           _loadingCrops = false;
         });
       }
@@ -355,13 +356,28 @@ class _AddCropSheetState extends State<_AddCropSheet> {
             const SizedBox(height: 16),
             _loadingCrops
                ? Container(
-                   height: 50,
-                   alignment: Alignment.center,
-                   child: const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+                   height: 100,
+                   decoration: BoxDecoration(
+                     color: GrowMateTheme.primaryGreen.withValues(alpha: 0.05),
+                     borderRadius: BorderRadius.circular(16),
+                   ),
+                   child: Column(
+                     mainAxisAlignment: MainAxisAlignment.center,
+                     children: [
+                       const SizedBox(
+                         width: 24,
+                         height: 24,
+                         child: CircularProgressIndicator(strokeWidth: 2.5, color: GrowMateTheme.primaryGreen),
+                       ),
+                       const SizedBox(height: 12),
+                       Text('Analyzing soil & weather for $_detectedPlace...', 
+                         style: const TextStyle(fontSize: 12, color: GrowMateTheme.primaryGreen, fontWeight: FontWeight.w500)),
+                     ],
+                   ),
                  )
                : DropdownButtonFormField<String>(
               initialValue: _selectedCropName,
-              hint: const Text('Discovery: Select Crop *'),
+              hint: const Text('Select Verified Crop *'),
               decoration: const InputDecoration(prefixIcon: Icon(Icons.grass_outlined)),
               items: _allCropsData.map((c) => DropdownMenuItem(
                 value: c['name'].toString(), 
@@ -432,25 +448,18 @@ class _AddCropSheetState extends State<_AddCropSheet> {
             const SizedBox(height: 12),
             Container(
               decoration: BoxDecoration(
-                border: Border.all(color: GrowMateTheme.borderLight),
+                color: GrowMateTheme.primaryGreen.withValues(alpha: 0.05),
+                border: Border.all(color: GrowMateTheme.primaryGreen.withValues(alpha: 0.2)),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: ListTile(
                 leading: const Icon(Icons.location_on_outlined, color: GrowMateTheme.primaryGreen),
-                title: Text(_selectedLocation == null ? 'Set Farm Location' : 'Location Selected'),
+                title: Text(_detectedPlace ?? 'Identifying Location...', 
+                    style: const TextStyle(fontWeight: FontWeight.w600, color: GrowMateTheme.primaryGreen)),
                 subtitle: _selectedLocation != null 
                     ? Text('${_selectedLocation!.latitude.toStringAsFixed(4)}, ${_selectedLocation!.longitude.toStringAsFixed(4)}')
-                    : const Text('Tap to open map'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () async {
-                  final loc = await Navigator.of(context).push<LatLng>(
-                    MaterialPageRoute(builder: (_) => LocationPickerScreen(initialLocation: _selectedLocation)),
-                  );
-                  if (loc != null) {
-                    setState(() => _selectedLocation = loc);
-                    _fetchSupportedCrops();
-                  }
-                },
+                    : const Text('Fetching farm coordinates...'),
+                trailing: const Icon(Icons.verified_user_outlined, color: GrowMateTheme.primaryGreen, size: 20),
               ),
             ),
             const SizedBox(height: 8),

@@ -3,6 +3,6 @@ import 'package:growmate_frontend/main.dart';
 
 void main() {
   testWidgets('App builds without crash', (WidgetTester tester) async {
-    await tester.pumpWidget(const GrowMateApp(hasToken: false));
+    await tester.pumpWidget(const GrowMateApp());
   });
 }

@@ -83,7 +83,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             onPressed: () => Navigator.of(context).pop(),
                           ),
                           const Spacer(),
-                          Image.asset('assets/icons/logo.png', width: 28, height: 28, color: Colors.white),
+                          Image.asset('assets/icons/logo.png', width: 28, height: 28),
                           const SizedBox(width: 8),
                           const Text('GrowMate',
                               style: TextStyle(

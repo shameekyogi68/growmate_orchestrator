@@ -119,7 +119,7 @@ class _Logo extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Image.asset('assets/icons/logo.png', width: 48, height: 48, color: Colors.white),
+        Image.asset('assets/icons/logo.png', width: 48, height: 48),
         const SizedBox(height: 12),
         const Text(
           'GrowMate',

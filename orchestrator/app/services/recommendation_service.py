@@ -54,40 +54,32 @@ async def get_crop_recommendations(
             return await get_fallback_recommendations(language, lite=lite)
 
 async def get_fallback_recommendations(language: str, lite: bool = False) -> dict:
-    """Provides a hardy, research-backed crop list if the external API is down."""
-    logger.warning("Using Deep Seasonal Fallback for crop discovery.")
-    # Local curated seed data (Representative of Udupi/Coastal region)
-    seed_data = {
-        "Summer": [
-            {
-                "crop_id": "O001-F",
-                "identity": {"crop_name": "Groundnut", "variety_name": "TMV-2", "crop_category": "Oilseed"},
-                "agro_climatic_suitability": {"suitable_temperature_range": "20°C - 35°C", "suitable_rainfall_range": "500mm - 1500mm"},
-                "morphological_characteristics": {"plant_height_range": "45cm - 60cm", "growth_habit": "Spreading", "maturity_duration_range": "105 days"},
-                "seed_specifications": {"seed_rate_per_acre": "5-10 kg", "germination_period": "4-7 days", "seed_viability_period": "6 months"},
-                "yield_potential": {"average_yield_per_acre": "9.0 quintal", "yield_range_under_normal_conditions": "7.2 - 10.8 quintal"},
-                "sensitivity_profile": {"drought_sensitivity_level": "Medium", "waterlogging_sensitivity_level": "High", "heat_tolerance_level": "Medium"},
-                "end_use_information": {"main_use_type": "Commercial", "market_category": "Grade A"}
-            }
-        ],
-        "Kharif": [
-            {
-                "crop_id": "C001-F",
-                "identity": {"crop_name": "Paddy", "variety_name": "MO-4 (Bhadra)", "crop_category": "Cereal"},
-                "agro_climatic_suitability": {"suitable_temperature_range": "22°C - 32°C", "suitable_rainfall_range": "1500mm - 4000mm"},
-                "morphological_characteristics": {"plant_height_range": "90cm - 120cm", "growth_habit": "Erect", "maturity_duration_range": "125 days"},
-                "seed_specifications": {"seed_rate_per_acre": "25-30 kg", "germination_period": "4-7 days", "seed_viability_period": "9 months"},
-                "yield_potential": {"average_yield_per_acre": "20.0 quintal", "yield_range_under_normal_conditions": "16.0 - 24.0 quintal"},
-                "sensitivity_profile": {"drought_sensitivity_level": "Medium", "waterlogging_sensitivity_level": "Low", "heat_tolerance_level": "Medium"},
-                "end_use_information": {"main_use_type": "Food Grain", "market_category": "Grade A"}
-            }
-        ]
-    }
-    
-    mapped_output = {}
-    for season, crops in seed_data.items():
-        mapped_output[season] = await map_recommendations(crops, language, lite=lite)
-    return mapped_output
+    """
+    Provides a live, dynamic crop list from the Discovery Service if the primary API fails.
+    Fulfills NFR: 'No hardcoded agronomy in core services'.
+    """
+    settings = get_settings()
+    logger.warning("Primary recommendation failed. Fetching Deep Seasonal Discovery from Discovery API.")
+
+    async with httpx.AsyncClient(timeout=settings.default_timeout_seconds) as client:
+        try:
+            # We hit the Discovery API's inventory endpoint which contains regional master data
+            response = await client.get(f"{settings.discovery_api_url}/inventory")
+            response.raise_for_status()
+            seed_data = response.json().get("inventory", {})
+
+            if not seed_data:
+                logger.error("Discovery API returned empty inventory. Critical failure.")
+                return {}
+
+            mapped_output = {}
+            for season, crops in seed_data.items():
+                mapped_output[season] = await map_recommendations(crops, language, lite=lite)
+            return mapped_output
+
+        except Exception as e:
+            logger.error(f"Critical Error: Both Primary and Discovery APIs are unreachable: {e}")
+            return {}
 
 
 async def map_recommendations(crops: list, language: str, lite: bool = False) -> list:
