@@ -196,6 +196,8 @@ async def validate_crops(
             # MORPHOLOGICAL & YIELD (Farmer Metrics)
             "morphological_characteristics": rec.get("morphological_characteristics", {}),
             "yield_potential": rec.get("yield_potential", {}),
+            "agro_climatic_suitability": rec.get("agro_climatic_suitability", {}),
+            "seed_specifications": rec.get("seed_specifications", {}),
             
             # UI METADATA (Rich Aesthetics)
             "icon": "agriculture",
