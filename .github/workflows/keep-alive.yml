@@ -1,0 +1,32 @@
+name: Keep Alive Warmup
+
+on:
+  schedule:
+    # Run every 14 minutes to prevent Render free tier from sleeping (sleeps at 15 mins)
+    - cron: '*/14 * * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Services
+        run: |
+          echo "Waking up GrowMate Ecosystem..."
+          
+          echo "Pinging Orchestrator..."
+          curl -s https://growmate-orchestrator.onrender.com/health || echo "Orchestrator ping failed"
+          
+          echo "Pinging Rainfall API..."
+          curl -s https://rainfall-advisory-api-1.onrender.com/get-advisory || echo "Rainfall API ping failed"
+          
+          echo "Pinging Soil API..."
+          curl -s https://soil-advisory-api.onrender.com/api/advisory || echo "Soil API ping failed"
+          
+          echo "Pinging Calendar API..."
+          curl -s https://crop-calendar-api-tq0m.onrender.com/calendar || echo "Calendar API ping failed"
+          
+          echo "Pinging Crop Advisory API..."
+          curl -s https://crop-advisory-api.onrender.com/recommend || echo "Crop Advisory API ping failed"
+          
+          echo "Warmup Complete."
