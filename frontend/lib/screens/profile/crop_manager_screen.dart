@@ -534,17 +534,46 @@ class _AddCropSheetState extends State<_AddCropSheet> {
     final desc = c['description']?.toString() ?? '';
     
     final yieldPot = c['yield_potential'] as Map<String, dynamic>?;
-    final avgYield = yieldPot?['average_yield_per_acre']?.toString() ?? 'N/A';
+    final avgYield = yieldPot?['average_yield_per_acre']?.toString();
     
     final morph = c['morphological_characteristics'] as Map<String, dynamic>?;
-    final duration = morph?['maturity_duration_range']?.toString() ?? 'N/A';
+    final duration = morph?['maturity_duration_range']?.toString();
 
     final agroInfo = c['agro_climatic_suitability'] as Map<String, dynamic>?;
-    final tempRange = agroInfo?['suitable_temperature_range']?.toString() ?? 'N/A';
-    final soilType = agroInfo?['suitable_soil_types']?.toString() ?? 'N/A';
+    final tempRange = agroInfo?['suitable_temperature_range']?.toString();
+    final rainRange = agroInfo?['suitable_rainfall_range']?.toString();
+    final soilType = agroInfo?['suitable_soil_types']?.toString();
 
     final seedSpecs = c['seed_specifications'] as Map<String, dynamic>?;
-    final seedRate = seedSpecs?['seed_rate_per_acre']?.toString() ?? 'N/A';
+    final seedRate = seedSpecs?['seed_rate_per_acre']?.toString();
+    final germination = seedSpecs?['germination_period']?.toString();
+    
+    final market = c['financial_intelligence'] as Map<String, dynamic>?;
+    final marketName = market?['market_name']?.toString();
+    final minPrice = market?['min_price']?.toString();
+    final maxPrice = market?['max_price']?.toString();
+
+    bool isValid(String? val) => val != null && val != 'N/A' && val.isNotEmpty;
+
+    final metricCards = <Widget>[];
+    if (isValid(avgYield)) metricCards.add(_buildMetricCard(Icons.agriculture, 'Yield/Acre', avgYield!));
+    if (isValid(duration)) metricCards.add(_buildMetricCard(Icons.timer_outlined, 'Duration', duration!));
+    if (isValid(tempRange)) metricCards.add(_buildMetricCard(Icons.thermostat_outlined, 'Temp Range', tempRange!));
+    if (isValid(rainRange)) metricCards.add(_buildMetricCard(Icons.water_drop_outlined, 'Rainfall', rainRange!));
+    if (isValid(seedRate)) metricCards.add(_buildMetricCard(Icons.eco_outlined, 'Seed Rate', seedRate!));
+    if (isValid(germination)) metricCards.add(_buildMetricCard(Icons.grass, 'Germination', germination!));
+    
+    final metricRows = <Widget>[];
+    for (int i = 0; i < metricCards.length; i += 2) {
+      if (i + 1 < metricCards.length) {
+        metricRows.add(Row(children: [metricCards[i], const SizedBox(width: 12), metricCards[i + 1]]));
+      } else {
+        metricRows.add(Row(children: [metricCards[i], const SizedBox(width: 12), const Expanded(child: SizedBox.shrink())]));
+      }
+      metricRows.add(const SizedBox(height: 12));
+    }
+    
+    final showMarket = isValid(marketName) && isValid(minPrice) && isValid(maxPrice);
 
     return Form(
       key: _formKey,
@@ -594,40 +623,54 @@ class _AddCropSheetState extends State<_AddCropSheet> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      _buildMetricCard(Icons.agriculture, 'Yield/Acre', avgYield),
-                      const SizedBox(width: 12),
-                      _buildMetricCard(Icons.timer_outlined, 'Duration', duration),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      _buildMetricCard(Icons.thermostat_outlined, 'Temp Range', tempRange),
-                      const SizedBox(width: 12),
-                      _buildMetricCard(Icons.eco_outlined, 'Seed Rate', seedRate),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: GrowMateTheme.surfaceWhite,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: GrowMateTheme.borderLight),
+                  if (showMarket) ...[
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3E8FF),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFD8B4FE)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.storefront, color: Color(0xFF9333EA)),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Local Market Pricing', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF9333EA))),
+                                const SizedBox(height: 2),
+                                Text('$marketName: $minPrice - $maxPrice', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: GrowMateTheme.textPrimary)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.layers_outlined, size: 20, color: GrowMateTheme.textSecondary),
-                        const SizedBox(width: 12),
-                        const Text('Ideal Soil:', style: TextStyle(fontSize: 12, color: GrowMateTheme.textSecondary)),
-                        const SizedBox(width: 8),
-                        Expanded(child: Text(soilType, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: GrowMateTheme.textPrimary))),
-                      ],
+                    const SizedBox(height: 16),
+                  ],
+                  ...metricRows,
+                  if (isValid(soilType)) ...[
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: GrowMateTheme.surfaceWhite,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: GrowMateTheme.borderLight),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.layers_outlined, size: 20, color: GrowMateTheme.textSecondary),
+                          const SizedBox(width: 12),
+                          const Text('Ideal Soil:', style: TextStyle(fontSize: 12, color: GrowMateTheme.textSecondary)),
+                          const SizedBox(width: 8),
+                          Expanded(child: Text(soilType!, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: GrowMateTheme.textPrimary))),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
+                    const SizedBox(height: 20),
+                  ],
                   const Text('Sowing Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
                   TextFormField(
