@@ -47,10 +47,9 @@ async def get_intelligent_crops(
 ) -> Dict:
     """
     Pure Dynamic Fusion: Fetches seasonally grouped crops and validates each against live fusion services.
-    NFR: All 3 external calls run in parallel via asyncio.gather.
     """
     try:
-        # 1. Fetch ALL external intelligence concurrently (Triple-Fusion 2.0)
+        # 1. Fetch ALL external intelligence concurrently
         raw_data, weather, rainfall, soil = await asyncio.gather(
             get_crop_recommendations(latitude, longitude, request_date, language, lite=True),
             fetch_weather_data(latitude, longitude, language, request_date),
@@ -60,7 +59,7 @@ async def get_intelligent_crops(
 
         location_name = _get_location_name(latitude, longitude)
 
-        # If raw_data is still unavailable (shouldn't happen with fallback), return empty but successful
+        # If raw_data is still unavailable, return empty but successful
         if not raw_data or raw_data == "unavailable":
             return {
                 "status": "success",
@@ -79,7 +78,7 @@ async def get_intelligent_crops(
                 )
                 if fused_crops:
                     seasonal_groups.append({"category": season, "crops": fused_crops})
-        # Handle flat list (fallback)
+        # Handle flat list
         elif isinstance(raw_data, list):
             fused_crops = await validate_crops(
                 raw_data, weather, rainfall, soil, request_date, language
@@ -103,7 +102,7 @@ async def get_intelligent_crops(
             "location": _get_location_name(latitude, longitude),
             "date": request_date,
             "seasonal_groups": [],
-            "message": "Service is under maintenance. Fallback enabled."
+            "message": f"Service is under maintenance: {str(e)}"
         }
 
 
@@ -114,29 +113,21 @@ async def validate_crops(
     seen_crops = set()
 
     for rec in crops:
-        display_name = rec["identity"]["crop_name"]
-        variety_name = rec["identity"]["variety_name"]
+        # Safety: Ensure identity exists
+        identity = rec.get("identity", {})
+        display_name = identity.get("crop_name", "Unknown Crop")
+        variety_name = identity.get("variety_name", "General")
 
         # Unique check by Name + Variety
         crop_id_key = f"{display_name}_{variety_name}"
         if crop_id_key in seen_crops:
             continue
 
-        # Extract discovery metadata with API-first defaults
-        meta = rec.get("discovery_metadata", {
-            "icon": "eco",
-            "difficulty": "Medium",
-            "market_value": "Medium",
-            "risk_level": "Medium",
-            "water_requirement": "Medium"
-        })
-
-        # --- Financial Optimization ---
-        market_info = rec.get("financial_intelligence", {})
-        live_price = market_info.get("modal_price", "N/A")
-        price_status = market_info.get("market_status", "Live")
-
-        # --- Data-Driven Fusion Validation ---
+        # --- Dynamic Metadata extraction ---
+        # We no longer use hardcoded keys. We take what the API gives.
+        discovery_meta = rec.get("discovery_metadata") or rec.get("metadata") or {}
+        
+        # Determine fusion status based on live environmental data
         fusion_status = "Verified"
         reason_en = "Validated for current environment."
         reason_kn = "ಪ್ರಸ್ತುತ ಪರಿಸರಕ್ಕೆ ಪರಿಶೀಲಿಸಲಾಗಿದೆ."
@@ -154,8 +145,7 @@ async def validate_crops(
                         fusion_status = "Warning"
                         reason_en = f"Variety needs high water ({min_rain}mm+); {rain_status} detected."
                         reason_kn = f"ತಳಿಗೆ ಹೆಚ್ಚಿನ ನೀರಿನ ಅಗತ್ಯವಿದೆ ({min_rain}mm+); ಪ್ರಸ್ತುತ {rain_status} ಕಂಡುಬಂದಿದೆ."
-            except Exception:
-                pass
+            except Exception: pass
 
         # 2. Temperature Logic
         temp_range_str = agro_suitability.get("suitable_temperature_range", "")
@@ -173,56 +163,31 @@ async def validate_crops(
                         fusion_status = "Warning"
                         reason_en = f"Current temp ({current_temp}°C) is below variety limit ({min_t}°C)."
                         reason_kn = f"ಪ್ರಸ್ತುತ ತಾಪಮಾನವು ({current_temp}°C) ತಳಿಯ ಮಿತಿಗಿಂತ ({min_t}°C) ಕಡಿಮೆಯಿದೆ."
-            except Exception:
-                pass
-
-        # 3. Soil pH Logic (Internal Validation)
-        ph_range_str = agro_suitability.get("suitable_soil_ph_range", "")
-        if ph_range_str and soil:
-            live_ph = soil.get("ph", 6.0)
-            try:
-                nums = re.findall(r"[\d.]+", ph_range_str)
-                if len(nums) >= 2:
-                    min_ph, max_ph = float(nums[0]), float(nums[1])
-                    if live_ph < (min_ph - 0.5) or live_ph > (max_ph + 0.5):
-                        fusion_status = "Warning"
-                        reason_en = f"Soil condition (pH {live_ph}) is not ideal for this variety."
-                        reason_kn = f"ಮಣ್ಣಿನ ಸ್ಥಿತಿ (pH {live_ph}) ಈ ತಳಿಗೆ ಸೂಕ್ತವಲ್ಲ."
-            except Exception:
-                pass
+            except Exception: pass
 
         # --- Visual Intelligence Injection ---
         ui_meta = STATUS_UI_MAP.get(fusion_status, STATUS_UI_MAP["Verified"])
 
+        # Construct the final object by PRESERVING and ENRICHING the original rec
+        # This ensures we don't lose any new fields from the API
         crop_data = {
-            "id": rec["crop_id"],
+            **rec, # Preserve all original API fields
+            "id": rec.get("crop_id", "N/A"),
             "name": display_name,
-            "name_en": display_name if language == "en" else rec.get("identity", {}).get("crop_name_en", display_name),
-            "name_kn": display_name if language == "kn" else rec.get("identity", {}).get("crop_name_kn", display_name),
-            "icon": meta.get("icon", "eco"),
+            "name_en": display_name if language == "en" else identity.get("crop_name_en", display_name),
+            "name_kn": display_name if language == "kn" else identity.get("crop_name_kn", display_name),
+            "icon": discovery_meta.get("icon", "eco"),
             "variety_name": variety_name,
-            "crop_category": rec.get("identity", {}).get("crop_category", "N/A"),
             "description": (reason_en if language == "en" else reason_kn),
             "status_color": ui_meta["color"],
             "status_icon": ui_meta["icon"],
             "status_label": ui_meta["label"] if language == "en" else ui_meta["label_kn"],
             "ui_tags": [
-                {"text": meta.get("difficulty", "Medium"), "color": "#3B82F6" if meta.get("difficulty") != "High" else "#EF4444"},
-                {"text": meta.get("market_value", "Medium"), "color": "#8B5CF6"},
-                {"text": meta.get("risk_level", "Medium"), "color": "#10B981" if meta.get("risk_level") == "Low" else "#F59E0B"},
+                {"text": discovery_meta.get("difficulty", "Medium"), "color": "#3B82F6"},
+                {"text": discovery_meta.get("market_value", "High"), "color": "#8B5CF6"},
+                {"text": discovery_meta.get("risk_level", "Low"), "color": "#10B981"},
             ],
-            "morphological_characteristics": rec.get("morphological_characteristics", {}),
-            "seed_specifications": rec.get("seed_specifications", {}),
-            "yield_potential": rec.get("yield_potential", {}),
-            "sensitivity_profile": rec.get("sensitivity_profile", {}),
-            "end_use_information": rec.get("end_use_information", {}),
-            "market_intelligence": {
-                "market_price": live_price,
-                "price_status": price_status,
-                "market_name": rec.get("financial_intelligence", {}).get("market_name", "Local APMC"),
-            },
             "fusion_status": fusion_status,
-            "is_pivot_alternative": meta.get("water_requirement") == "Low" or (isinstance(rec.get("duration_weeks"), int) and rec["duration_weeks"] < 12),
         }
         fused_crops.append(crop_data)
         seen_crops.add(crop_id_key)

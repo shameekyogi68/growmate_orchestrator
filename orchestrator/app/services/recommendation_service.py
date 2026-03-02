@@ -8,7 +8,7 @@ def normalize_value(value_str: str) -> str:
     """Standardizes unit strings (e.g., 'quintal' -> 'Quintal') for UI consistency."""
     if not value_str or value_str == "N/A":
         return "N/A"
-    return value_str.strip().capitalize()
+    return str(value_str).strip().capitalize()
 
 
 async def get_crop_recommendations(
@@ -98,14 +98,16 @@ async def map_recommendations(crops: list, language: str, lite: bool = False) ->
 
     # 2. Fetch all unique prices concurrently
     keys = list(unique_crops.keys())
-    market_results = await asyncio.gather(*unique_crops.values())
+    market_results = await asyncio.gather(*unique_crops.values()) if unique_crops else []
     market_map = dict(zip(keys, market_results))
 
     mapped_recs = []
     for rec in crops:
-        identity = rec.get("identity", {})
-        crop_name = identity.get("crop_name", "N/A")
-        variety_name = None if lite else identity.get("variety_name", "N/A")
+        # PURE DYNAMIC MERGE: We start with the original record and only override specifically required fields.
+        # This prevents "Hardcoded" feeling by preserving API the data structure.
+        identity = float_to_dict(rec.get("identity", {}))
+        crop_name = identity.get("crop_name", rec.get("crop_name", "N/A"))
+        variety_name = None if lite else identity.get("variety_name", rec.get("variety_name", "N/A"))
         market_info = market_map.get((crop_name, variety_name), {})
 
         agro = rec.get("agro_climatic_suitability", {})
@@ -116,13 +118,13 @@ async def map_recommendations(crops: list, language: str, lite: bool = False) ->
         end_use = rec.get("end_use_information", {})
 
         mapped = {
-            "crop_id": rec.get("crop_id", "N/A"),
+            **rec, # SPREAD ALL ORIGINAL FIELDS
+            "crop_id": rec.get("crop_id", rec.get("id", "N/A")),
             "identity": {
                 "crop_name": crop_name,
                 "variety_name": variety_name,
-                "crop_category": identity.get(
-                    "crop_category", rec.get("crop_category", "N/A")
-                ),
+                "crop_category": identity.get("crop_category", rec.get("crop_category", "N/A")),
+                **identity # Preserve nested identity fields
             },
             "financial_intelligence": {
                 "modal_price": market_info.get("modal_price", "N/A"),
@@ -133,47 +135,44 @@ async def map_recommendations(crops: list, language: str, lite: bool = False) ->
                 "source": market_info.get("source", "Agmarknet"),
             },
             "agro_climatic_suitability": {
-                "suitable_temperature_range": agro.get(
-                    "suitable_temperature_range", "20°C - 35°C"
-                ),
-                "suitable_rainfall_range": agro.get(
-                    "suitable_rainfall_range", "1000mm - 4000mm"
-                ),
+                "suitable_temperature_range": agro.get("suitable_temperature_range", "N/A"),
+                "suitable_rainfall_range": agro.get("suitable_rainfall_range", "N/A"),
                 "suitable_soil_types": agro.get("suitable_soil_types", "N/A"),
-                "suitable_soil_ph_range": agro.get(
-                    "suitable_soil_ph_range", "4.0 - 7.0"
-                ),
+                "suitable_soil_ph_range": agro.get("suitable_soil_ph_range", "N/A"),
+                **agro # Preserve others
             },
             "morphological_characteristics": {
                 "plant_height_range": morph.get("plant_height_range", "N/A"),
                 "growth_habit": morph.get("growth_habit", "N/A"),
                 "maturity_duration_range": normalize_value(morph.get("maturity_duration_range", "N/A")),
+                **morph
             },
             "seed_specifications": {
                 "seed_rate_per_acre": normalize_value(seed.get("seed_rate_per_acre", "N/A")),
                 "germination_period": normalize_value(seed.get("germination_period", "N/A")),
                 "seed_viability_period": normalize_value(seed.get("seed_viability_period", "N/A")),
+                **seed
             },
             "yield_potential": {
                 "average_yield_per_acre": normalize_value(yield_pot.get("average_yield_per_acre", "N/A")),
                 "yield_range_under_normal_conditions": normalize_value(yield_pot.get("yield_range_under_normal_conditions", "N/A")),
+                **yield_pot
             },
             "sensitivity_profile": {
-                "drought_sensitivity_level": sensitivity.get(
-                    "drought_sensitivity_level", "Medium"
-                ),
-                "waterlogging_sensitivity_level": sensitivity.get(
-                    "waterlogging_sensitivity_level", "Low"
-                ),
-                "heat_tolerance_level": sensitivity.get(
-                    "heat_tolerance_level", "Medium"
-                ),
+                "drought_sensitivity_level": sensitivity.get("drought_sensitivity_level", "Medium"),
+                "waterlogging_sensitivity_level": sensitivity.get("waterlogging_sensitivity_level", "Low"),
+                "heat_tolerance_level": sensitivity.get("heat_tolerance_level", "Medium"),
+                **sensitivity
             },
             "end_use_information": {
                 "main_use_type": end_use.get("main_use_type", "Food Grain"),
                 "market_category": end_use.get("market_category", "Grade A"),
+                **end_use
             },
             "raw_advisory": rec.get("advisory", "N/A"),
         }
         mapped_recs.append(mapped)
     return mapped_recs
+
+def float_to_dict(val):
+    return val if isinstance(val, dict) else {}
