@@ -1,6 +1,8 @@
 name: Keep Alive Warmup
 
 on:
+  push:
+    branches: [ main ]
   schedule:
     # Run every 14 minutes to prevent Render free tier from sleeping (sleeps at 15 mins)
     - cron: '*/14 * * * *'
