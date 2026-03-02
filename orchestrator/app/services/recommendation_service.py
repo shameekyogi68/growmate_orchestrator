@@ -12,7 +12,7 @@ def normalize_value(value_str: str) -> str:
 
 
 async def get_crop_recommendations(
-    latitude: float, longitude: float, date: str, language: str | None = None
+    latitude: float, longitude: float, date: str, language: str | None = None, lite: bool = False
 ):
     """
     Fetches zone-specific crop recommendations from the live Agronomic API.
@@ -43,17 +43,17 @@ async def get_crop_recommendations(
                 mapped_output = {}
                 for season, crops in raw_data.items():
                     # NFR: Pass lite=True for discovery flow to optimize market fetches
-                    mapped_output[season] = await map_recommendations(crops, language, lite=True)
+                    mapped_output[season] = await map_recommendations(crops, language, lite=lite)
                 return mapped_output
 
             # Handle flat list (fallback/legacy)
-            return await map_recommendations(raw_data, language, lite=True)
+            return await map_recommendations(raw_data, language, lite=lite)
 
         except Exception as e:
             logger.error(f"Error fetching live crop recommendations: {e}")
-            return await get_fallback_recommendations(language)
+            return await get_fallback_recommendations(language, lite=lite)
 
-async def get_fallback_recommendations(language: str) -> dict:
+async def get_fallback_recommendations(language: str, lite: bool = False) -> dict:
     """Provides a hardy, research-backed crop list if the external API is down."""
     logger.warning("Using Deep Seasonal Fallback for crop discovery.")
     # Local curated seed data (Representative of Udupi/Coastal region)
@@ -86,23 +86,23 @@ async def get_fallback_recommendations(language: str) -> dict:
     
     mapped_output = {}
     for season, crops in seed_data.items():
-        mapped_output[season] = await map_recommendations(crops, language)
+        mapped_output[season] = await map_recommendations(crops, language, lite=lite)
     return mapped_output
 
 
 async def map_recommendations(crops: list, language: str, lite: bool = False) -> list:
     # 1. Prepare unique market price tasks to avoid redundant fetching
     unique_crops = {}
-    for rec in crops:
-        identity = rec.get("identity", {})
-        crop_name = identity.get("crop_name", "N/A")
-        # In lite mode (Discovery), we only fetch at the Crop level to save OGD hits
-        variety_name = None if lite else identity.get("variety_name", "N/A")
-        
-        # Key by Crop + Variety
-        key = (crop_name, variety_name)
-        if key not in unique_crops:
-            unique_crops[key] = fetch_market_prices(crop_name, variety_name, language=language)
+    if not lite:
+        for rec in crops:
+            identity = rec.get("identity", {})
+            crop_name = identity.get("crop_name", "N/A")
+            variety_name = identity.get("variety_name", "N/A")
+            
+            # Key by Crop + Variety
+            key = (crop_name, variety_name)
+            if key not in unique_crops:
+                unique_crops[key] = fetch_market_prices(crop_name, variety_name, language=language)
 
     # 2. Fetch all unique prices concurrently
     keys = list(unique_crops.keys())

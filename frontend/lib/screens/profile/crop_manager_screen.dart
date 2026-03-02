@@ -297,7 +297,7 @@ class _AddCropSheetState extends State<_AddCropSheet> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'Discovery Error. Try another location.';
+          _error = 'Discovery taking longer than expected. Please wait a moment and retry.';
           _loadingCrops = false;
         });
       }

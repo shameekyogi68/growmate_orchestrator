@@ -127,7 +127,7 @@ async def get_intelligent_crops(
         # 1. Fetch ALL external intelligence concurrently (Triple-Fusion 2.0)
         # NFR: Still fast due to parallel gather, but now includes internal Soil AI.
         raw_data, weather, rainfall, soil = await asyncio.gather(
-            get_crop_recommendations(latitude, longitude, request_date, language),
+            get_crop_recommendations(latitude, longitude, request_date, language, lite=True),
             fetch_weather_data(latitude, longitude, language, request_date),
             get_rainfall_advisory(latitude, longitude, request_date, language),
             get_soil_advisory(latitude, longitude, language),
