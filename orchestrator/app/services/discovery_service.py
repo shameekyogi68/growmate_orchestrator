@@ -7,7 +7,7 @@ from app.services.soil_service import get_soil_advisory
 from app.utils.logger import logger
 import re
 
-# Visual Hints (UI-only policies)
+# Visual Hints Mapping (Fusion Status)
 STATUS_UI_MAP = {
     "Verified": {"color": "#10B981", "icon": "check_circle", "label": "Ideal", "label_kn": "ಸೂಕ್ತ"},
     "Warning": {"color": "#F59E0B", "icon": "warning", "label": "Caution", "label_kn": "ಎಚ್ಚರಿಕೆ"},
@@ -23,20 +23,13 @@ RENDER_HINTS = {
 
 
 def _get_location_name(lat: float, lon: float) -> str:
-    """
-    Returns a human-readable location name for Udupi regions based on GPS.
-    """
-    if 13.8 <= lat <= 14.2:
-        return "Byndoor, Udupi"
-    if 13.6 <= lat < 13.8:
-        return "Kundapur, Udupi"
-    if 13.4 <= lat < 13.6:
-        return "Brahmavar, Udupi"
-    if 13.2 <= lat < 13.4:
-        return "Udupi Town"
-    if 13.0 <= lat < 13.2:
-        return "Kaup, Udupi"
-    return f"Coord: {lat:.2f}, {lon:.2f}"
+    """Returns a location name based on GPS coordinates for Udupi region."""
+    if 13.8 <= lat <= 14.1: return "Byndoor, Udupi"
+    if 13.6 <= lat < 13.8: return "Kundapur, Udupi"
+    if 13.4 <= lat < 13.6: return "Brahmavar, Udupi"
+    if 13.2 <= lat < 13.4: return "Udupi Town"
+    if 13.0 <= lat < 13.2: return "Kaup, Udupi"
+    return f"Farming Zone ({lat:.2f}, {lon:.2f})"
 
 
 async def get_intelligent_crops(
@@ -46,10 +39,12 @@ async def get_intelligent_crops(
     language: str = "en",
 ) -> Dict:
     """
-    Pure Dynamic Fusion: Fetches seasonally grouped crops and validates each against live fusion services.
+    Consumes results from the Advisory Recommendation API and enriches them 
+    with live Weather, Soil, and Rainfall intelligence.
     """
     try:
-        # 1. Fetch ALL external intelligence concurrently
+        # 1. Fetch EVERYTHING in parallel (Fusion 2.0)
+        # We call the Recommendation Service which hits https://crop-advisory-api.onrender.com/recommend
         raw_data, weather, rainfall, soil = await asyncio.gather(
             get_crop_recommendations(latitude, longitude, request_date, language, lite=False),
             fetch_weather_data(latitude, longitude, language, request_date),
@@ -59,7 +54,6 @@ async def get_intelligent_crops(
 
         location_name = _get_location_name(latitude, longitude)
 
-        # If raw_data is still unavailable, return empty but successful
         if not raw_data or raw_data == "unavailable":
             return {
                 "status": "success",
@@ -70,7 +64,7 @@ async def get_intelligent_crops(
 
         seasonal_groups = []
 
-        # Handle dictionary of seasons
+        # Handle Seasonal Dictionary (Preferred)
         if isinstance(raw_data, dict):
             for season, crops in raw_data.items():
                 fused_crops = await validate_crops(
@@ -78,15 +72,13 @@ async def get_intelligent_crops(
                 )
                 if fused_crops:
                     seasonal_groups.append({"category": season, "crops": fused_crops})
-        # Handle flat list
+        # Handle Flat List
         elif isinstance(raw_data, list):
             fused_crops = await validate_crops(
                 raw_data, weather, rainfall, soil, request_date, language
             )
             if fused_crops:
-                seasonal_groups.append(
-                    {"category": "Recommended", "crops": fused_crops}
-                )
+                seasonal_groups.append({"category": "Recommended", "crops": fused_crops})
 
         return {
             "status": "success",
@@ -96,100 +88,103 @@ async def get_intelligent_crops(
             "render_hints": RENDER_HINTS
         }
     except Exception as e:
-        logger.error(f"Error in Pure Dynamic Fusion: {e}")
+        logger.error(f"Discovery Fusion Error: {e}")
         return {
             "status": "success",
             "location": _get_location_name(latitude, longitude),
             "date": request_date,
             "seasonal_groups": [],
-            "message": f"Service is under maintenance: {str(e)}"
+            "message": f"Service update in progress. Please try again shortly."
         }
 
 
 async def validate_crops(
     crops: list, weather: dict, rainfall: dict, soil: dict, request_date: str, language: str
 ) -> list:
+    """
+    The True Fusion Layer: Filters for farmer-essential fields and injects 
+    accuracy based on live environment sensors.
+    """
     fused_crops = []
     seen_crops = set()
 
     for rec in crops:
-        # Safety: Ensure identity exists
+        # 1. PRESERVE IDENTITY (Name, Variety, Category)
         identity = rec.get("identity", {})
-        display_name = identity.get("crop_name", "Unknown Crop")
-        variety_name = identity.get("variety_name", "General")
+        crop_name = identity.get("crop_name", rec.get("name", "N/A"))
+        variety = identity.get("variety_name", rec.get("variety_name", "General"))
+        category = identity.get("crop_category", rec.get("crop_category", "N/A"))
 
-        # Unique check by Name + Variety
-        crop_id_key = f"{display_name}_{variety_name}"
-        if crop_id_key in seen_crops:
-            continue
+        # Dedup check
+        crop_key = f"{crop_name}_{variety}"
+        if crop_key in seen_crops: continue
 
-        # --- Dynamic Metadata extraction ---
-        # We no longer use hardcoded keys. We take what the API gives.
-        discovery_meta = rec.get("discovery_metadata") or rec.get("metadata") or {}
-        
-        # Determine fusion status based on live environmental data
+        # 2. DYNAMIC FUSION (Accuracy Validation)
         fusion_status = "Verified"
-        reason_en = "Validated for current environment."
-        reason_kn = "ಪ್ರಸ್ತುತ ಪರಿಸರಕ್ಕೆ ಪರಿಶೀಲಿಸಲಾಗಿದೆ."
+        reason_en = "Ideal conditions detected for this variety."
+        reason_kn = "ಈ ತಳಿಗೆ ಸೂಕ್ತವಾದ ವಾತಾವರಣ ಕಂಡುಬಂದಿದೆ."
+        
         agro_suitability = rec.get("agro_climatic_suitability", {})
         
-        # 1. Rainfall Logic
-        rain_range_str = agro_suitability.get("suitable_rainfall_range", "")
-        if rain_range_str and rainfall:
-            rain_status = rainfall.get("intelligence", {}).get("rainfall_status", "Normal")
-            try:
-                nums = [float(n) for n in re.findall(r"[\d.]+", rain_range_str)]
-                if len(nums) >= 2:
-                    min_rain = nums[0]
-                    if min_rain >= 1500 and any(k in rain_status for k in ["Stress", "Deficit", "Dry"]):
-                        fusion_status = "Warning"
-                        reason_en = f"Variety needs high water ({min_rain}mm+); {rain_status} detected."
-                        reason_kn = f"ತಳಿಗೆ ಹೆಚ್ಚಿನ ನೀರಿನ ಅಗತ್ಯವಿದೆ ({min_rain}mm+); ಪ್ರಸ್ತುತ {rain_status} ಕಂಡುಬಂದಿದೆ."
-            except Exception: pass
+        # Rainfall Check
+        rain_range = agro_suitability.get("suitable_rainfall_range", "")
+        if rain_range and rainfall:
+            status = rainfall.get("intelligence", {}).get("rainfall_status", "Normal")
+            if "Drought" in status or "Stress" in status:
+                fusion_status = "Warning"
+                reason_en = f"Water stress detected in zone. Monitor irrigation for {variety}."
+                reason_kn = f"ವಲಯದಲ್ಲಿ ನೀರಿನ ಕೊರತೆ ಕಂಡುಬಂದಿದೆ. {variety} ತಳಿಗೆ ನೀರಾವರಿಯನ್ನು ಗಮನಿಸಿ."
 
-        # 2. Temperature Logic
-        temp_range_str = agro_suitability.get("suitable_temperature_range", "")
-        current_temp = weather.get("temperature", 30)
-        if temp_range_str:
-            try:
-                nums = [float(n) for n in re.findall(r"[\d.]+", temp_range_str)]
-                if len(nums) >= 2:
-                    min_t, max_t = nums[0], nums[1]
-                    if current_temp > (max_t + 2):
-                        fusion_status = "Warning"
-                        reason_en = f"Current temp ({current_temp}°C) exceeds variety limit ({max_t}°C)."
-                        reason_kn = f"ಪ್ರಸ್ತುತ ತಾಪಮಾನವು ({current_temp}°C) ತಳಿಯ ಮಿತಿಯನ್ನು ({max_t}°C) ಮೀರಿದೆ."
-                    elif current_temp < (min_t - 2):
-                        fusion_status = "Warning"
-                        reason_en = f"Current temp ({current_temp}°C) is below variety limit ({min_t}°C)."
-                        reason_kn = f"ಪ್ರಸ್ತುತ ತಾಪಮಾನವು ({current_temp}°C) ತಳಿಯ ಮಿತಿಗಿಂತ ({min_t}°C) ಕಡಿಮೆಯಿದೆ."
-            except Exception: pass
+        # Temperature Check
+        temp_range = agro_suitability.get("suitable_temperature_range", "")
+        curr_temp = weather.get("temperature", 30)
+        if temp_range:
+            nums = [float(n) for n in re.findall(r"[\d.]+", temp_range)]
+            if len(nums) >= 2 and curr_temp > (nums[1] + 2):
+                fusion_status = "Warning"
+                reason_en = f"Heat stress ({curr_temp}°C) exceeds {variety} threshold."
+                reason_kn = f"ತಾಪಮಾನವು ({curr_temp}°C) {variety} ಮಿತಿಯನ್ನು ಮೀರಿದೆ."
 
-        # --- Visual Intelligence Injection ---
-        ui_meta = STATUS_UI_MAP.get(fusion_status, STATUS_UI_MAP["Verified"])
+        # 3. FARMER-ESSENTIAL FILTERING (Clean Structure)
+        ui_style = STATUS_UI_MAP.get(fusion_status, STATUS_UI_MAP["Verified"])
+        market = rec.get("financial_intelligence", {})
 
-        # Construct the final object by PRESERVING and ENRICHING the original rec
-        # This ensures we don't lose any new fields from the API
-        crop_data = {
-            **rec, # Preserve all original API fields
-            "id": rec.get("crop_id", "N/A"),
-            "name": display_name,
-            "name_en": display_name if language == "en" else identity.get("crop_name_en", display_name),
-            "name_kn": display_name if language == "kn" else identity.get("crop_name_kn", display_name),
-            "icon": discovery_meta.get("icon", "eco"),
-            "variety_name": variety_name,
+        farmer_data = {
+            "id": rec.get("crop_id", rec.get("id", "N/A")),
+            # IDENTITY (Preserved Exactly)
+            "identity": {
+                "crop_name": crop_name,
+                "variety_name": variety,
+                "crop_category": category
+            },
+            # FUSION STATUS (Injected Reality)
+            "status_label": ui_style["label"] if language == "en" else ui_style["label_kn"],
+            "status_color": ui_style["color"],
+            "status_icon": ui_style["icon"],
             "description": (reason_en if language == "en" else reason_kn),
-            "status_color": ui_meta["color"],
-            "status_icon": ui_meta["icon"],
-            "status_label": ui_meta["label"] if language == "en" else ui_meta["label_kn"],
+            
+            # FINANCIAL INTELLIGENCE (Market Data)
+            "financial_intelligence": {
+                "modal_price": market.get("modal_price", "N/A"),
+                "market_status": market.get("market_status", "Live"),
+                "market_name": market.get("market_name", "Local APMC")
+            },
+            
+            # MORPHOLOGICAL & YIELD (Farmer Metrics)
+            "morphological_characteristics": rec.get("morphological_characteristics", {}),
+            "yield_potential": rec.get("yield_potential", {}),
+            
+            # UI METADATA (Rich Aesthetics)
+            "icon": "agriculture",
             "ui_tags": [
-                {"text": discovery_meta.get("difficulty", "Medium"), "color": "#3B82F6"},
-                {"text": discovery_meta.get("market_value", "High"), "color": "#8B5CF6"},
-                {"text": discovery_meta.get("risk_level", "Low"), "color": "#10B981"},
+                {"text": variety, "color": "#3B82F6"},
+                {"text": fusion_status, "color": ui_style["color"]},
+                {"text": f"₹{market.get('modal_price', 'N/A')}", "color": "#8B5CF6"}
             ],
-            "fusion_status": fusion_status,
+            "fusion_status": fusion_status
         }
-        fused_crops.append(crop_data)
-        seen_crops.add(crop_id_key)
+        
+        fused_crops.append(farmer_data)
+        seen_crops.add(crop_key)
 
     return fused_crops
