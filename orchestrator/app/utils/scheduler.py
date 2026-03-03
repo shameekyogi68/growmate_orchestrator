@@ -61,13 +61,16 @@ async def _health_monitor():
 
     endpoints = {
         "Recommendation API": f"{settings.recommendation_api_url}/docs",
+        "Discovery API": f"{settings.discovery_api_url}/docs",
         "Soil API": f"{settings.soil_api_url}/docs",
         "Rainfall API": f"{settings.rainfall_api_url}/docs",
+        "Calendar API": f"{settings.calendar_api_url}/docs",
     }
 
     while True:
         try:
-            async with httpx.AsyncClient(timeout=5.0) as client:
+            # Render cold starts might take > 5s; using 30s timeout here
+            async with httpx.AsyncClient(timeout=30.0) as client:
                 for name, url in endpoints.items():
                     try:
                         resp = await client.get(url)
