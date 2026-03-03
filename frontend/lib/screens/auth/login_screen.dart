@@ -141,6 +141,16 @@ class _Logo extends StatelessWidget {
             fontWeight: FontWeight.w400,
           ),
         ),
+        const SizedBox(height: 2),
+        const Text(
+          'ಬುದ್ಧಿವಂತ ಕೃಷಿ ವೇದಿಕೆ',
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 12,
+            color: Colors.white60,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ],
     );
   }
@@ -186,10 +196,10 @@ class _LoginCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
-              'Welcome back',
+              'Welcome back • ಮತ್ತೆ ಸ್ವಾಗತ',
               style: TextStyle(
                 fontFamily: 'Inter',
-                fontSize: 22,
+                fontSize: 20,
                 fontWeight: FontWeight.w700,
                 color: GrowMateTheme.textPrimary,
               ),
@@ -200,6 +210,15 @@ class _LoginCard extends StatelessWidget {
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 13,
+                color: GrowMateTheme.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 2),
+            const Text(
+              'ನಿಮ್ಮ ಕೃಷಿ ಖಾತೆಗೆ ಲಾಗಿನ್ ಆಗಿ',
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 12,
                 color: GrowMateTheme.textSecondary,
               ),
             ),
