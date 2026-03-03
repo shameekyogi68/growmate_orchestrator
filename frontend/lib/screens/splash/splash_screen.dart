@@ -166,8 +166,8 @@ class _SplashScreenState extends State<SplashScreen>
     final results = await Future.wait([
       _warmUpServer(),
       _checkAuth(),
-      // Guarantee minimum 3.5s splash for the full animation experience
-      Future.delayed(const Duration(milliseconds: 3500)),
+      // Guarantee minimum 2.5s splash for a snappy but polished animation experience
+      Future.delayed(const Duration(milliseconds: 2500)),
     ]);
 
     stopwatch.stop();
@@ -204,6 +204,7 @@ class _SplashScreenState extends State<SplashScreen>
       // to forcefully wake them up from Render cold starts instantly
       // without waiting for them to finish.
       final urls = [
+        'https://growmate-orchestrator.onrender.com/health', // main orchestrator
         'https://crop-advisory-api.onrender.com/docs',
         'https://crop-discovery-api.onrender.com/docs',
         'https://soil-advisory-api.onrender.com/docs',
