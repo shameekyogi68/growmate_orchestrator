@@ -4,8 +4,8 @@ on:
   push:
     branches: [ main ]
   schedule:
-    # Run every 14 minutes to prevent Render free tier from sleeping (sleeps at 15 mins)
-    - cron: '*/14 * * * *'
+    # Run every 5 minutes to prevent Render free tier from sleeping (sleeps at 15 mins)
+    - cron: '*/5 * * * *'
   workflow_dispatch: # Allow manual trigger
 
 jobs:
@@ -30,5 +30,8 @@ jobs:
           
           echo "Pinging Crop Advisory API..."
           curl -s https://crop-advisory-api.onrender.com/recommend || echo "Crop Advisory API ping failed"
+          
+          echo "Pinging Discovery API..."
+          curl -s https://crop-discovery-api.onrender.com/docs || echo "Discovery API ping failed"
           
           echo "Warmup Complete."
