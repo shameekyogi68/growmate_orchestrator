@@ -111,7 +111,7 @@ app.include_router(user_controller.router)
 app.include_router(rainfall_controller.router)
 
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 async def health_check():
     """Health check with database and environment status."""
     from app.utils.resilience import REGISTRY
