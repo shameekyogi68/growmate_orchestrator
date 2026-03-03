@@ -40,12 +40,12 @@ class _SplashScreenState extends State<SplashScreen>
   // ─── Status text carousel ─────────────────────────────────────────────────
   int _currentTextIndex = 0;
   final List<_StatusLine> _statusLines = const [
-    _StatusLine(Icons.cloud_sync_outlined, 'Waking up the farm brain…'),
-    _StatusLine(Icons.satellite_alt_outlined, 'Fetching weather data…'),
-    _StatusLine(Icons.eco_outlined, 'Preparing crop intelligence…'),
-    _StatusLine(Icons.water_drop_outlined, 'Analyzing soil & rainfall…'),
-    _StatusLine(Icons.auto_graph_outlined, 'Loading market prices…'),
-    _StatusLine(Icons.tips_and_updates_outlined, 'Building your advisory…'),
+    _StatusLine(Icons.cloud_sync_outlined, 'Waking up the farm brain…', 'ಕೃಷಿ ತಂತ್ರಜ್ಞಾನ ಸಿದ್ಧವಾಗುತ್ತಿದೆ…'),
+    _StatusLine(Icons.satellite_alt_outlined, 'Fetching weather data…', 'ಹವಾಮಾನ ಮಾಹಿತಿ ಪಡೆಯಲಾಗುತ್ತಿದೆ…'),
+    _StatusLine(Icons.eco_outlined, 'Preparing crop intelligence…', 'ಬೆಳೆ ಮಾಹಿತಿ ಸಿದ್ಧಪಡಿಸಲಾಗುತ್ತಿದೆ…'),
+    _StatusLine(Icons.water_drop_outlined, 'Analyzing soil & rainfall…', 'ಮಣ್ಣು ಮತ್ತು ಮಳೆಯ ವಿಶ್ಲೇಷಣೆ…'),
+    _StatusLine(Icons.auto_graph_outlined, 'Loading market prices…', 'ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳನ್ನು ಪಡೆಯಲಾಗುತ್ತಿದೆ…'),
+    _StatusLine(Icons.tips_and_updates_outlined, 'Building your advisory…', 'ನಿಮ್ಮ ಸಲಹೆಗಳನ್ನು ಸಿದ್ಧಪಡಿಸಲಾಗುತ್ತಿದೆ…'),
   ];
 
   bool _serverReady = false;
@@ -469,18 +469,38 @@ class _SplashScreenState extends State<SplashScreen>
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start, // Align top of icon
       children: [
-        Icon(line.icon, size: 16, color: Colors.white54),
-        const SizedBox(width: 8),
-        Text(
-          line.text,
-          style: const TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 13,
-            fontWeight: FontWeight.w400,
-            color: Colors.white54,
-            letterSpacing: 0.3,
-          ),
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Icon(line.icon, size: 16, color: Colors.white54),
+        ),
+        const SizedBox(width: 10),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              line.text,
+              style: const TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 13,
+                fontWeight: FontWeight.w400,
+                color: Colors.white54,
+                letterSpacing: 0.3,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              line.textKn,
+              style: const TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: Colors.white38, // Slightly dimmer for secondary emphasis
+                letterSpacing: 0.1,
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -589,8 +609,9 @@ class _SplashScreenState extends State<SplashScreen>
 // ─── Status line data ────────────────────────────────────────────────────────
 class _StatusLine {
   final IconData icon;
-  final String text;
-  const _StatusLine(this.icon, this.text);
+  final String text; // English
+  final String textKn; // Kannada
+  const _StatusLine(this.icon, this.text, this.textKn);
 }
 
 // ─── Floating Particles ──────────────────────────────────────────────────────
