@@ -143,8 +143,8 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                   Polygon(
                     points: _udupiPolygon,
                     color: GrowMateTheme.primaryGreen.withValues(alpha: 0.15),
-                    borderColor: GrowMateTheme.primaryGreenDark,
-                    borderStrokeWidth: 2,
+                    borderColor: GrowMateTheme.primaryGreen,
+                    borderStrokeWidth: 3,
                   ),
                 ],
               ),
