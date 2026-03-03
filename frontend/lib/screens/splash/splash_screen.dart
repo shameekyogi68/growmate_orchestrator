@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/services/api_service.dart';
 import '../../core/theme/growmate_theme.dart';
@@ -199,6 +200,24 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _warmUpServer() async {
     try {
+      // 1. Fire-and-forget raw GET requests to all backend microservices
+      // to forcefully wake them up from Render cold starts instantly
+      // without waiting for them to finish.
+      final urls = [
+        'https://crop-advisory-api.onrender.com/docs',
+        'https://crop-discovery-api.onrender.com/docs',
+        'https://soil-advisory-api.onrender.com/docs',
+        'https://rainfall-advisory-api-1.onrender.com/docs',
+        'https://crop-calendar-api-tq0m.onrender.com/docs',
+      ];
+      
+      for (final url in urls) {
+        // We use catchError so individual failures don't crash the warmup
+        http.get(Uri.parse(url)).catchError((_) => http.Response('', 500));
+      }
+
+      // 2. Warm up Orchestrator via our built-in API Service
+      // We await this one so the app knows the orchestrator is ready
       await ApiService.instance.getHealth();
     } catch (_) {
       // Server might be cold — that's fine, we still proceed
