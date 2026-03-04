@@ -6,6 +6,7 @@ import '../../core/theme/growmate_theme.dart';
 import '../../core/services/api_service.dart';
 import '../../core/models/api_models.dart';
 import '../../shared/location_picker_screen.dart';
+import '../shell/app_shell.dart';
 import 'package:growmate_frontend/core/localization/app_locale.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -927,9 +928,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                                   ),
                                   GestureDetector(
-                                    onTap: () =>
-                                        Navigator.of(context)
-                                            .pushNamed('/crops'),
+                                    onTap: () => AppShell.switchTab(1),
                                     child: Container(
                                       padding: const EdgeInsets
                                           .symmetric(
@@ -963,9 +962,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               width: double.infinity,
                               height: 48,
                               child: OutlinedButton.icon(
-                                onPressed: () =>
-                                    Navigator.of(context)
-                                        .pushNamed('/crops'),
+                                onPressed: () => AppShell.switchTab(1),
                                 icon: const Icon(
                                     Icons.grass_outlined),
                                 label: Text(

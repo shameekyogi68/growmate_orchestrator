@@ -1,98 +1,90 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../advisory/advisory_screen.dart';
+import '../profile/crop_manager_screen.dart';
 import '../profile/profile_screen.dart';
 import '../../core/theme/growmate_theme.dart';
 import '../../core/localization/app_locale.dart';
 
+/// Global key so any screen can switch tabs from outside AppShell.
+final appShellKey = GlobalKey<AppShellState>();
+
 class AppShell extends StatefulWidget {
-  const AppShell({super.key});
+  const AppShell({super.key}) : super();
+
+  /// Call this from anywhere to jump to a specific tab.
+  static void switchTab(int index) {
+    appShellKey.currentState?.switchTab(index);
+  }
 
   @override
-  State<AppShell> createState() => _AppShellState();
+  AppShellState createState() => AppShellState();
 }
 
-class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
+class AppShellState extends State<AppShell> with TickerProviderStateMixin {
   int _currentIndex = 0;
-  late AnimationController _slideCtrl;
-  late Animation<Offset> _slideAnim;
-  int _previousIndex = 0;
+  late AnimationController _animCtrl;
+  late Animation<double> _fadeAnim;
 
-  static const List<Widget> _screens = [
+  final List<Widget> _screens = const [
     AdvisoryScreen(),
+    CropManagerScreen(),
     ProfileScreen(),
   ];
 
   @override
   void initState() {
     super.initState();
-    _slideCtrl = AnimationController(
+    _animCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 280),
+      duration: const Duration(milliseconds: 240),
     );
-    _slideAnim = Tween<Offset>(
-      begin: const Offset(1, 0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _slideCtrl, curve: Curves.easeOutCubic));
+    _fadeAnim = CurvedAnimation(parent: _animCtrl, curve: Curves.easeInOut);
+    _animCtrl.value = 1.0; // start fully visible
   }
 
   @override
   void dispose() {
-    _slideCtrl.dispose();
+    _animCtrl.dispose();
     super.dispose();
   }
 
-  void _onTabTapped(int index) {
+  void switchTab(int index) {
     if (index == _currentIndex) return;
-    HapticFeedback.selectionClick();
-    setState(() {
-      _previousIndex = _currentIndex;
-      _currentIndex = index;
+    _animCtrl.reverse().then((_) {
+      if (!mounted) return;
+      setState(() => _currentIndex = index);
+      _animCtrl.forward();
     });
-    _slideAnim = Tween<Offset>(
-      begin: index > _previousIndex
-          ? const Offset(0.08, 0)
-          : const Offset(-0.08, 0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _slideCtrl, curve: Curves.easeOutCubic));
-    _slideCtrl.forward(from: 0);
+    HapticFeedback.selectionClick();
   }
+
+  void _onTabTapped(int index) => switchTab(index);
 
   @override
   Widget build(BuildContext context) {
-    final isKn = L.isKn;
-
     return Scaffold(
-      body: SlideTransition(
-        position: _slideAnim,
-        child: FadeTransition(
-          opacity: _slideCtrl.drive(Tween<double>(begin: 0.85, end: 1.0))
-              .drive(CurveTween(curve: Curves.easeOut)),
-          child: IndexedStack(
-            index: _currentIndex,
-            children: _screens,
-          ),
+      body: FadeTransition(
+        opacity: _fadeAnim,
+        child: IndexedStack(
+          index: _currentIndex,
+          children: _screens,
         ),
       ),
       bottomNavigationBar: _GrowMateNavBar(
         currentIndex: _currentIndex,
-        isKn: isKn,
         onTap: _onTabTapped,
       ),
     );
   }
 }
 
+// ─── Premium Bottom Navigation Bar ───────────────────────────────────────────
+
 class _GrowMateNavBar extends StatelessWidget {
   final int currentIndex;
-  final bool isKn;
   final ValueChanged<int> onTap;
-
-  const _GrowMateNavBar({
-    required this.currentIndex,
-    required this.isKn,
-    required this.onTap,
-  });
+  const _GrowMateNavBar({required this.currentIndex, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -101,8 +93,8 @@ class _GrowMateNavBar extends StatelessWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 16,
+            color: Colors.black.withValues(alpha: 0.10),
+            blurRadius: 20,
             offset: const Offset(0, -4),
           ),
         ],
@@ -110,7 +102,7 @@ class _GrowMateNavBar extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
           child: Row(
             children: [
               _NavItem(
@@ -118,17 +110,23 @@ class _GrowMateNavBar extends StatelessWidget {
                 currentIndex: currentIndex,
                 icon: Icons.eco_outlined,
                 activeIcon: Icons.eco_rounded,
-                label: isKn ? 'ಸಲಹೆ' : 'Advisory',
-                sublabel: isKn ? 'Farm Advisory' : 'ಕೃಷಿ ಸಲಹೆ',
+                label: L.tr('Advisory', 'ಸಲಹೆ'),
                 onTap: onTap,
               ),
               _NavItem(
                 index: 1,
                 currentIndex: currentIndex,
+                icon: Icons.grass_outlined,
+                activeIcon: Icons.grass_rounded,
+                label: L.tr('My Crops', 'ನನ್ನ ಬೆಳೆ'),
+                onTap: onTap,
+              ),
+              _NavItem(
+                index: 2,
+                currentIndex: currentIndex,
                 icon: Icons.person_outline_rounded,
                 activeIcon: Icons.person_rounded,
-                label: isKn ? 'ಪ್ರೊಫೈಲ್' : 'Profile',
-                sublabel: isKn ? 'My Account' : 'ನನ್ನ ಖಾತೆ',
+                label: L.tr('Profile', 'ಪ್ರೊಫೈಲ್'),
                 onTap: onTap,
               ),
             ],
@@ -145,7 +143,6 @@ class _NavItem extends StatelessWidget {
   final IconData icon;
   final IconData activeIcon;
   final String label;
-  final String sublabel;
   final ValueChanged<int> onTap;
 
   const _NavItem({
@@ -154,7 +151,6 @@ class _NavItem extends StatelessWidget {
     required this.icon,
     required this.activeIcon,
     required this.label,
-    required this.sublabel,
     required this.onTap,
   });
 
@@ -167,23 +163,34 @@ class _NavItem extends StatelessWidget {
         onTap: () => onTap(index),
         behavior: HitTestBehavior.opaque,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 260),
+          duration: const Duration(milliseconds: 240),
           curve: Curves.easeOutCubic,
-          margin: const EdgeInsets.symmetric(horizontal: 6),
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
             color: isSelected
                 ? GrowMateTheme.primaryGreen.withValues(alpha: 0.10)
                 : Colors.transparent,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Animated dot indicator above icon
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 240),
+                width: isSelected ? 4 : 0,
+                height: isSelected ? 4 : 0,
+                margin: const EdgeInsets.only(bottom: 3),
+                decoration: BoxDecoration(
+                  color: GrowMateTheme.primaryGreen,
+                  shape: BoxShape.circle,
+                ),
+              ),
               AnimatedSwitcher(
-                duration: const Duration(milliseconds: 220),
+                duration: const Duration(milliseconds: 200),
                 transitionBuilder: (child, anim) => ScaleTransition(
-                  scale: anim,
+                  scale: Tween<double>(begin: 0.7, end: 1.0).animate(anim),
                   child: FadeTransition(opacity: anim, child: child),
                 ),
                 child: Icon(
@@ -192,23 +199,21 @@ class _NavItem extends StatelessWidget {
                   color: isSelected
                       ? GrowMateTheme.primaryGreen
                       : GrowMateTheme.textSecondary,
-                  size: 26,
+                  size: 24,
                 ),
               ),
-              const SizedBox(height: 4),
-              AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 220),
+              const SizedBox(height: 3),
+              Text(
+                label,
                 style: TextStyle(
                   fontFamily: 'Inter',
-                  fontSize: 12,
-                  fontWeight:
-                      isSelected ? FontWeight.w700 : FontWeight.w500,
+                  fontSize: 11,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                   color: isSelected
                       ? GrowMateTheme.primaryGreen
                       : GrowMateTheme.textSecondary,
                   letterSpacing: 0.1,
                 ),
-                child: Text(label),
               ),
             ],
           ),

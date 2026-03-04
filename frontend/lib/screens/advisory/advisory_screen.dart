@@ -4,6 +4,7 @@ import '../../core/theme/growmate_theme.dart';
 import '../../core/services/api_service.dart';
 import '../../core/models/api_models.dart';
 import '../../shared/widgets.dart';
+import '../shell/app_shell.dart';
 import 'widgets/main_status_card.dart';
 import 'widgets/alert_list.dart';
 import 'widgets/rainfall_card.dart';
@@ -43,7 +44,8 @@ class _AdvisoryScreenState extends State<AdvisoryScreen> {
       final crop = prefs.getString('active_crop');
 
       if (crop == null || crop.isEmpty) {
-        if (mounted) Navigator.of(context).pushReplacementNamed('/crops');
+        // Switch to the My Crops tab so bottom nav bar stays visible
+        if (mounted) AppShell.switchTab(1);
         return;
       }
 

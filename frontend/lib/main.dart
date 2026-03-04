@@ -6,7 +6,6 @@ import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
 import 'screens/auth/quick_pin_screen.dart';
 import 'screens/shell/app_shell.dart';
-import 'screens/profile/crop_manager_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,24 +17,27 @@ void main() async {
   runApp(const GrowMateApp());
 }
 
-/// Smooth slide-up page transition for all routes
+/// Smooth fade + slide-up page transition for all routes
 class _SlideUpRoute extends PageRouteBuilder {
   final Widget page;
   _SlideUpRoute({required this.page})
       : super(
           pageBuilder: (context, animation, secondaryAnimation) => page,
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 0.05);
+            const begin = Offset(0.0, 0.04);
             const end = Offset.zero;
             const curve = Curves.easeOutCubic;
-            final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-            final fadeTween = Tween<double>(begin: 0.0, end: 1.0).chain(CurveTween(curve: curve));
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            final fadeTween = Tween<double>(begin: 0.0, end: 1.0)
+                .chain(CurveTween(curve: curve));
             return FadeTransition(
               opacity: animation.drive(fadeTween),
-              child: SlideTransition(position: animation.drive(tween), child: child),
+              child:
+                  SlideTransition(position: animation.drive(tween), child: child),
             );
           },
-          transitionDuration: const Duration(milliseconds: 350),
+          transitionDuration: const Duration(milliseconds: 320),
         );
 }
 
@@ -50,23 +52,27 @@ class GrowMateApp extends StatelessWidget {
       theme: GrowMateTheme.lightTheme,
       initialRoute: '/',
       onGenerateRoute: (settings) {
-        final routes = <String, Widget>{
-          '/':            const SplashScreen(),
-          '/login':       const LoginScreen(),
-          '/register':    const RegisterScreen(),
-          '/quick-login': const QuickPinScreen(),
-          '/home':        const AppShell(),
-          '/crops':       const CropManagerScreen(),
-        };
-        final page = routes[settings.name];
-        if (page != null) {
-          // Splash has no transition
-          if (settings.name == '/') {
-            return MaterialPageRoute(builder: (_) => page);
-          }
-          return _SlideUpRoute(page: page);
+        Widget? page;
+        switch (settings.name) {
+          case '/':
+            return MaterialPageRoute(builder: (_) => const SplashScreen());
+          case '/login':
+            page = const LoginScreen();
+            break;
+          case '/register':
+            page = const RegisterScreen();
+            break;
+          case '/quick-login':
+            page = const QuickPinScreen();
+            break;
+          case '/home':
+            // Use the global key so AppShell.switchTab() works from anywhere
+            page = AppShell(key: appShellKey);
+            break;
+          default:
+            return MaterialPageRoute(builder: (_) => const SplashScreen());
         }
-        return MaterialPageRoute(builder: (_) => const SplashScreen());
+        return _SlideUpRoute(page: page);
       },
     );
   }
