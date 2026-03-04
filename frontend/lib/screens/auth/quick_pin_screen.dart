@@ -36,7 +36,8 @@ class _QuickPinScreenState extends State<QuickPinScreen> {
       );
       if (mounted) Navigator.of(context).pushReplacementNamed('/home');
     } on ApiException catch (e) {
-      setState(() { _error = e.detail; _pin = ''; });
+      debugPrint('API Error: ${e.detail}');
+      setState(() { _error = L.tr('Oops! Something went wrong. Let\'s try again.', 'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.'); _pin = ''; });
     } catch (_) {
       setState(() { _error = L.tr('Connection failed.', 'ಸಂಪರ್ಕ ವಿಫಲವಾಗಿದೆ.'); _pin = ''; });
     } finally {

@@ -95,7 +95,8 @@ class _ProfileScreenState extends State<ProfileScreen>
         if (mounted) Navigator.of(context).pushReplacementNamed('/login');
         return;
       }
-      if (mounted) setState(() => _error = e.detail);
+      debugPrint('API Error: ${e.detail}');
+      if (mounted) setState(() => _error = L.tr('Oops! Something went wrong. Let\'s try again.', 'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.'));
     } catch (_) {
       if (mounted) {
         setState(() => _error = L.tr(
@@ -151,7 +152,8 @@ class _ProfileScreenState extends State<ProfileScreen>
         );
       }
     } on ApiException catch (e) {
-      if (mounted) setState(() => _error = e.detail);
+      debugPrint('API Error: ${e.detail}');
+      if (mounted) setState(() => _error = L.tr('Oops! Something went wrong. Let\'s try again.', 'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.'));
     } catch (_) {
       if (mounted) {
         setState(() => _error = L.tr('Save failed. Check your connection.',
@@ -202,7 +204,8 @@ class _ProfileScreenState extends State<ProfileScreen>
         );
       }
     } on ApiException catch (e) {
-      if (mounted) setState(() => _pinError = e.detail);
+      debugPrint('API Error: ${e.detail}');
+      if (mounted) setState(() => _pinError = L.tr('Oops! Something went wrong. Let\'s try again.', 'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.'));
     } catch (_) {
       if (mounted) {
         setState(() => _pinError =

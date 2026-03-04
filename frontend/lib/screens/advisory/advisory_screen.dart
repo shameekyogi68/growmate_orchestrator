@@ -75,7 +75,8 @@ class _AdvisoryScreenState extends State<AdvisoryScreen> {
       if (e.isRateLimited) {
         setState(() => _isRateLimited = true);
       } else {
-        setState(() => _errorMessage = e.detail);
+        debugPrint('API Error: ${e.detail}');
+        setState(() => _errorMessage = L.tr('Oops! Something went wrong. Let\'s try again.', 'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.'));
       }
     } catch (e) {
       setState(() => _errorMessage =

@@ -53,7 +53,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
       if (mounted) Navigator.of(context).pushReplacementNamed('/home');
     } on ApiException catch (e) {
-      setState(() => _errorMessage = e.detail);
+      debugPrint('API Error: ${e.detail}');
+      setState(() => _errorMessage = L.tr('Oops! Something went wrong. Let\'s try again.', 'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.'));
     } catch (_) {
       setState(() => _errorMessage = L.tr('Connection failed. Check your network.', 'ಸಂಪರ್ಕ ವಿಫಲವಾಗಿದೆ. ನಿಮ್ಮ ನೆಟ್‌ವರ್ಕ್ ಪರಿಶೀಲಿಸಿ.'));
     } finally {
