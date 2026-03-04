@@ -106,14 +106,14 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Select Farm Location', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600)),
+        title: const Text('Select Farm Location · ಫಾರ್ಮ್ ಸ್ಥಳವನ್ನು ಆಯ್ಕೆಮಾಡಿ', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600)),
         backgroundColor: GrowMateTheme.surfaceWhite,
         foregroundColor: GrowMateTheme.textPrimary,
         elevation: 1,
         actions: [
           TextButton(
             onPressed: isValid ? _onConfirm : null,
-            child: Text('Confirm', style: TextStyle(
+            child: Text('Confirm · ಖಚಿತಪಡಿಸಿ', style: TextStyle(
               color: isValid ? GrowMateTheme.primaryGreen : GrowMateTheme.textSecondary.withValues(alpha: 0.5), 
               fontWeight: FontWeight.w700, 
               fontSize: 16
@@ -192,7 +192,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                   const SizedBox(width: 12),
                   const Expanded(
                     child: Text(
-                      'Tap on the map to place the pin on your farm. This helps us provide accurate localized weather and crop advisories.',
+                      'Tap on the map to place the pin on your farm. This helps us provide accurate localized weather and crop advisories. · ನಿಮ್ಮ ಫಾರ್ಮ್‌ನಲ್ಲಿ ಪಿನ್ ಇರಿಸಲು ನಕ್ಷೆಯ ಮೇಲೆ ಟ್ಯಾಪ್ ಮಾಡಿ. ಇದು ನಿಮಗೆ ನಿಖರವಾದ ಹವಾಮಾನ ಮತ್ತು ಬೆಳೆ ಸಲಹೆಗಳನ್ನು ನೀಡಲು ನಮಗೆ ಸಹಾಯ ಮಾಡುತ್ತದೆ.',
                       style: TextStyle(fontSize: 12, color: GrowMateTheme.textSecondary, fontFamily: 'Inter'),
                     ),
                   ),
@@ -220,7 +220,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                     SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Service available only inside Udupi District (Green Area). Please move your pin into the zone to confirm.',
+                        'Service available only inside Udupi District (Green Area). Please move your pin into the zone to confirm. · ಸೇವೆಯು ಉಡುಪಿ ಜಿಲ್ಲೆಯೊಳಗೆ (ಹಸಿರು ಪ್ರದೇಶ) ಮಾತ್ರ ಲಭ್ಯವಿದೆ. ದಯವಿಟ್ಟು ಖಚಿತಪಡಿಸಲು ನಿಮ್ಮ ಪಿನ್ ಅನ್ನು ಆ ವಲಯಕ್ಕೆ ಸರಿಸಿ.',
                         style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600, fontFamily: 'Inter', height: 1.3),
                       ),
                     ),

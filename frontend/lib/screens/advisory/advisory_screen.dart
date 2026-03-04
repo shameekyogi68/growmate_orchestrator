@@ -126,21 +126,21 @@ class _AdvisoryScreenState extends State<AdvisoryScreen> {
             const Icon(Icons.hourglass_bottom_rounded,
                 color: GrowMateTheme.warningAmber, size: 52),
             const SizedBox(height: 16),
-            const Text('Too Many Requests',
+            const Text('Too Many Requests · ಹೆಚ್ಚಿನ ಸಂಖ್ಯೆಯ ವಿನಂತಿಗಳು',
                 style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: GrowMateTheme.textPrimary)),
             const SizedBox(height: 8),
-            const Text('You\'ve exceeded the request limit. Please wait a moment.',
+            const Text('You\'ve exceeded the request limit. Please wait a moment. · ನೀವು ವಿನಂತಿಯ ಮಿತಿಯನ್ನು ಮೀರಿದ್ದೀರಿ. ದಯವಿಟ್ಟು ಸ್ವಲ್ಪ ಸಮಯ ಕಾಯಿರಿ.',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 13, color: GrowMateTheme.textSecondary)),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: _loadAdvisory,
               icon: const Icon(Icons.refresh),
-              label: const Text('Try Again'),
+              label: const Text('Try Again · ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ'),
             ),
           ],
         ),
@@ -158,7 +158,7 @@ class _AdvisoryScreenState extends State<AdvisoryScreen> {
             const Icon(Icons.cloud_off_rounded,
                 color: GrowMateTheme.textSecondary, size: 52),
             const SizedBox(height: 16),
-            const Text('Unable to Load Advisory',
+            const Text('Unable to Load Advisory · ಸಲಹೆಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ',
                 style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 18,
@@ -173,7 +173,7 @@ class _AdvisoryScreenState extends State<AdvisoryScreen> {
             ElevatedButton.icon(
               onPressed: _loadAdvisory,
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: const Text('Retry · ಮರುಪ್ರಯತ್ನಿಸಿ'),
             ),
           ],
         ),
@@ -232,7 +232,7 @@ class _AdvisoryScreenState extends State<AdvisoryScreen> {
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Some data services are unavailable. Advisory is based on partial information.',
+                    'Some data services are unavailable. Advisory is based on partial information. · ಕೆಲವು ಡೇಟಾ ಸೇವೆಗಳು ಲಭ್ಯವಿಲ್ಲ. ಲಭ್ಯವಿರುವ ಮಾಹಿತಿಯ ಆಧಾರದ ಮೇಲೆ ಪ್ರಸ್ತುತ ಸಲಹೆಯನ್ನು ನೀಡಲಾಗಿದೆ.',
                     style: TextStyle(
                         fontSize: 12, color: GrowMateTheme.warningAmber),
                   ),
@@ -280,8 +280,8 @@ class _AdvisoryAppBar extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     advisory != null
-                        ? 'Farm Advisory · ${_formattedDate(advisory!.lastUpdated)}'
-                        : 'Loading advisory...',
+                        ? 'Farm Advisory · ${_formattedDate(advisory!.lastUpdated)} · ಕೃಷಿ ಸಲಹೆ'
+                        : 'Loading advisory... · ಸಲಹೆಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...',
                     style: const TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 12,
@@ -292,7 +292,7 @@ class _AdvisoryAppBar extends StatelessWidget {
             ),
           ),
         ),
-        title: const Text('Advisory',
+        title: const Text('Advisory · ಸಲಹೆ',
             style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 16,

@@ -37,7 +37,7 @@ class RainfallCard extends StatelessWidget {
                     color: GrowMateTheme.skyBlue, size: 20),
               ),
               const SizedBox(width: 10),
-              const Text('Rainfall',
+              const Text('Rainfall · ಮಳೆ',
                   style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 15,
@@ -76,7 +76,7 @@ class _RainfallContent extends StatelessWidget {
     final irrigationNeeded = soilStatus?['irrigation_needed'] as bool?;
 
     if (statusMsg == null && rainfallStatus == null) {
-      return const Text('No rainfall data available.',
+      return const Text('No rainfall data available. · ಮಳೆಯ ಡೇಟಾ ಲಭ್ಯವಿಲ್ಲ.',
           style: TextStyle(fontSize: 13, color: GrowMateTheme.textSecondary));
     }
 
@@ -132,7 +132,7 @@ class _IrrigationChip extends StatelessWidget {
         ),
       ),
       child: Text(
-        needed ? 'Irrigation Recommended' : 'No Irrigation Needed',
+        needed ? 'Irrigation Recommended · ನೀರಾವರಿ ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ' : 'No Irrigation Needed · ನೀರಾವರಿ ಅಗತ್ಯವಿಲ್ಲ',
         style: TextStyle(
           fontFamily: 'Inter',
           fontSize: 12,

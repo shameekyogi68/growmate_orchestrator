@@ -15,7 +15,7 @@ class AlertList extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Active Alerts',
+          'Active Alerts · ಸಕ್ರಿಯ ಎಚ್ಚರಿಕೆಗಳು',
           style: TextStyle(
             fontFamily: 'Inter',
             fontSize: 16,

@@ -107,6 +107,8 @@ class ApiService {
     final data = await _handleResponse(res);
     final auth = AuthResponse.fromJson(data);
     await saveAuthData(auth);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('phone_number', phoneNumber);
     return auth;
   }
 
@@ -131,6 +133,8 @@ class ApiService {
     final data = await _handleResponse(res);
     final auth = AuthResponse.fromJson(data);
     await saveAuthData(auth);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('phone_number', phoneNumber);
     return auth;
   }
 
@@ -150,6 +154,7 @@ class ApiService {
     String? language,
     double? latitude,
     double? longitude,
+    String? quickPin,
   }) async {
     final token = await _authToken;
     final body = <String, dynamic>{};
@@ -157,6 +162,7 @@ class ApiService {
     if (language != null) body['language'] = language;
     if (latitude != null) body['latitude'] = latitude;
     if (longitude != null) body['longitude'] = longitude;
+    if (quickPin != null) body['quick_pin'] = quickPin;
 
     final res = await http
         .patch(

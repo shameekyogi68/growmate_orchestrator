@@ -38,7 +38,7 @@ class MarketCard extends StatelessWidget {
                   color: GrowMateTheme.sunYellow, size: 20),
             ),
             const SizedBox(width: 10),
-            const Text('Market Prices',
+            const Text('Market Prices · ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳು',
                 style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 15,
@@ -122,7 +122,7 @@ class PestCard extends StatelessWidget {
               child: Icon(Icons.bug_report_outlined, color: color, size: 20),
             ),
             const SizedBox(width: 10),
-            const Text('Pest & Disease',
+            const Text('Pest & Disease · ಕೀಟ ಮತ್ತು ರೋಗ',
                 style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 15,

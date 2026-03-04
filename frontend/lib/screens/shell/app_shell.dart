@@ -34,12 +34,12 @@ class _AppShellState extends State<AppShell> {
           NavigationDestination(
             icon: Icon(Icons.dashboard_outlined),
             selectedIcon: Icon(Icons.dashboard, color: GrowMateTheme.primaryGreen),
-            label: 'Advisory',
+            label: 'Advisory · ಸಲಹೆ',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person, color: GrowMateTheme.primaryGreen),
-            label: 'Profile',
+            label: 'Profile · ಪ್ರೊಫೈಲ್',
           ),
         ],
       ),

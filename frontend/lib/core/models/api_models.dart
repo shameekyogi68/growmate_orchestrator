@@ -130,6 +130,7 @@ class AdvisoryAlert {
 
 /// UserProfile — matches GET /user/profile response.
 class UserProfile {
+  final String? phoneNumber;
   final String? fullName;
   final String language;
   final double? latitude;
@@ -138,6 +139,7 @@ class UserProfile {
   final String? activeSowingDate;
 
   const UserProfile({
+    this.phoneNumber,
     this.fullName,
     required this.language,
     this.latitude,
@@ -147,6 +149,7 @@ class UserProfile {
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) => UserProfile(
+        phoneNumber: json['phone_number'] as String?,
         fullName: json['full_name'] as String?,
         language: json['language'] as String? ?? 'en',
         latitude: (json['latitude'] as num?)?.toDouble(),

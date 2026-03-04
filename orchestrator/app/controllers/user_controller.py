@@ -14,6 +14,7 @@ class ProfileUpdate(BaseModel):
     language: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    quick_pin: Optional[str] = None
 
 
 class RegisterRequest(BaseModel):
@@ -221,7 +222,7 @@ async def get_profile(token_data: dict = Depends(verify_token)):
         return {"full_name": "Mock User", "language": "en", "latitude": 13.8, "longitude": 74.6}
 
     user = await fetch_one(
-        "SELECT full_name, language, latitude, longitude, active_crop, active_sowing_date FROM users WHERE id = $1",
+        "SELECT phone_number, full_name, language, latitude, longitude, active_crop, active_sowing_date FROM users WHERE id = $1",
         int(user_id),
     )
     if not user:
@@ -252,6 +253,11 @@ async def update_profile(req: ProfileUpdate, token_data: dict = Depends(verify_t
     if req.longitude is not None:
         updates.append(f"longitude = ${len(params)+1}")
         params.append(req.longitude)
+    if req.quick_pin is not None:
+        if len(req.quick_pin) != 4 or not req.quick_pin.isdigit():
+            raise HTTPException(status_code=422, detail="PIN must be exactly 4 digits")
+        updates.append(f"quick_pin = ${len(params)+1}")
+        params.append(req.quick_pin)
 
     if not updates:
         return {"status": "no_changes"}
