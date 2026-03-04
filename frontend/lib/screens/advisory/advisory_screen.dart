@@ -45,7 +45,7 @@ class _AdvisoryScreenState extends State<AdvisoryScreen> {
 
       if (crop == null || crop.isEmpty) {
         // Switch to the My Crops tab so bottom nav bar stays visible
-        if (mounted) AppShell.switchTab(1);
+        if (mounted) AppShell.switchTab(0);
         return;
       }
 

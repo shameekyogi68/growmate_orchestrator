@@ -25,7 +25,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late TextEditingController _nameCtrl;
   String _language = 'en';
   LatLng? _selectedLocation;
-  String? _phoneNumber;
 
   // PIN change
   final _currentPinCtrl = TextEditingController();
@@ -76,7 +75,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _profile = p;
         _nameCtrl.text = p.fullName ?? '';
         _language = p.language;
-        _phoneNumber = p.phoneNumber ?? prefs.getString('phone_number');
         if (p.latitude != null && p.longitude != null) {
           _selectedLocation = LatLng(p.latitude!, p.longitude!);
         }
@@ -326,18 +324,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 color: Colors.white,
                               ),
                             ),
-                            if (_phoneNumber != null) ...[
-                              const SizedBox(height: 4),
-                              Text(
-                                _phoneNumber!,
-                                style: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 14,
-                                  color:
-                                      Colors.white.withValues(alpha: 0.85),
-                                ),
+                            const SizedBox(height: 4),
+                            Text(
+                              L.tr('My Profile', 'ನನ್ನ ಪ್ರೊಫೈಲ್'),
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 13,
+                                color: Colors.white.withValues(alpha: 0.7),
                               ),
-                            ],
+                            ),
                           ],
                         ),
                       ),
@@ -350,6 +345,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             color: Colors.white)),
                     titlePadding: const EdgeInsetsDirectional.only(
                         start: 20, bottom: 14),
+                    collapseMode: CollapseMode.pin,
                   ),
                   actions: [
                     if (_hasUnsavedChanges)
@@ -437,59 +433,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         color:
                                             GrowMateTheme.primaryGreen,
                                         width: 1.5)),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-
-                            // Phone Number (Display only)
-                            _FieldLabel(
-                                L.tr('Phone Number', 'ದೂರವಾಣಿ ಸಂಖ್ಯೆ')),
-                            const SizedBox(height: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 14),
-                              decoration: BoxDecoration(
-                                color: GrowMateTheme.borderLight
-                                    .withValues(alpha: 0.4),
-                                borderRadius:
-                                    BorderRadius.circular(12),
-                                border: Border.all(
-                                    color: GrowMateTheme.borderLight),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.phone_outlined,
-                                      color:
-                                          GrowMateTheme.textSecondary,
-                                      size: 20),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    _phoneNumber ?? 'Not available',
-                                    style: const TextStyle(
-                                        fontFamily: 'Inter',
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w500,
-                                        color:
-                                            GrowMateTheme.textPrimary),
-                                  ),
-                                  const Spacer(),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 3),
-                                    decoration: BoxDecoration(
-                                      color: GrowMateTheme.skyBlue
-                                          .withValues(alpha: 0.1),
-                                      borderRadius:
-                                          BorderRadius.circular(8),
-                                    ),
-                                    child: Text(L.tr('Verified', 'ಪರಿಶೀಲಿಸಲಾಗಿದೆ'),
-                                        style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w600,
-                                            color:
-                                                GrowMateTheme.skyBlue)),
-                                  ),
-                                ],
                               ),
                             ),
                             const SizedBox(height: 16),
@@ -928,7 +871,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                                   ),
                                   GestureDetector(
-                                    onTap: () => AppShell.switchTab(1),
+                                    onTap: () => AppShell.switchTab(0),
                                     child: Container(
                                       padding: const EdgeInsets
                                           .symmetric(
@@ -962,7 +905,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               width: double.infinity,
                               height: 48,
                               child: OutlinedButton.icon(
-                                onPressed: () => AppShell.switchTab(1),
+                                onPressed: () => AppShell.switchTab(0),
                                 icon: const Icon(
                                     Icons.grass_outlined),
                                 label: Text(
