@@ -402,30 +402,13 @@ class _ProfileScreenState extends State<ProfileScreen>
           child: Column(
             children: [
               // Avatar
-              Hero(
-                tag: 'profile-avatar',
-                child: Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.5),
-                      width: 3,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.3),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: ClipOval(
-                    child: Image.asset(
-                      'assets/icons/Farmer_Avatar.png',
-                      fit: BoxFit.cover,
-                    ),
+              SizedBox(
+                width: 80,
+                height: 80,
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/icons/Farmer_Avatar.png',
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),
