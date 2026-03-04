@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/growmate_theme.dart';
 import '../../../core/utils/priority_color_mapper.dart';
+import 'package:growmate_frontend/core/localization/app_locale.dart';
 
 /// MarketCard — renders market_prices from backend. Hidden if empty.
 class MarketCard extends StatelessWidget {
@@ -38,7 +39,7 @@ class MarketCard extends StatelessWidget {
                   color: GrowMateTheme.sunYellow, size: 20),
             ),
             const SizedBox(width: 10),
-            const Text('Market Prices · ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳು',
+            Text(L.tr('Market Prices', 'ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳು'),
                 style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 15,
@@ -122,7 +123,7 @@ class PestCard extends StatelessWidget {
               child: Icon(Icons.bug_report_outlined, color: color, size: 20),
             ),
             const SizedBox(width: 10),
-            const Text('Pest & Disease · ಕೀಟ ಮತ್ತು ರೋಗ',
+            Text(L.tr('Pest & Disease', 'ಕೀಟ ಮತ್ತು ರೋಗ'),
                 style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 15,

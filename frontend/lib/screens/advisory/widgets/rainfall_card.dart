@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/growmate_theme.dart';
 import '../../../shared/widgets.dart';
+import 'package:growmate_frontend/core/localization/app_locale.dart';
 
 /// RainfallCard — checks for DEGRADED status explicitly.
 /// If status == 'DEGRADED', shows DegradedBanner.
@@ -37,7 +38,7 @@ class RainfallCard extends StatelessWidget {
                     color: GrowMateTheme.skyBlue, size: 20),
               ),
               const SizedBox(width: 10),
-              const Text('Rainfall · ಮಳೆ',
+              Text(L.tr('Rainfall', 'ಮಳೆ'),
                   style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 15,
@@ -76,7 +77,7 @@ class _RainfallContent extends StatelessWidget {
     final irrigationNeeded = soilStatus?['irrigation_needed'] as bool?;
 
     if (statusMsg == null && rainfallStatus == null) {
-      return const Text('No rainfall data available. · ಮಳೆಯ ಡೇಟಾ ಲಭ್ಯವಿಲ್ಲ.',
+      return Text(L.tr('No rainfall data available.', 'ಮಳೆಯ ಡೇಟಾ ಲಭ್ಯವಿಲ್ಲ.'),
           style: TextStyle(fontSize: 13, color: GrowMateTheme.textSecondary));
     }
 
@@ -132,7 +133,7 @@ class _IrrigationChip extends StatelessWidget {
         ),
       ),
       child: Text(
-        needed ? 'Irrigation Recommended · ನೀರಾವರಿ ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ' : 'No Irrigation Needed · ನೀರಾವರಿ ಅಗತ್ಯವಿಲ್ಲ',
+        needed ? L.tr('Irrigation Recommended', 'ನೀರಾವರಿ ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ') : L.tr('No Irrigation Needed', 'ನೀರಾವರಿ ಅಗತ್ಯವಿಲ್ಲ'),
         style: TextStyle(
           fontFamily: 'Inter',
           fontSize: 12,

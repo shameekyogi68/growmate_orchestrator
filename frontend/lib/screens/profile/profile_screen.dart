@@ -6,6 +6,7 @@ import '../../core/theme/growmate_theme.dart';
 import '../../core/services/api_service.dart';
 import '../../core/models/api_models.dart';
 import '../../shared/location_picker_screen.dart';
+import 'package:growmate_frontend/core/localization/app_locale.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -90,7 +91,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } catch (_) {
       if (mounted) {
         setState(() => _error =
-            'Could not load profile. · ಪ್ರೊಫೈಲ್ ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.');
+            L.tr('Could not load profile.', 'ಪ್ರೊಫೈಲ್ ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.'));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -101,12 +102,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // Validate name
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) {
-      setState(() => _error = 'Name cannot be empty. · ಹೆಸರು ಖಾಲಿ ಇರಬಾರದು.');
+      setState(() => _error = L.tr('Name cannot be empty.', 'ಹೆಸರು ಖಾಲಿ ಇರಬಾರದು.'));
       return;
     }
     if (name.length < 2) {
       setState(() => _error =
-          'Name must be at least 2 characters. · ಹೆಸರು ಕನಿಷ್ಠ 2 ಅಕ್ಷರಗಳಾಗಿರಬೇಕು.');
+          L.tr('Name must be at least 2 characters.', 'ಹೆಸರು ಕನಿಷ್ಠ 2 ಅಕ್ಷರಗಳಾಗಿರಬೇಕು.'));
       return;
     }
 
@@ -122,17 +123,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
         latitude: _selectedLocation?.latitude,
         longitude: _selectedLocation?.longitude,
       );
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('language', _language);
+      // Update global locale immediately so the whole app reflects the change
+      await L.setLang(_language);
       if (_selectedLocation != null) {
+        final prefs = await SharedPreferences.getInstance();
         await prefs.setDouble('latitude', _selectedLocation!.latitude);
         await prefs.setDouble('longitude', _selectedLocation!.longitude);
       }
       if (mounted) {
         setState(() => _hasUnsavedChanges = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Profile saved · ಪ್ರೊಫೈಲ್ ಉಳಿಸಲಾಗಿದೆ'),
+          SnackBar(
+            content: Text(L.tr('✅ Profile saved', '✅ ಪ್ರೊಫೈಲ್ ಉಳಿಸಲಾಗಿದೆ')),
             backgroundColor: GrowMateTheme.successGreen,
             behavior: SnackBarBehavior.floating,
           ),
@@ -143,7 +145,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } catch (_) {
       if (mounted) {
         setState(() =>
-            _error = 'Save failed. Check your connection. · ಉಳಿಸಲು ವಿಫಲ.');
+            _error = L.tr('Save failed. Check your connection.', 'ಉಳಿಸಲು ವಿಫಲ. ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ.'));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -160,17 +162,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (newPin.length != 4) {
       setState(() => _pinError =
-          'New PIN must be 4 digits. · ಹೊಸ ಪಿನ್ 4 ಅಂಕಿಗಳಾಗಿರಬೇಕು.');
+          L.tr('New PIN must be 4 digits.', 'ಹೊಸ ಪಿನ್ 4 ಅಂಕಿಗಳಾಗಿರಬೇಕು.'));
       return;
     }
     if (!RegExp(r'^\d{4}$').hasMatch(newPin)) {
       setState(() => _pinError =
-          'PIN must contain only digits. · ಪಿನ್ ಅಂಕಿಗಳನ್ನು ಮಾತ್ರ ಹೊಂದಿರಬೇಕು.');
+          L.tr('PIN must contain only digits.', 'ಪಿನ್ ಅಂಕಿಗಳನ್ನು ಮಾತ್ರ ಹೊಂದಿರಬೇಕು.'));
       return;
     }
     if (newPin != confirmPin) {
       setState(() => _pinError =
-          'PINs do not match. · ಪಿನ್‌ಗಳು ಹೊಂದಿಕೆಯಾಗಿಲ್ಲ.');
+          L.tr('PINs do not match.', 'ಪಿನ್‌ಗಳು ಹೊಂದಿಕೆಯಾಗಿಲ್ಲ.'));
       return;
     }
 
@@ -186,9 +188,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _currentPinCtrl.clear();
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content:
-                Text('🔒 PIN updated · ಪಿನ್ ನವೀಕರಿಸಲಾಗಿದೆ'),
+                Text(L.tr('🔒 PIN updated', 'ಪಿನ್ ನವೀಕರಿಸಲಾಗಿದೆ')),
             backgroundColor: GrowMateTheme.successGreen,
             behavior: SnackBarBehavior.floating,
           ),
@@ -199,7 +201,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } catch (_) {
       if (mounted) {
         setState(() => _pinError =
-            'PIN update failed. · ಪಿನ್ ನವೀಕರಣ ವಿಫಲವಾಗಿದೆ.');
+            L.tr('PIN update failed.', 'ಪಿನ್ ನವೀಕರಣ ವಿಫಲವಾಗಿದೆ.'));
       }
     } finally {
       if (mounted) setState(() => _savingPin = false);
@@ -211,21 +213,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
+        title: Row(
           children: [
             Icon(Icons.logout, color: GrowMateTheme.dangerRed, size: 24),
             SizedBox(width: 10),
-            Text('Sign Out · ಸೈನ್ ಔಟ್'),
+            Text(L.tr('Sign Out', 'ಸೈನ್ ಔಟ್')),
           ],
         ),
-        content: const Text(
-          'Are you sure you want to sign out? You will need your phone number and PIN to sign back in.\n\nನೀವು ಸೈನ್ ಔಟ್ ಮಾಡಲು ಖಚಿತವಾಗಿದ್ದೀರಾ? ಮರಳಿ ಸೈನ್ ಇನ್ ಮಾಡಲು ನಿಮ್ಮ ಫೋನ್ ನಂಬರ್ ಮತ್ತು ಪಿನ್ ಅಗತ್ಯವಿದೆ.',
-          style: TextStyle(fontSize: 14, height: 1.5),
+        content: Text(
+          L.tr(
+            'Are you sure you want to sign out? You will need your phone number and PIN to sign back in.',
+            'ನೀವು ಸೈನ್ ಔಟ್ ಮಾಡಲು ಖಚಿತವಾಗಿದ್ದೀರಾ? ಮರಳಿ ಸೈನ್ ಇನ್ ಮಾಡಲು ನಿಮ್ಮ ಫೋನ್ ನಂಬರ್ ಮತ್ತು ಪಿನ್ ಅಗತ್ಯವಿದೆ.',
+          ),
+          style: const TextStyle(fontSize: 14, height: 1.5),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel · ರದ್ದುಮಾಡಿ'),
+            child: Text(L.tr('Cancel', 'ರದ್ದುಮಾಡಿ')),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -234,7 +239,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text('Sign Out · ಸೈನ್ ಔಟ್',
+            child: Text(L.tr('Sign Out', 'ಸೈನ್ ಔಟ್'),
                 style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -254,13 +259,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: GrowMateTheme.backgroundCream,
       body: _loading
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   CircularProgressIndicator(color: GrowMateTheme.primaryGreen),
                   SizedBox(height: 16),
-                  Text('Loading profile... · ಪ್ರೊಫೈಲ್ ಲೋಡ್ ಆಗುತ್ತಿದೆ...',
+                  Text(L.tr('Loading profile...', 'ಪ್ರೊಫೈಲ್ ಲೋಡ್ ಆಗುತ್ತಿದೆ...'),
                       style: TextStyle(
                           color: GrowMateTheme.textSecondary, fontSize: 13)),
                 ],
@@ -312,7 +317,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             Text(
                               _nameCtrl.text.isNotEmpty
                                   ? _nameCtrl.text
-                                  : 'Farmer · ರೈತ',
+                                  : L.tr('Farmer', 'ರೈತ'),
                               style: const TextStyle(
                                 fontFamily: 'Inter',
                                 fontSize: 20,
@@ -336,7 +341,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                     ),
-                    title: const Text('My Profile · ನನ್ನ ಪ್ರೊಫೈಲ್',
+                    title: Text(L.tr('My Profile', 'ನನ್ನ ಪ್ರೊಫೈಲ್'),
                         style: TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 16,
@@ -368,7 +373,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         color: Colors.white.withValues(
                                             alpha: 0.4)),
                                   ),
-                                  child: const Text('Save · ಉಳಿಸಿ',
+                                  child: Text(L.tr('Save', 'ಉಳಿಸಿ'),
                                       style: TextStyle(
                                           color: Colors.white,
                                           fontWeight: FontWeight.w700,
@@ -395,12 +400,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                         // ═══ PERSONAL INFO SECTION ═══
                         _buildSectionCard(
-                          title: 'Personal Details · ವೈಯಕ್ತಿಕ ವಿವರಗಳು',
+                          title: L.tr('Personal Details', 'ವೈಯಕ್ತಿಕ ವಿವರಗಳು'),
                           icon: Icons.person_outline,
                           children: [
                             // Full Name
-                            const _FieldLabel(
-                                'Full Name · ಪೂರ್ಣ ಹೆಸರು'),
+                            _FieldLabel(
+                                L.tr('Full Name', 'ಪೂರ್ಣ ಹೆಸರು')),
                             const SizedBox(height: 6),
                             TextFormField(
                               controller: _nameCtrl,
@@ -408,7 +413,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   TextCapitalization.words,
                               decoration: InputDecoration(
                                 hintText:
-                                    'Enter your name · ನಿಮ್ಮ ಹೆಸರನ್ನು ನಮೂದಿಸಿ',
+                                    L.tr('Enter your name', 'ನಿಮ್ಮ ಹೆಸರನ್ನು ನಮೂದಿಸಿ'),
                                 prefixIcon: const Icon(
                                     Icons.badge_outlined,
                                     color: GrowMateTheme.primaryGreen),
@@ -436,8 +441,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             const SizedBox(height: 16),
 
                             // Phone Number (Display only)
-                            const _FieldLabel(
-                                'Phone Number · ದೂರವಾಣಿ ಸಂಖ್ಯೆ'),
+                            _FieldLabel(
+                                L.tr('Phone Number', 'ದೂರವಾಣಿ ಸಂಖ್ಯೆ')),
                             const SizedBox(height: 6),
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -476,7 +481,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       borderRadius:
                                           BorderRadius.circular(8),
                                     ),
-                                    child: const Text('Verified · ಪರಿಶೀಲಿಸಲಾಗಿದೆ',
+                                    child: Text(L.tr('Verified', 'ಪರಿಶೀಲಿಸಲಾಗಿದೆ'),
                                         style: TextStyle(
                                             fontSize: 10,
                                             fontWeight: FontWeight.w600,
@@ -489,8 +494,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             const SizedBox(height: 16),
 
                             // Language
-                            const _FieldLabel(
-                                'Language · ಭಾಷೆ'),
+                            _FieldLabel(
+                                L.tr('Language', 'ಭಾಷೆ')),
                             const SizedBox(height: 6),
                             DropdownButtonFormField<String>(
                               value: _language,
@@ -534,7 +539,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                         // ═══ LOCATION SECTION ═══
                         _buildSectionCard(
-                          title: 'Farm Location · ಫಾರ್ಮ್ ಸ್ಥಳ',
+                          title: L.tr('Farm Location', 'ಫಾರ್ಮ್ ಸ್ಥಳ'),
                           icon: Icons.location_on_outlined,
                           children: [
                             InkWell(
@@ -597,8 +602,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         children: [
                                           Text(
                                             _selectedLocation == null
-                                                ? 'Set Farm Location · ಫಾರ್ಮ್ ಸ್ಥಳ ಹೊಂದಿಸಿ'
-                                                : 'Location Set · ಸ್ಥಳ ಹೊಂದಿಸಲಾಗಿದೆ',
+                                                ? L.tr('Set Farm Location', 'ಫಾರ್ಮ್ ಸ್ಥಳ ಹೊಂದಿಸಿ')
+                                                : L.tr('Location Set', 'ಸ್ಥಳ ಹೊಂದಿಸಲಾಗಿದೆ'),
                                             style: TextStyle(
                                               fontFamily: 'Inter',
                                               fontSize: 14,
@@ -616,7 +621,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           Text(
                                             _selectedLocation != null
                                                 ? '${_selectedLocation!.latitude.toStringAsFixed(4)}, ${_selectedLocation!.longitude.toStringAsFixed(4)}'
-                                                : 'Tap to open map · ನಕ್ಷೆ ತೆರೆಯಲು ಟ್ಯಾಪ್ ಮಾಡಿ',
+                                                : L.tr('Tap to open map', 'ನಕ್ಷೆ ತೆರೆಯಲು ಟ್ಯಾಪ್ ಮಾಡಿ'),
                                             style: const TextStyle(
                                                 fontSize: 12,
                                                 color: GrowMateTheme
@@ -640,7 +645,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         // ═══ SECURITY SECTION — PIN CHANGE ═══
                         _buildSectionCard(
                           title:
-                              'Security · ಭದ್ರತೆ',
+                              L.tr('Security', 'ಭದ್ರತೆ'),
                           icon: Icons.shield_outlined,
                           children: [
                             if (!_showPinSection)
@@ -660,7 +665,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         color: GrowMateTheme
                                             .borderLight),
                                   ),
-                                  child: const Row(
+                                  child: Row(
                                     children: [
                                       Icon(Icons.lock_outline,
                                           color: GrowMateTheme
@@ -669,7 +674,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       SizedBox(width: 12),
                                       Expanded(
                                         child: Text(
-                                          'Change PIN · ಪಿನ್ ಬದಲಾಯಿಸಿ',
+                                          L.tr('Change PIN', 'ಪಿನ್ ಬದಲಾಯಿಸಿ'),
                                           style: TextStyle(
                                               fontFamily: 'Inter',
                                               fontSize: 14,
@@ -688,8 +693,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               )
                             else ...[
                               // New PIN
-                              const _FieldLabel(
-                                  'New PIN · ಹೊಸ ಪಿನ್'),
+                              _FieldLabel(
+                                  L.tr('New PIN', 'ಹೊಸ ಪಿನ್')),
                               const SizedBox(height: 6),
                               TextFormField(
                                 controller: _newPinCtrl,
@@ -733,8 +738,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                               const SizedBox(height: 12),
                               // Confirm PIN
-                              const _FieldLabel(
-                                  'Confirm PIN · ಪಿನ್ ಖಚಿತಪಡಿಸಿ'),
+                              _FieldLabel(
+                                  L.tr('Confirm PIN', 'ಪಿನ್ ಖಚಿತಪಡಿಸಿ')),
                               const SizedBox(height: 6),
                               TextFormField(
                                 controller: _confirmPinCtrl,
@@ -807,8 +812,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                         .circular(
                                                             12)),
                                       ),
-                                      child: const Text(
-                                          'Cancel · ರದ್ದುಮಾಡಿ'),
+                                      child: Text(
+                                          L.tr('Cancel', 'ರದ್ದುಮಾಡಿ')),
                                     ),
                                   ),
                                   const SizedBox(width: 12),
@@ -840,8 +845,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                       strokeWidth:
                                                           2),
                                             )
-                                          : const Text(
-                                              'Update · ನವೀಕರಿಸಿ',
+                                          : Text(
+                                              L.tr('Update', 'ನವೀಕರಿಸಿ'),
                                               style: TextStyle(
                                                   color: Colors
                                                       .white,
@@ -860,7 +865,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                         // ═══ CROP SECTION ═══
                         _buildSectionCard(
-                          title: 'My Farm · ನನ್ನ ಫಾರ್ಮ್',
+                          title: L.tr('My Farm', 'ನನ್ನ ಫಾರ್ಮ್'),
                           icon: Icons.grass_outlined,
                           children: [
                             if (_profile?.activeCrop != null) ...[
@@ -901,8 +906,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           CrossAxisAlignment
                                               .start,
                                       children: [
-                                        const Text(
-                                            'Active Crop · ಸಕ್ರಿಯ ಬೆಳೆ',
+                                        Text(
+                                            L.tr('Active Crop', 'ಸಕ್ರಿಯ ಬೆಳೆ'),
                                             style: TextStyle(
                                                 fontSize: 11,
                                                 color: GrowMateTheme
@@ -939,8 +944,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             BorderRadius.circular(
                                                 8),
                                       ),
-                                      child: const Text(
-                                          'Change · ಬದಲಾಯಿಸಿ',
+                                      child: Text(
+                                          L.tr('Change', 'ಬದಲಾಯಿಸಿ'),
                                           style: TextStyle(
                                               fontSize: 12,
                                               color: GrowMateTheme
@@ -963,8 +968,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         .pushNamed('/crops'),
                                 icon: const Icon(
                                     Icons.grass_outlined),
-                                label: const Text(
-                                    'Manage My Crops · ನನ್ನ ಬೆಳೆಗಳನ್ನು ನಿರ್ವಹಿಸಿ'),
+                                label: Text(
+                                    L.tr('Manage My Crops', 'ನನ್ನ ಬೆಳೆಗಳನ್ನು ನಿರ್ವಹಿಸಿ')),
                                 style: OutlinedButton.styleFrom(
                                   shape: RoundedRectangleBorder(
                                       borderRadius:
@@ -996,8 +1001,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               strokeWidth: 2))
                                   : const Icon(Icons.save_outlined,
                                       color: Colors.white),
-                              label: const Text(
-                                  'Save Changes · ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಿ',
+                              label: Text(
+                                  L.tr('Save Changes', 'ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಿ'),
                                   style: TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.w700,
@@ -1023,8 +1028,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             onPressed: _logout,
                             icon: const Icon(Icons.logout,
                                 color: GrowMateTheme.dangerRed),
-                            label: const Text(
-                                'Sign Out · ಸೈನ್ ಔಟ್',
+                            label: Text(
+                                L.tr('Sign Out', 'ಸೈನ್ ಔಟ್'),
                                 style: TextStyle(
                                     color:
                                         GrowMateTheme.dangerRed,
@@ -1044,7 +1049,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         // App version
                         Center(
                           child: Text(
-                            'GrowMate v1.0.0 · Made for Udupi Farmers 🌾',
+                            L.tr('GrowMate v1.0.0', 'Made for Udupi Farmers 🌾'),
                             style: TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 11,

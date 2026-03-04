@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/growmate_theme.dart';
 import '../../core/services/api_service.dart';
+import 'package:growmate_frontend/core/localization/app_locale.dart';
 
 class QuickPinScreen extends StatefulWidget {
   const QuickPinScreen({super.key});
@@ -37,7 +38,7 @@ class _QuickPinScreenState extends State<QuickPinScreen> {
     } on ApiException catch (e) {
       setState(() { _error = e.detail; _pin = ''; });
     } catch (_) {
-      setState(() { _error = 'Connection failed. · ಸಂಪರ್ಕ ವಿಫಲವಾಗಿದೆ.'; _pin = ''; });
+      setState(() { _error = L.tr('Connection failed.', 'ಸಂಪರ್ಕ ವಿಫಲವಾಗಿದೆ.'); _pin = ''; });
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -63,10 +64,10 @@ class _QuickPinScreenState extends State<QuickPinScreen> {
               const SizedBox(height: 24),
               const Icon(Icons.pin_rounded, color: Colors.white70, size: 52),
               const SizedBox(height: 16),
-              const Text('Quick PIN Login · ತ್ವರಿತ ಪಿನ್ ಲಾಗಿನ್', style: TextStyle(
+              Text(L.tr('Quick PIN Login', 'ತ್ವರಿತ ಪಿನ್ ಲಾಗಿನ್'), style: TextStyle(
                 fontFamily: 'Inter', fontSize: 24, fontWeight: FontWeight.w700, color: Colors.white)),
               const SizedBox(height: 8),
-              const Text('Enter your phone and 4-digit PIN · ನಿಮ್ಮ ಫೋನ್ ಮತ್ತು 4-ಅಂಕಿಯ ಪಿನ್ ನಮೂದಿಸಿ', style: TextStyle(
+              Text(L.tr('Enter your phone and 4-digit PIN', 'ನಿಮ್ಮ ಫೋನ್ ಮತ್ತು 4-ಅಂಕಿಯ ಪಿನ್ ನಮೂದಿಸಿ'), style: TextStyle(
                 fontFamily: 'Inter', fontSize: 13, color: Colors.white70)),
               const SizedBox(height: 32),
               Expanded(
@@ -83,8 +84,8 @@ class _QuickPinScreenState extends State<QuickPinScreen> {
                         keyboardType: TextInputType.phone,
                         maxLength: 10,
                         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                        decoration: const InputDecoration(
-                          labelText: 'Phone Number · ದೂರವಾಣಿ ಸಂಖ್ಯೆ',
+                        decoration: InputDecoration(
+                          labelText: L.tr('Phone Number', 'ದೂರವಾಣಿ ಸಂಖ್ಯೆ'),
                           prefixIcon: Icon(Icons.phone_outlined),
                           filled: true,
                           fillColor: GrowMateTheme.surfaceWhite,

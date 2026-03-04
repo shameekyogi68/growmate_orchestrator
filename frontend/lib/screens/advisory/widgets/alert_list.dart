@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/models/api_models.dart';
 import '../../../shared/widgets.dart';
+import 'package:growmate_frontend/core/localization/app_locale.dart';
 
 /// Renders the list of alerts from backend. Hidden when empty.
 class AlertList extends StatelessWidget {
@@ -14,8 +15,8 @@ class AlertList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Active Alerts · ಸಕ್ರಿಯ ಎಚ್ಚರಿಕೆಗಳು',
+        Text(
+          L.tr('Active Alerts', 'ಸಕ್ರಿಯ ಎಚ್ಚರಿಕೆಗಳು'),
           style: TextStyle(
             fontFamily: 'Inter',
             fontSize: 16,

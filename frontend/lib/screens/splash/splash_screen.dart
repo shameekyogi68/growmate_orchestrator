@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/services/api_service.dart';
 import '../../core/theme/growmate_theme.dart';
+import '../../core/localization/app_locale.dart';
 
 /// Premium animated splash screen — Swiggy / Zomato-level polish.
 /// Orchestrates logo animation, particle effects, status text cycle,
@@ -160,12 +161,13 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _warmUpAndNavigate() async {
-    // Start backend warmup + token check concurrently
+    // Start backend warmup + token check + locale load concurrently
     final stopwatch = Stopwatch()..start();
 
     final results = await Future.wait([
       _warmUpServer(),
       _checkAuth(),
+      L.load(), // Load user's language preference from SharedPreferences
       // Guarantee minimum 2.5s splash for a snappy but polished animation experience
       Future.delayed(const Duration(milliseconds: 2500)),
     ]);
@@ -469,38 +471,18 @@ class _SplashScreenState extends State<SplashScreen>
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start, // Align top of icon
       children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 2),
-          child: Icon(line.icon, size: 16, color: Colors.white54),
-        ),
+        Icon(line.icon, size: 16, color: Colors.white54),
         const SizedBox(width: 10),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              line.text,
-              style: const TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 13,
-                fontWeight: FontWeight.w400,
-                color: Colors.white54,
-                letterSpacing: 0.3,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              line.textKn,
-              style: const TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                color: Colors.white38, // Slightly dimmer for secondary emphasis
-                letterSpacing: 0.1,
-              ),
-            ),
-          ],
+        Text(
+          L.tr(line.text, line.textKn),
+          style: const TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 13,
+            fontWeight: FontWeight.w400,
+            color: Colors.white54,
+            letterSpacing: 0.3,
+          ),
         ),
       ],
     );
@@ -581,7 +563,7 @@ class _SplashScreenState extends State<SplashScreen>
             ),
             const SizedBox(width: 6),
             Text(
-              _serverReady ? 'Connected' : 'Connecting to server…',
+              _serverReady ? L.tr('Connected', 'ಸಂಪರ್ಕಿಸಲಾಗಿದೆ') : L.tr('Connecting to server…', 'ಸರ್ವರ್‌ಗೆ ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ…'),
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 11,

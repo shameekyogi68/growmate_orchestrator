@@ -4,6 +4,7 @@ import '../../core/theme/growmate_theme.dart';
 import '../../core/services/api_service.dart';
 import '../../shared/location_picker_screen.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:growmate_frontend/core/localization/app_locale.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -34,7 +35,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedLocation == null) {
-      setState(() => _errorMessage = 'Please set your farm location within Udupi District. · ದಯವಿಟ್ಟು ಉಡುಪಿ ಜಿಲ್ಲೆಯೊಳಗೆ ನಿಮ್ಮ ಫಾರ್ಮ್ ಸ್ಥಳವನ್ನು ಹೊಂದಿಸಿ.');
+      setState(() => _errorMessage = L.tr('Please set your farm location within Udupi District.', 'ದಯವಿಟ್ಟು ಉಡುಪಿ ಜಿಲ್ಲೆಯೊಳಗೆ ನಿಮ್ಮ ಫಾರ್ಮ್ ಸ್ಥಳವನ್ನು ಹೊಂದಿಸಿ.'));
       return;
     }
     setState(() {
@@ -54,7 +55,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     } on ApiException catch (e) {
       setState(() => _errorMessage = e.detail);
     } catch (_) {
-      setState(() => _errorMessage = 'Connection failed. Check your network. · ಸಂಪರ್ಕ ವಿಫಲವಾಗಿದೆ. ನಿಮ್ಮ ನೆಟ್‌ವರ್ಕ್ ಪರಿಶೀಲಿಸಿ.');
+      setState(() => _errorMessage = L.tr('Connection failed. Check your network.', 'ಸಂಪರ್ಕ ವಿಫಲವಾಗಿದೆ. ನಿಮ್ಮ ನೆಟ್‌ವರ್ಕ್ ಪರಿಶೀಲಿಸಿ.'));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -108,14 +109,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              const Text('Create Account · ಖಾತೆ ತೆರೆಯಿರಿ',
+                              Text(L.tr('Create Account', 'ಖಾತೆ ತೆರೆಯಿರಿ'),
                                   style: TextStyle(
                                       fontFamily: 'Inter',
                                       fontSize: 22,
                                       fontWeight: FontWeight.w700,
                                       color: GrowMateTheme.textPrimary)),
                               const SizedBox(height: 4),
-                              const Text('Set up your farmer profile · ನಿಮ್ಮ ರೈತ ಪ್ರೊಫೈಲ್ ಅನ್ನು ಹೊಂದಿಸಿ',
+                              Text(L.tr('Set up your farmer profile', 'ನಿಮ್ಮ ರೈತ ಪ್ರೊಫೈಲ್ ಅನ್ನು ಹೊಂದಿಸಿ'),
                                   style: TextStyle(
                                       fontFamily: 'Inter',
                                       fontSize: 13,
@@ -129,21 +130,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 inputFormatters: [
                                   FilteringTextInputFormatter.digitsOnly
                                 ],
-                                decoration: const InputDecoration(
-                                  labelText: 'Phone Number * · ದೂರವಾಣಿ ಸಂಖ್ಯೆ *',
+                                decoration: InputDecoration(
+                                  labelText: L.tr('Phone Number *', 'ದೂರವಾಣಿ ಸಂಖ್ಯೆ *'),
                                   prefixIcon: Icon(Icons.phone_outlined),
                                   counterText: '',
                                 ),
                                 validator: (v) => (v == null || v.length < 10)
-                                    ? 'Enter valid phone number · ಮಾನ್ಯವಾದ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ'
+                                    ? L.tr('Enter valid phone number', 'ಮಾನ್ಯವಾದ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ')
                                     : null,
                               ),
                               const SizedBox(height: 14),
                               TextFormField(
                                 
                                 controller: _nameCtrl,
-                                decoration: const InputDecoration(
-                                  labelText: 'Full Name · ಪೂರ್ಣ ಹೆಸರು',
+                                decoration: InputDecoration(
+                                  labelText: L.tr('Full Name', 'ಪೂರ್ಣ ಹೆಸರು'),
                                   prefixIcon: Icon(Icons.person_outline),
                                 ),
                               ),
@@ -159,7 +160,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   FilteringTextInputFormatter.digitsOnly
                                 ],
                                 decoration: InputDecoration(
-                                  labelText: '4-Digit PIN * · 4-ಅಂಕಿಯ ಪಿನ್ *',
+                                  labelText: L.tr('4-Digit PIN *', '4-ಅಂಕಿಯ ಪಿನ್ *'),
                                   prefixIcon: const Icon(Icons.lock_outline),
                                   counterText: '',
                                   suffixIcon: IconButton(
@@ -172,7 +173,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 ),
                                 validator: (v) {
                                   if (v == null || v.length != 4) {
-                                    return 'PIN must be exactly 4 digits · ಪಿನ್ ಸರಿಯಾಗಿ 4 ಅಂಕಿಗಳಿರಬೇಕು';
+                                    return L.tr('PIN must be exactly 4 digits', 'ಪಿನ್ ಸರಿಯಾಗಿ 4 ಅಂಕಿಗಳಿರಬೇಕು');
                                   }
                                   return null;
                                 },
@@ -180,8 +181,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               const SizedBox(height: 14),
                               DropdownButtonFormField<String>(
                                 value: _language,
-                                decoration: const InputDecoration(
-                                  labelText: 'Language · ಭಾಷೆ',
+                                decoration: InputDecoration(
+                                  labelText: L.tr('Language', 'ಭಾಷೆ'),
                                   prefixIcon: Icon(Icons.translate_outlined),
                                 ),
                                 items: const [
@@ -201,10 +202,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 ),
                                 child: ListTile(
                                   leading: const Icon(Icons.location_on_outlined, color: GrowMateTheme.primaryGreen),
-                                  title: Text(_selectedLocation == null ? 'Set Farm Location · ಫಾರ್ಮ್ ಸ್ಥಳವನ್ನು ಹೊಂದಿಸಿ' : 'Location Selected · ಸ್ಥಳವನ್ನು ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ'),
+                                  title: Text(_selectedLocation == null ? L.tr('Set Farm Location', 'ಫಾರ್ಮ್ ಸ್ಥಳವನ್ನು ಹೊಂದಿಸಿ') : L.tr('Location Selected', 'ಸ್ಥಳವನ್ನು ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ')),
                                   subtitle: _selectedLocation != null 
                                       ? Text('${_selectedLocation!.latitude.toStringAsFixed(4)}, ${_selectedLocation!.longitude.toStringAsFixed(4)}')
-                                      : const Text('Tap to open map · ನಕ್ಷೆಯನ್ನು ತೆರೆಯಲು ಟ್ಯಾಪ್ ಮಾಡಿ'),
+                                      : Text(L.tr('Tap to open map', 'ನಕ್ಷೆಯನ್ನು ತೆರೆಯಲು ಟ್ಯಾಪ್ ಮಾಡಿ')),
                                   trailing: const Icon(Icons.chevron_right),
                                   onTap: () async {
                                     final loc = await Navigator.of(context).push<LatLng>(
@@ -249,21 +250,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                               color: Colors.white,
                                               strokeWidth: 2),
                                         )
-                                      : const Text('Create Account · ಖಾತೆ ತೆರೆಯಿರಿ'),
+                                      : Text(L.tr('Create Account', 'ಖಾತೆ ತೆರೆಯಿರಿ')),
                                 ),
                               ),
                               const SizedBox(height: 16),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Text('Already have an account? · ಈಗಾಗಲೇ ಖಾತೆ ಹೊಂದಿದ್ದೀರಾ? ',
+                                  Text(L.tr('Already have an account?', 'ಈಗಾಗಲೇ ಖಾತೆ ಹೊಂದಿದ್ದೀರಾ? '),
                                       style: TextStyle(
                                           fontSize: 13,
                                           color: GrowMateTheme.textSecondary)),
                                   GestureDetector(
                                     onTap: () =>
                                         Navigator.of(context).pop(),
-                                    child: const Text('Sign In · ಸೈನ್ ಇನ್',
+                                    child: Text(L.tr('Sign In', 'ಸೈನ್ ಇನ್'),
                                         style: TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w600,

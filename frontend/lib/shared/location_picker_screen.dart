@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../core/theme/growmate_theme.dart';
+import 'package:growmate_frontend/core/localization/app_locale.dart';
 
 class LocationPickerScreen extends StatefulWidget {
   final LatLng? initialLocation;
@@ -106,14 +107,14 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Select Farm Location · ಫಾರ್ಮ್ ಸ್ಥಳವನ್ನು ಆಯ್ಕೆಮಾಡಿ', style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600)),
+        title: Text(L.tr('Select Farm Location', 'ಫಾರ್ಮ್ ಸ್ಥಳವನ್ನು ಆಯ್ಕೆಮಾಡಿ'), style: TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600)),
         backgroundColor: GrowMateTheme.surfaceWhite,
         foregroundColor: GrowMateTheme.textPrimary,
         elevation: 1,
         actions: [
           TextButton(
             onPressed: isValid ? _onConfirm : null,
-            child: Text('Confirm · ಖಚಿತಪಡಿಸಿ', style: TextStyle(
+            child: Text(L.tr('Confirm', 'ಖಚಿತಪಡಿಸಿ'), style: TextStyle(
               color: isValid ? GrowMateTheme.primaryGreen : GrowMateTheme.textSecondary.withValues(alpha: 0.5), 
               fontWeight: FontWeight.w700, 
               fontSize: 16
@@ -190,9 +191,9 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                 children: [
                   const Icon(Icons.info_outline, color: GrowMateTheme.textSecondary, size: 20),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Tap on the map to place the pin on your farm. This helps us provide accurate localized weather and crop advisories. · ನಿಮ್ಮ ಫಾರ್ಮ್‌ನಲ್ಲಿ ಪಿನ್ ಇರಿಸಲು ನಕ್ಷೆಯ ಮೇಲೆ ಟ್ಯಾಪ್ ಮಾಡಿ. ಇದು ನಿಮಗೆ ನಿಖರವಾದ ಹವಾಮಾನ ಮತ್ತು ಬೆಳೆ ಸಲಹೆಗಳನ್ನು ನೀಡಲು ನಮಗೆ ಸಹಾಯ ಮಾಡುತ್ತದೆ.',
+                      L.tr('Tap on the map to place the pin on your farm. This helps us provide accurate localized weather and crop advisories.', 'ನಿಮ್ಮ ಫಾರ್ಮ್‌ನಲ್ಲಿ ಪಿನ್ ಇರಿಸಲು ನಕ್ಷೆಯ ಮೇಲೆ ಟ್ಯಾಪ್ ಮಾಡಿ. ಇದು ನಿಮಗೆ ನಿಖರವಾದ ಹವಾಮಾನ ಮತ್ತು ಬೆಳೆ ಸಲಹೆಗಳನ್ನು ನೀಡಲು ನಮಗೆ ಸಹಾಯ ಮಾಡುತ್ತದೆ.'),
                       style: TextStyle(fontSize: 12, color: GrowMateTheme.textSecondary, fontFamily: 'Inter'),
                     ),
                   ),
@@ -214,13 +215,13 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: GrowMateTheme.elevatedShadow,
                 ),
-                child: const Row(
+                child: Row(
                   children: [
                     Icon(Icons.error_outline, color: Colors.white, size: 22),
                     SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Service available only inside Udupi District (Green Area). Please move your pin into the zone to confirm. · ಸೇವೆಯು ಉಡುಪಿ ಜಿಲ್ಲೆಯೊಳಗೆ (ಹಸಿರು ಪ್ರದೇಶ) ಮಾತ್ರ ಲಭ್ಯವಿದೆ. ದಯವಿಟ್ಟು ಖಚಿತಪಡಿಸಲು ನಿಮ್ಮ ಪಿನ್ ಅನ್ನು ಆ ವಲಯಕ್ಕೆ ಸರಿಸಿ.',
+                        L.tr('Service available only inside Udupi District (Green Area). Please move your pin into the zone to confirm.', 'ಸೇವೆಯು ಉಡುಪಿ ಜಿಲ್ಲೆಯೊಳಗೆ (ಹಸಿರು ಪ್ರದೇಶ) ಮಾತ್ರ ಲಭ್ಯವಿದೆ. ದಯವಿಟ್ಟು ಖಚಿತಪಡಿಸಲು ನಿಮ್ಮ ಪಿನ್ ಅನ್ನು ಆ ವಲಯಕ್ಕೆ ಸರಿಸಿ.'),
                         style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600, fontFamily: 'Inter', height: 1.3),
                       ),
                     ),
