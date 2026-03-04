@@ -79,7 +79,8 @@ class _AdvisoryScreenState extends State<AdvisoryScreen> {
       }
     } catch (e) {
       setState(() => _errorMessage =
-          'Could not reach server. Check your connection and try again.');
+          L.tr('Could not reach server. Check your connection and try again.',
+               'ಸರ್ವರ್ ತಲುಪಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.'));
     } finally {
       if (mounted) setState(() => _loading = false);
     }

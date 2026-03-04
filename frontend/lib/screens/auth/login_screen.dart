@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/growmate_theme.dart';
 import '../../core/services/api_service.dart';
+import '../../core/localization/app_locale.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -26,8 +27,7 @@ class _LoginScreenState extends State<LoginScreen>
     super.initState();
     _fadeCtrl = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 600));
-    _fadeAnim =
-        CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut);
+    _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut);
     _fadeCtrl.forward();
   }
 
@@ -56,7 +56,8 @@ class _LoginScreenState extends State<LoginScreen>
     } on ApiException catch (e) {
       setState(() => _errorMessage = e.detail);
     } catch (_) {
-      setState(() => _errorMessage = 'Connection failed. Check your network.');
+      setState(() => _errorMessage =
+          L.tr('Connection failed. Check your network.', 'ಸಂಪರ್ಕ ವಿಫಲವಾಗಿದೆ. ನಿಮ್ಮ ನೆಟ್‌ವರ್ಕ್ ಪರಿಶೀಲಿಸಿ.'));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -66,7 +67,8 @@ class _LoginScreenState extends State<LoginScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(gradient: GrowMateTheme.headerGradient),
+        decoration:
+            const BoxDecoration(gradient: GrowMateTheme.headerGradient),
         child: SafeArea(
           child: FadeTransition(
             opacity: _fadeAnim,
@@ -80,22 +82,174 @@ class _LoginScreenState extends State<LoginScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 48),
-                        const _Logo(),
+                        // ── Logo & tagline ──
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Image.asset('assets/icons/logo.png',
+                                width: 48, height: 48),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'GrowMate',
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 34,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              L.tr('Intelligent Farming Platform',
+                                  'ಬುದ್ಧಿವಂತ ಕೃಷಿ ವೇದಿಕೆ'),
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 14,
+                                color: Colors.white70,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
                         const SizedBox(height: 48),
-                        _LoginCard(
-                          formKey: _formKey,
-                          phoneCtrl: _phoneCtrl,
-                          pinCtrl: _pinCtrl,
-                          obscurePin: _obscurePin,
-                          onToggleObscure: () =>
-                              setState(() => _obscurePin = !_obscurePin),
-                          errorMessage: _errorMessage,
-                          loading: _loading,
-                          onLogin: _login,
-                          onGoRegister: () =>
-                              Navigator.of(context).pushNamed('/register'),
-                          onQuickPin: () =>
-                              Navigator.of(context).pushNamed('/quick-login'),
+
+                        // ── Login Card ──
+                        Container(
+                          decoration: BoxDecoration(
+                            color: GrowMateTheme.surfaceWhite,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: GrowMateTheme.elevatedShadow,
+                          ),
+                          padding: const EdgeInsets.all(24),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Text(
+                                  L.tr('Welcome back', 'ಮತ್ತೆ ಸ್ವಾಗತ'),
+                                  style: const TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w700,
+                                    color: GrowMateTheme.textPrimary,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  L.tr('Sign in to your farm dashboard',
+                                      'ನಿಮ್ಮ ಕೃಷಿ ಖಾತೆಗೆ ಲಾಗಿನ್ ಆಗಿ'),
+                                  style: const TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 13,
+                                    color: GrowMateTheme.textSecondary,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                TextFormField(
+                                  controller: _phoneCtrl,
+                                  keyboardType: TextInputType.phone,
+                                  maxLength: 10,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly
+                                  ],
+                                  decoration: InputDecoration(
+                                    labelText: L.tr(
+                                        'Phone Number', 'ದೂರವಾಣಿ ಸಂಖ್ಯೆ'),
+                                    prefixIcon:
+                                        const Icon(Icons.phone_outlined),
+                                    counterText: '',
+                                  ),
+                                  validator: (v) =>
+                                      (v == null || v.length < 10)
+                                          ? L.tr('Enter valid phone number',
+                                              'ಮಾನ್ಯವಾದ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ')
+                                          : null,
+                                ),
+                                const SizedBox(height: 16),
+                                TextFormField(
+                                  controller: _pinCtrl,
+                                  obscureText: _obscurePin,
+                                  keyboardType: TextInputType.number,
+                                  maxLength: 4,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly
+                                  ],
+                                  decoration: InputDecoration(
+                                    labelText: L.tr(
+                                        '4-Digit PIN', '4-ಅಂಕಿಯ ಪಿನ್'),
+                                    prefixIcon:
+                                        const Icon(Icons.lock_outline),
+                                    counterText: '',
+                                    suffixIcon: IconButton(
+                                      icon: Icon(_obscurePin
+                                          ? Icons.visibility_off_outlined
+                                          : Icons.visibility_outlined),
+                                      onPressed: () => setState(
+                                          () => _obscurePin = !_obscurePin),
+                                    ),
+                                  ),
+                                  validator: (v) =>
+                                      (v == null || v.length != 4)
+                                          ? L.tr('Enter 4-digit PIN',
+                                              '4-ಅಂಕಿಯ ಪಿನ್ ನಮೂದಿಸಿ')
+                                          : null,
+                                ),
+                                if (_errorMessage != null) ...[
+                                  const SizedBox(height: 14),
+                                  _ErrorBanner(message: _errorMessage!),
+                                ],
+                                const SizedBox(height: 24),
+                                SizedBox(
+                                  height: 52,
+                                  child: ElevatedButton(
+                                    onPressed: _loading ? null : _login,
+                                    child: _loading
+                                        ? const SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child:
+                                                CircularProgressIndicator(
+                                              color: Colors.white,
+                                              strokeWidth: 2,
+                                            ),
+                                          )
+                                        : Text(L.tr(
+                                            'Sign In', 'ಸೈನ್ ಇನ್')),
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      L.tr("Don't have an account? ",
+                                          "ಖಾತೆ ಇಲ್ಲವೇ? "),
+                                      style: const TextStyle(
+                                          fontSize: 13,
+                                          color:
+                                              GrowMateTheme.textSecondary),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () => Navigator.of(context)
+                                          .pushNamed('/register'),
+                                      child: Text(
+                                        L.tr('Register', 'ನೋಂದಣಿ'),
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color:
+                                              GrowMateTheme.primaryGreen,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                         const Spacer(),
                       ],
@@ -105,203 +259,6 @@ class _LoginScreenState extends State<LoginScreen>
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _Logo extends StatelessWidget {
-  const _Logo();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Image.asset('assets/icons/logo.png', width: 48, height: 48),
-        const SizedBox(height: 12),
-        const Text(
-          'GrowMate',
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 34,
-            fontWeight: FontWeight.w800,
-            color: Colors.white,
-            letterSpacing: -0.5,
-          ),
-        ),
-        const SizedBox(height: 4),
-        const Text(
-          'Intelligent Farming Platform',
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 14,
-            color: Colors.white70,
-            fontWeight: FontWeight.w400,
-          ),
-        ),
-        const SizedBox(height: 2),
-        const Text(
-          'ಬುದ್ಧಿವಂತ ಕೃಷಿ ವೇದಿಕೆ',
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 12,
-            color: Colors.white60,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _LoginCard extends StatelessWidget {
-  final GlobalKey<FormState> formKey;
-  final TextEditingController phoneCtrl;
-  final TextEditingController pinCtrl;
-  final bool obscurePin;
-  final bool loading;
-  final String? errorMessage;
-  final VoidCallback onToggleObscure;
-  final VoidCallback onLogin;
-  final VoidCallback onGoRegister;
-  final VoidCallback onQuickPin;
-
-  const _LoginCard({
-    required this.formKey,
-    required this.phoneCtrl,
-    required this.pinCtrl,
-    required this.obscurePin,
-    required this.loading,
-    required this.onToggleObscure,
-    required this.onLogin,
-    required this.onGoRegister,
-    required this.onQuickPin,
-    this.errorMessage,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: GrowMateTheme.surfaceWhite,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: GrowMateTheme.elevatedShadow,
-      ),
-      padding: const EdgeInsets.all(24),
-      child: Form(
-        key: formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Welcome back • ಮತ್ತೆ ಸ್ವಾಗತ',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: GrowMateTheme.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Sign in to your farm dashboard',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 13,
-                color: GrowMateTheme.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 2),
-            const Text(
-              'ನಿಮ್ಮ ಕೃಷಿ ಖಾತೆಗೆ ಲಾಗಿನ್ ಆಗಿ',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 12,
-                color: GrowMateTheme.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 24),
-            TextFormField(
-              
-              controller: phoneCtrl,
-              keyboardType: TextInputType.phone,
-              maxLength: 10,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              decoration: const InputDecoration(
-                labelText: 'Phone Number',
-                prefixIcon: Icon(Icons.phone_outlined),
-                counterText: '',
-              ),
-              validator: (v) =>
-                  (v == null || v.length < 10) ? 'Enter valid phone number' : null,
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              
-              controller: pinCtrl,
-              obscureText: obscurePin,
-              keyboardType: TextInputType.number,
-              maxLength: 4,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              decoration: InputDecoration(
-                labelText: '4-Digit PIN',
-                prefixIcon: const Icon(Icons.lock_outline),
-                counterText: '',
-                suffixIcon: IconButton(
-                  icon: Icon(obscurePin
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility_outlined),
-                  onPressed: onToggleObscure,
-                ),
-              ),
-              validator: (v) =>
-                  (v == null || v.length != 4) ? 'Enter 4-digit PIN' : null,
-            ),
-            if (errorMessage != null) ...[
-              const SizedBox(height: 14),
-              _ErrorBanner(message: errorMessage!),
-            ],
-            const SizedBox(height: 24),
-            SizedBox(
-              height: 52,
-              child: ElevatedButton(
-                
-                onPressed: loading ? null : onLogin,
-                child: loading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : const Text('Sign In'),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text("Don't have an account? ",
-                    style: TextStyle(
-                        fontSize: 13, color: GrowMateTheme.textSecondary)),
-                GestureDetector(
-                  onTap: onGoRegister,
-                  child: const Text(
-                    'Register',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: GrowMateTheme.primaryGreen,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
         ),
       ),
     );
@@ -319,7 +276,8 @@ class _ErrorBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: GrowMateTheme.dangerRed.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: GrowMateTheme.dangerRed.withValues(alpha: 0.3)),
+        border: Border.all(
+            color: GrowMateTheme.dangerRed.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [

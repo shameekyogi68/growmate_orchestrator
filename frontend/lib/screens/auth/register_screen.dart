@@ -189,7 +189,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   DropdownMenuItem(
                                       value: 'en', child: Text('English')),
                                   DropdownMenuItem(
-                                      value: 'kn', child: Text('ಕನ್ನಡ (Kannada)')),
+                                      value: 'kn', child: Text('ಕನ್ನಡ')),
                                 ],
                                 onChanged: (v) =>
                                     setState(() => _language = v ?? 'en'),

@@ -69,7 +69,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
     try {
       final p = await ApiService.instance.getProfile();
-      final prefs = await SharedPreferences.getInstance();
       if (!mounted) return;
       setState(() {
         _profile = p;
@@ -467,7 +466,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 DropdownMenuItem(
                                     value: 'kn',
                                     child:
-                                        Text('ಕನ್ನಡ (Kannada)')),
+                                        Text('ಕನ್ನಡ')),
                               ],
                               onChanged: (v) {
                                 setState(() {
