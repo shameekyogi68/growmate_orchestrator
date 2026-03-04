@@ -55,10 +55,12 @@ class _LoginScreenState extends State<LoginScreen>
       }
     } on ApiException catch (e) {
       debugPrint('API Error: ${e.detail}');
-      setState(() => _errorMessage = L.tr('Oops! Something went wrong. Let\'s try again.', 'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.'));
+      setState(() => _errorMessage = L.tr(
+          'Oops! Something went wrong. Let\'s try again.',
+          'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.'));
     } catch (_) {
-      setState(() => _errorMessage =
-          L.tr('Connection failed. Check your network.', 'ಸಂಪರ್ಕ ವಿಫಲವಾಗಿದೆ. ನಿಮ್ಮ ನೆಟ್‌ವರ್ಕ್ ಪರಿಶೀಲಿಸಿ.'));
+      setState(() => _errorMessage = L.tr('Connection failed. Check your network.',
+          'ಸಂಪರ್ಕ ವಿಫಲವಾಗಿದೆ. ನಿಮ್ಮ ನೆಟ್‌ವರ್ಕ್ ಪರಿಶೀಲಿಸಿ.'));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -68,12 +70,18 @@ class _LoginScreenState extends State<LoginScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration:
-            const BoxDecoration(gradient: GrowMateTheme.headerGradient),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF1B5E20), Color(0xFF388E3C)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
         child: SafeArea(
           child: FadeTransition(
             opacity: _fadeAnim,
             child: CustomScrollView(
+              physics: const BouncingScrollPhysics(),
               slivers: [
                 SliverFillRemaining(
                   hasScrollBody: false,
@@ -87,8 +95,11 @@ class _LoginScreenState extends State<LoginScreen>
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Image.asset('assets/icons/logo.png',
-                                width: 48, height: 48),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.asset('assets/icons/logo.png',
+                                  width: 48, height: 48),
+                            ),
                             const SizedBox(height: 12),
                             const Text(
                               'GrowMate',
@@ -104,10 +115,10 @@ class _LoginScreenState extends State<LoginScreen>
                             Text(
                               L.tr('Intelligent Farming Platform',
                                   'ಬುದ್ಧಿವಂತ ಕೃಷಿ ವೇದಿಕೆ'),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontFamily: 'Inter',
                                 fontSize: 14,
-                                color: Colors.white70,
+                                color: Colors.white.withValues(alpha: 0.7),
                                 fontWeight: FontWeight.w400,
                               ),
                             ),
@@ -118,9 +129,15 @@ class _LoginScreenState extends State<LoginScreen>
                         // ── Login Card ──
                         Container(
                           decoration: BoxDecoration(
-                            color: GrowMateTheme.surfaceWhite,
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(24),
-                            boxShadow: GrowMateTheme.elevatedShadow,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.08),
+                                blurRadius: 20,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
                           padding: const EdgeInsets.all(24),
                           child: Form(
@@ -148,54 +165,46 @@ class _LoginScreenState extends State<LoginScreen>
                                   ),
                                 ),
                                 const SizedBox(height: 24),
-                                TextFormField(
+                                _premiumField(
                                   controller: _phoneCtrl,
+                                  label: L.tr('Phone Number', 'ದೂರವಾಣಿ ಸಂಖ್ಯೆ'),
+                                  icon: Icons.phone_outlined,
                                   keyboardType: TextInputType.phone,
                                   maxLength: 10,
                                   inputFormatters: [
                                     FilteringTextInputFormatter.digitsOnly
                                   ],
-                                  decoration: InputDecoration(
-                                    labelText: L.tr(
-                                        'Phone Number', 'ದೂರವಾಣಿ ಸಂಖ್ಯೆ'),
-                                    prefixIcon:
-                                        const Icon(Icons.phone_outlined),
-                                    counterText: '',
-                                  ),
-                                  validator: (v) =>
-                                      (v == null || v.length < 10)
-                                          ? L.tr('Enter valid phone number',
-                                              'ಮಾನ್ಯವಾದ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ')
-                                          : null,
+                                  validator: (v) => (v == null || v.length < 10)
+                                      ? L.tr('Enter valid phone number',
+                                          'ಮಾನ್ಯವಾದ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ')
+                                      : null,
                                 ),
                                 const SizedBox(height: 16),
-                                TextFormField(
+                                _premiumField(
                                   controller: _pinCtrl,
-                                  obscureText: _obscurePin,
+                                  label: L.tr('4-Digit PIN', '4-ಅಂಕಿಯ ಪಿನ್'),
+                                  icon: Icons.lock_outline,
+                                  obscure: _obscurePin,
                                   keyboardType: TextInputType.number,
                                   maxLength: 4,
                                   inputFormatters: [
                                     FilteringTextInputFormatter.digitsOnly
                                   ],
-                                  decoration: InputDecoration(
-                                    labelText: L.tr(
-                                        '4-Digit PIN', '4-ಅಂಕಿಯ ಪಿನ್'),
-                                    prefixIcon:
-                                        const Icon(Icons.lock_outline),
-                                    counterText: '',
-                                    suffixIcon: IconButton(
-                                      icon: Icon(_obscurePin
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePin
                                           ? Icons.visibility_off_outlined
-                                          : Icons.visibility_outlined),
-                                      onPressed: () => setState(
-                                          () => _obscurePin = !_obscurePin),
+                                          : Icons.visibility_outlined,
+                                      color: GrowMateTheme.textSecondary,
+                                      size: 20,
                                     ),
+                                    onPressed: () => setState(
+                                        () => _obscurePin = !_obscurePin),
                                   ),
-                                  validator: (v) =>
-                                      (v == null || v.length != 4)
-                                          ? L.tr('Enter 4-digit PIN',
-                                              '4-ಅಂಕಿಯ ಪಿನ್ ನಮೂದಿಸಿ')
-                                          : null,
+                                  validator: (v) => (v == null || v.length != 4)
+                                      ? L.tr('Enter 4-digit PIN',
+                                          '4-ಅಂಕಿಯ ಪಿನ್ ನಮೂದಿಸಿ')
+                                      : null,
                                 ),
                                 if (_errorMessage != null) ...[
                                   const SizedBox(height: 14),
@@ -206,32 +215,45 @@ class _LoginScreenState extends State<LoginScreen>
                                   height: 52,
                                   child: ElevatedButton(
                                     onPressed: _loading ? null : _login,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor:
+                                          GrowMateTheme.harvestOrange,
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(14)),
+                                      elevation: 0,
+                                    ),
                                     child: _loading
                                         ? const SizedBox(
                                             width: 20,
                                             height: 20,
-                                            child:
-                                                CircularProgressIndicator(
-                                              color: Colors.white,
-                                              strokeWidth: 2,
-                                            ),
+                                            child: CircularProgressIndicator(
+                                                color: Colors.white,
+                                                strokeWidth: 2),
                                           )
-                                        : Text(L.tr(
-                                            'Sign In', 'ಸೈನ್ ಇನ್')),
+                                        : Text(
+                                            L.tr('Sign In', 'ಸೈನ್ ಇನ್'),
+                                            style: TextStyle(
+                                              fontFamily: 'Inter',
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w700,
+                                              color: Colors.white,
+                                            ),
+                                          ),
                                   ),
                                 ),
                                 const SizedBox(height: 20),
                                 Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
                                       L.tr("Don't have an account? ",
                                           "ಖಾತೆ ಇಲ್ಲವೇ? "),
                                       style: const TextStyle(
-                                          fontSize: 13,
-                                          color:
-                                              GrowMateTheme.textSecondary),
+                                        fontFamily: 'Inter',
+                                        fontSize: 13,
+                                        color: GrowMateTheme.textSecondary,
+                                      ),
                                     ),
                                     GestureDetector(
                                       onTap: () => Navigator.of(context)
@@ -239,10 +261,10 @@ class _LoginScreenState extends State<LoginScreen>
                                       child: Text(
                                         L.tr('Register', 'ನೋಂದಣಿ'),
                                         style: const TextStyle(
+                                          fontFamily: 'Inter',
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,
-                                          color:
-                                              GrowMateTheme.primaryGreen,
+                                          color: GrowMateTheme.primaryGreen,
                                         ),
                                       ),
                                     ),
@@ -264,6 +286,62 @@ class _LoginScreenState extends State<LoginScreen>
       ),
     );
   }
+
+  Widget _premiumField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    bool obscure = false,
+    TextInputType? keyboardType,
+    int? maxLength,
+    List<TextInputFormatter>? inputFormatters,
+    Widget? suffixIcon,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscure,
+      keyboardType: keyboardType,
+      maxLength: maxLength,
+      inputFormatters: inputFormatters,
+      validator: validator,
+      style: TextStyle(
+        fontFamily: 'Inter',
+        fontSize: 15,
+        fontWeight: FontWeight.w500,
+        color: GrowMateTheme.textPrimary,
+      ),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle:
+            TextStyle(fontFamily: 'Inter', color: GrowMateTheme.textSecondary),
+        prefixIcon: Icon(icon, color: GrowMateTheme.primaryGreen, size: 20),
+        suffixIcon: suffixIcon,
+        counterText: '',
+        filled: true,
+        fillColor: const Color(0xFFF8F9FC),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: const Color(0xFFE8E8E8)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide:
+              BorderSide(color: GrowMateTheme.primaryGreen, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: GrowMateTheme.harvestOrange),
+        ),
+      ),
+    );
+  }
 }
 
 class _ErrorBanner extends StatelessWidget {
@@ -276,19 +354,19 @@ class _ErrorBanner extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: GrowMateTheme.harvestOrange.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
             color: GrowMateTheme.harvestOrange.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline,
+          Icon(Icons.info_outline,
               color: GrowMateTheme.harvestOrange, size: 16),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               message,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 color: GrowMateTheme.harvestOrange,
                 fontFamily: 'Inter',

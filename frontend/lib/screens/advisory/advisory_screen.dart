@@ -90,7 +90,7 @@ class _AdvisoryScreenState extends State<AdvisoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: GrowMateTheme.backgroundCream,
+      backgroundColor: const Color(0xFFF5F6FA),
       body: NestedScrollView(
         headerSliverBuilder: (ctx, innerScrolled) => [
           _AdvisoryAppBar(advisory: _advisory),
