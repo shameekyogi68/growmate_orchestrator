@@ -402,14 +402,13 @@ class _ProfileScreenState extends State<ProfileScreen>
           child: Column(
             children: [
               // Avatar
-              SizedBox(
-                width: 80,
-                height: 80,
-                child: ClipOval(
-                  child: Image.asset(
-                    'assets/icons/Farmer_Avatar.png',
-                    fit: BoxFit.cover,
-                  ),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(18),
+                child: Image.asset(
+                  'assets/icons/Farmer_Avatar.png',
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.cover,
                 ),
               ),
               const SizedBox(height: 12),
