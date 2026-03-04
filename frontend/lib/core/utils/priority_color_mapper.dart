@@ -10,7 +10,7 @@ class PriorityColorMapper {
   static Color forPriorityLevel(String? priorityLevel) {
     switch (priorityLevel?.toUpperCase()) {
       case 'CRITICAL':
-        return GrowMateTheme.dangerRed;
+        return GrowMateTheme.harvestOrange;
       case 'HIGH':
         return GrowMateTheme.warningAmber;
       case 'MEDIUM':
@@ -24,7 +24,7 @@ class PriorityColorMapper {
   static Color forRiskLevel(String? riskLevel) {
     switch (riskLevel?.toUpperCase()) {
       case 'HIGH':
-        return GrowMateTheme.dangerRed;
+        return GrowMateTheme.harvestOrange;
       case 'MEDIUM':
         return GrowMateTheme.warningAmber;
       case 'LOW':
@@ -50,7 +50,7 @@ class PriorityColorMapper {
   static Color forConfidenceScore(double score) {
     if (score > 0.8) return GrowMateTheme.successGreen;
     if (score >= 0.5) return GrowMateTheme.warningAmber;
-    return GrowMateTheme.dangerRed;
+    return GrowMateTheme.harvestOrange;
   }
 
   /// Maps backend `confidence_score` to human-readable label.

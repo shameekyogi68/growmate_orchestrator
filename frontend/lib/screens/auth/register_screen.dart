@@ -222,18 +222,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: GrowMateTheme.dangerRed
+                                    color: GrowMateTheme.harvestOrange
                                         .withValues(alpha: 0.08),
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
-                                        color: GrowMateTheme.dangerRed
+                                        color: GrowMateTheme.harvestOrange
                                             .withValues(alpha: 0.3)),
                                   ),
                                   child: Text(
                                     _errorMessage!,
                                     style: const TextStyle(
                                         fontSize: 12,
-                                        color: GrowMateTheme.dangerRed),
+                                        color: GrowMateTheme.harvestOrange),
                                   ),
                                 ),
                               ],

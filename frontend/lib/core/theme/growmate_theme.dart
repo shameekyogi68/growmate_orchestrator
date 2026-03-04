@@ -17,7 +17,7 @@ class GrowMateTheme {
   // ─── Status Colors (MUST match backend color_code values) ─────────────────
   static const Color successGreen = Color(0xFF10B981); // LOW risk / healthy
   static const Color warningAmber = Color(0xFFF59E0B); // HIGH / partial
-  static const Color dangerRed = Color(0xFFEF4444);    // CRITICAL / degraded
+  static const Color dangerRed = Color(0xFFE65100);    // CRITICAL / degraded (matches harvestOrange)
   static const Color infoBlue = Color(0xFF1565C0);     // MEDIUM risk
 
   // ─── Brand Gradient ───────────────────────────────────────────────────────
@@ -65,7 +65,7 @@ class GrowMateTheme {
           primaryContainer: Color(0xFFE8F5E9),
           secondary: secondaryOrange,
           secondaryContainer: Color(0xFFFFF3E0),
-          error: dangerRed,
+          error: harvestOrange,
           surface: surfaceWhite,
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
@@ -118,7 +118,7 @@ class GrowMateTheme {
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: dangerRed),
+            borderSide: const BorderSide(color: harvestOrange),
           ),
           labelStyle: const TextStyle(
             fontFamily: 'Inter',

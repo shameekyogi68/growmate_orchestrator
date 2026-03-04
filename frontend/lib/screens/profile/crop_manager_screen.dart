@@ -85,7 +85,7 @@ class _CropManagerScreenState extends State<CropManagerScreen>
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(children: [
-          Icon(Icons.delete_outline, color: GrowMateTheme.dangerRed, size: 22),
+          Icon(Icons.delete_outline, color: GrowMateTheme.harvestOrange, size: 22),
           const SizedBox(width: 10),
           Text(L.tr('Delete Crop?', 'ಬೆಳೆಯನ್ನು ಅಳಿಸುವುದೇ?'),
               style:
@@ -103,7 +103,7 @@ class _CropManagerScreenState extends State<CropManagerScreen>
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: GrowMateTheme.dangerRed,
+              backgroundColor: GrowMateTheme.harvestOrange,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
             ),
@@ -437,26 +437,26 @@ class _CropManagerScreenState extends State<CropManagerScreen>
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: GrowMateTheme.dangerRed.withValues(alpha: 0.06),
+        color: GrowMateTheme.harvestOrange.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-            color: GrowMateTheme.dangerRed.withValues(alpha: 0.25)),
+            color: GrowMateTheme.harvestOrange.withValues(alpha: 0.25)),
       ),
       child: Row(children: [
         Icon(Icons.error_outline,
-            color: GrowMateTheme.dangerRed, size: 18),
+            color: GrowMateTheme.harvestOrange, size: 18),
         const SizedBox(width: 10),
         Expanded(
           child: Text(_error!,
               style: TextStyle(
-                  color: GrowMateTheme.dangerRed,
+                  color: GrowMateTheme.harvestOrange,
                   fontSize: 12,
                   fontFamily: 'Inter')),
         ),
         GestureDetector(
           onTap: () => setState(() => _error = null),
           child: Icon(Icons.close,
-              color: GrowMateTheme.dangerRed, size: 16),
+              color: GrowMateTheme.harvestOrange, size: 16),
         ),
       ]),
     );
@@ -634,10 +634,10 @@ class _CropCard extends StatelessWidget {
               value: 'delete',
               child: Row(children: [
                 Icon(Icons.delete_outline,
-                    size: 18, color: GrowMateTheme.dangerRed),
+                    size: 18, color: GrowMateTheme.harvestOrange),
                 const SizedBox(width: 8),
                 Text(L.tr('Delete', 'ಅಳಿಸಿ'),
-                    style: TextStyle(color: GrowMateTheme.dangerRed)),
+                    style: TextStyle(color: GrowMateTheme.harvestOrange)),
               ]),
             ),
           ],
@@ -869,7 +869,7 @@ class _AddCropSheetState extends State<_AddCropSheet> {
                       ? Center(
                           child: Text(_error!,
                               style: TextStyle(
-                                  color: GrowMateTheme.dangerRed)))
+                                  color: GrowMateTheme.harvestOrange)))
                       : _allCropsData.isEmpty
                           ? Center(
                               child: Text(
@@ -1438,7 +1438,7 @@ class _AddCropSheetState extends State<_AddCropSheet> {
               padding: const EdgeInsets.only(bottom: 8.0),
               child: Text(_error!,
                   style: TextStyle(
-                      color: GrowMateTheme.dangerRed,
+                      color: GrowMateTheme.harvestOrange,
                       fontSize: 13)),
             ),
           SizedBox(

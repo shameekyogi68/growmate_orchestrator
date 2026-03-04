@@ -109,7 +109,7 @@ class _QuickPinScreenState extends State<QuickPinScreen> {
                       ),
                       if (_error != null) ...[
                         const SizedBox(height: 12),
-                        Text(_error!, style: const TextStyle(color: GrowMateTheme.dangerRed, fontSize: 13)),
+                        Text(_error!, style: const TextStyle(color: GrowMateTheme.harvestOrange, fontSize: 13)),
                       ],
                       const SizedBox(height: 28),
                       if (_loading)

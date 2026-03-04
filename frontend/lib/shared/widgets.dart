@@ -238,14 +238,14 @@ class DegradedBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: GrowMateTheme.dangerRed.withValues(alpha: 0.08),
+        color: GrowMateTheme.harvestOrange.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: GrowMateTheme.dangerRed.withValues(alpha: 0.3)),
+        border: Border.all(color: GrowMateTheme.harvestOrange.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
           const Icon(Icons.signal_wifi_statusbar_connected_no_internet_4,
-              color: GrowMateTheme.dangerRed, size: 18),
+              color: GrowMateTheme.harvestOrange, size: 18),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -256,7 +256,7 @@ class DegradedBanner extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    color: GrowMateTheme.dangerRed,
+                    color: GrowMateTheme.harvestOrange,
                     letterSpacing: 0.5,
                     fontFamily: 'Inter',
                   ),

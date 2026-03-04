@@ -275,22 +275,22 @@ class _ErrorBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: GrowMateTheme.dangerRed.withValues(alpha: 0.08),
+        color: GrowMateTheme.harvestOrange.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-            color: GrowMateTheme.dangerRed.withValues(alpha: 0.3)),
+            color: GrowMateTheme.harvestOrange.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
           const Icon(Icons.error_outline,
-              color: GrowMateTheme.dangerRed, size: 16),
+              color: GrowMateTheme.harvestOrange, size: 16),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               message,
               style: const TextStyle(
                 fontSize: 12,
-                color: GrowMateTheme.dangerRed,
+                color: GrowMateTheme.harvestOrange,
                 fontFamily: 'Inter',
               ),
             ),

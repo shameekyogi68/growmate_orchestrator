@@ -223,7 +223,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(children: [
-          Icon(Icons.logout, color: GrowMateTheme.dangerRed, size: 22),
+          Icon(Icons.logout, color: GrowMateTheme.harvestOrange, size: 22),
           SizedBox(width: 10),
           Text(L.tr('Sign Out', 'ಸೈನ್ ಔಟ್'),
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
@@ -243,7 +243,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: GrowMateTheme.dangerRed,
+              backgroundColor: GrowMateTheme.harvestOrange,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
             ),
@@ -679,7 +679,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             const SizedBox(height: 8),
             Text(_pinError!,
                 style:
-                    TextStyle(fontSize: 12, color: GrowMateTheme.dangerRed)),
+                    TextStyle(fontSize: 12, color: GrowMateTheme.harvestOrange)),
           ],
           const SizedBox(height: 14),
           Row(children: [
@@ -857,17 +857,17 @@ class _ProfileScreenState extends State<ProfileScreen>
       height: 48,
       child: OutlinedButton.icon(
         onPressed: _logout,
-        icon: Icon(Icons.logout, color: GrowMateTheme.dangerRed, size: 20),
+        icon: Icon(Icons.logout, color: GrowMateTheme.harvestOrange, size: 20),
         label: Text(
           L.tr('Sign Out', 'ಸೈನ್ ಔಟ್'),
           style: TextStyle(
-              color: GrowMateTheme.dangerRed, fontWeight: FontWeight.w600),
+              color: GrowMateTheme.harvestOrange, fontWeight: FontWeight.w600),
         ),
         style: OutlinedButton.styleFrom(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           side: BorderSide(
-              color: GrowMateTheme.dangerRed.withValues(alpha: 0.4)),
+              color: GrowMateTheme.harvestOrange.withValues(alpha: 0.4)),
         ),
       ),
     );
@@ -879,26 +879,26 @@ class _ProfileScreenState extends State<ProfileScreen>
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: GrowMateTheme.dangerRed.withValues(alpha: 0.06),
+        color: GrowMateTheme.harvestOrange.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-            color: GrowMateTheme.dangerRed.withValues(alpha: 0.25)),
+            color: GrowMateTheme.harvestOrange.withValues(alpha: 0.25)),
       ),
       child: Row(children: [
         Icon(Icons.error_outline,
-            color: GrowMateTheme.dangerRed, size: 18),
+            color: GrowMateTheme.harvestOrange, size: 18),
         const SizedBox(width: 10),
         Expanded(
           child: Text(_error!,
               style: TextStyle(
-                  color: GrowMateTheme.dangerRed,
+                  color: GrowMateTheme.harvestOrange,
                   fontSize: 12,
                   fontFamily: 'Inter')),
         ),
         GestureDetector(
           onTap: () => setState(() => _error = null),
           child: Icon(Icons.close,
-              color: GrowMateTheme.dangerRed, size: 16),
+              color: GrowMateTheme.harvestOrange, size: 16),
         ),
       ]),
     );

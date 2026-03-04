@@ -211,7 +211,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: GrowMateTheme.dangerRed.withValues(alpha: 0.95),
+                  color: GrowMateTheme.harvestOrange.withValues(alpha: 0.95),
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: GrowMateTheme.elevatedShadow,
                 ),
