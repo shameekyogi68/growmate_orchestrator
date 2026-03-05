@@ -96,11 +96,21 @@ class _ProfileScreenState extends State<ProfileScreen>
         return;
       }
       debugPrint('API Error: ${e.detail}');
-      if (mounted) setState(() => _error = L.tr('Oops! Something went wrong. Let\'s try again.', 'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.'));
+      if (mounted)
+        setState(
+          () => _error = L.tr(
+            'Oops! Something went wrong. Let\'s try again.',
+            'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+          ),
+        );
     } catch (_) {
       if (mounted) {
-        setState(() => _error = L.tr(
-            'Could not load profile.', 'ಪ್ರೊಫೈಲ್ ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.'));
+        setState(
+          () => _error = L.tr(
+            'Could not load profile.',
+            'ಪ್ರೊಫೈಲ್ ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.',
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -110,14 +120,18 @@ class _ProfileScreenState extends State<ProfileScreen>
   Future<void> _saveProfile() async {
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) {
-      setState(() =>
-          _error = L.tr('Name cannot be empty.', 'ಹೆಸರು ಖಾಲಿ ಇರಬಾರದು.'));
+      setState(
+        () => _error = L.tr('Name cannot be empty.', 'ಹೆಸರು ಖಾಲಿ ಇರಬಾರದು.'),
+      );
       return;
     }
     if (name.length < 2) {
-      setState(() => _error = L.tr(
+      setState(
+        () => _error = L.tr(
           'Name must be at least 2 characters.',
-          'ಹೆಸರು ಕನಿಷ್ಠ 2 ಅಕ್ಷರಗಳಾಗಿರಬೇಕು.'));
+          'ಹೆಸರು ಕನಿಷ್ಠ 2 ಅಕ್ಷರಗಳಾಗಿರಬೇಕು.',
+        ),
+      );
       return;
     }
     if (!mounted) return;
@@ -142,22 +156,32 @@ class _ProfileScreenState extends State<ProfileScreen>
         setState(() => _hasUnsavedChanges = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                Text(L.tr('✅ Profile saved', '✅ ಪ್ರೊಫೈಲ್ ಉಳಿಸಲಾಗಿದೆ')),
+            content: Text(L.tr('✅ Profile saved', '✅ ಪ್ರೊಫೈಲ್ ಉಳಿಸಲಾಗಿದೆ')),
             backgroundColor: GrowMateTheme.successGreen,
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
     } on ApiException catch (e) {
       debugPrint('API Error: ${e.detail}');
-      if (mounted) setState(() => _error = L.tr('Oops! Something went wrong. Let\'s try again.', 'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.'));
+      if (mounted)
+        setState(
+          () => _error = L.tr(
+            'Oops! Something went wrong. Let\'s try again.',
+            'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+          ),
+        );
     } catch (_) {
       if (mounted) {
-        setState(() => _error = L.tr('Save failed. Check your connection.',
-            'ಉಳಿಸಲು ವಿಫಲ. ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ.'));
+        setState(
+          () => _error = L.tr(
+            'Save failed. Check your connection.',
+            'ಉಳಿಸಲು ವಿಫಲ. ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ.',
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -169,18 +193,28 @@ class _ProfileScreenState extends State<ProfileScreen>
     final confirmPin = _confirmPinCtrl.text.trim();
     setState(() => _pinError = null);
     if (newPin.length != 4) {
-      setState(() => _pinError = L.tr(
-          'New PIN must be 4 digits.', 'ಹೊಸ ಪಿನ್ 4 ಅಂಕಿಗಳಾಗಿರಬೇಕು.'));
+      setState(
+        () => _pinError = L.tr(
+          'New PIN must be 4 digits.',
+          'ಹೊಸ ಪಿನ್ 4 ಅಂಕಿಗಳಾಗಿರಬೇಕು.',
+        ),
+      );
       return;
     }
     if (!RegExp(r'^\d{4}$').hasMatch(newPin)) {
-      setState(() => _pinError = L.tr(
-          'PIN must contain only digits.', 'ಪಿನ್ ಅಂಕಿಗಳನ್ನು ಮಾತ್ರ ಹೊಂದಿರಬೇಕು.'));
+      setState(
+        () => _pinError = L.tr(
+          'PIN must contain only digits.',
+          'ಪಿನ್ ಅಂಕಿಗಳನ್ನು ಮಾತ್ರ ಹೊಂದಿರಬೇಕು.',
+        ),
+      );
       return;
     }
     if (newPin != confirmPin) {
-      setState(() => _pinError =
-          L.tr('PINs do not match.', 'ಪಿನ್‌ಗಳು ಹೊಂದಿಕೆಯಾಗಿಲ್ಲ.'));
+      setState(
+        () =>
+            _pinError = L.tr('PINs do not match.', 'ಪಿನ್‌ಗಳು ಹೊಂದಿಕೆಯಾಗಿಲ್ಲ.'),
+      );
       return;
     }
     setState(() => _savingPin = true);
@@ -198,18 +232,27 @@ class _ProfileScreenState extends State<ProfileScreen>
             content: Text(L.tr('🔒 PIN updated', '🔒 ಪಿನ್ ನವೀಕರಿಸಲಾಗಿದೆ')),
             backgroundColor: GrowMateTheme.successGreen,
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
     } on ApiException catch (e) {
       debugPrint('API Error: ${e.detail}');
-      if (mounted) setState(() => _pinError = L.tr('Oops! Something went wrong. Let\'s try again.', 'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.'));
+      if (mounted)
+        setState(
+          () => _pinError = L.tr(
+            'Oops! Something went wrong. Let\'s try again.',
+            'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+          ),
+        );
     } catch (_) {
       if (mounted) {
-        setState(() => _pinError =
-            L.tr('PIN update failed.', 'ಪಿನ್ ನವೀಕರಣ ವಿಫಲವಾಗಿದೆ.'));
+        setState(
+          () =>
+              _pinError = L.tr('PIN update failed.', 'ಪಿನ್ ನವೀಕರಣ ವಿಫಲವಾಗಿದೆ.'),
+        );
       }
     } finally {
       if (mounted) setState(() => _savingPin = false);
@@ -220,14 +263,17 @@ class _ProfileScreenState extends State<ProfileScreen>
     final shouldLogout = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(children: [
-          Icon(Icons.logout, color: GrowMateTheme.harvestOrange, size: 22),
-          SizedBox(width: 10),
-          Text(L.tr('Sign Out', 'ಸೈನ್ ಔಟ್'),
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-        ]),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(Icons.logout, color: GrowMateTheme.harvestOrange, size: 22),
+            SizedBox(width: 10),
+            Text(
+              L.tr('Sign Out', 'ಸೈನ್ ಔಟ್'),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
         content: Text(
           L.tr(
             'Are you sure you want to sign out? You will need your phone number and PIN to sign back in.',
@@ -245,10 +291,13 @@ class _ProfileScreenState extends State<ProfileScreen>
             style: ElevatedButton.styleFrom(
               backgroundColor: GrowMateTheme.harvestOrange,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-            child: Text(L.tr('Sign Out', 'ಸೈನ್ ಔಟ್'),
-                style: TextStyle(color: Colors.white)),
+            child: Text(
+              L.tr('Sign Out', 'ಸೈನ್ ಔಟ್'),
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -292,11 +341,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                           const SizedBox(height: 12),
                         ],
                         // Personal Info
-                        _buildStaggeredCard(
-                          0.0,
-                          0.3,
-                          _buildPersonalSection(),
-                        ),
+                        _buildStaggeredCard(0.0, 0.3, _buildPersonalSection()),
                         const SizedBox(height: 12),
                         // Location
                         _buildStaggeredCard(
@@ -306,29 +351,17 @@ class _ProfileScreenState extends State<ProfileScreen>
                         ),
                         const SizedBox(height: 12),
                         // Security
-                        _buildStaggeredCard(
-                          0.3,
-                          0.6,
-                          _buildSecuritySection(),
-                        ),
+                        _buildStaggeredCard(0.3, 0.6, _buildSecuritySection()),
                         const SizedBox(height: 12),
                         // Farm / Crops
-                        _buildStaggeredCard(
-                          0.45,
-                          0.75,
-                          _buildFarmSection(),
-                        ),
+                        _buildStaggeredCard(0.45, 0.75, _buildFarmSection()),
                         const SizedBox(height: 16),
                         // Save button
                         if (_hasUnsavedChanges)
                           _buildStaggeredCard(0.6, 0.85, _buildSaveButton()),
                         if (_hasUnsavedChanges) const SizedBox(height: 12),
                         // Logout
-                        _buildStaggeredCard(
-                          0.7,
-                          0.95,
-                          _buildLogoutButton(),
-                        ),
+                        _buildStaggeredCard(0.7, 0.95, _buildLogoutButton()),
                         const SizedBox(height: 16),
                         // version
                         FadeTransition(
@@ -338,8 +371,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                             style: TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 11,
-                              color: GrowMateTheme.textSecondary
-                                  .withValues(alpha: 0.5),
+                              color: GrowMateTheme.textSecondary.withValues(
+                                alpha: 0.5,
+                              ),
                             ),
                           ),
                         ),
@@ -409,8 +443,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                 borderRadius: BorderRadius.circular(18),
                 child: Image.asset(
                   'assets/icons/Farmer_Avatar.png',
-                  width: 80,
-                  height: 80,
+                  width: 70,
+                  height: 70,
                   fit: BoxFit.cover,
                 ),
               ),
@@ -471,24 +505,28 @@ class _ProfileScreenState extends State<ProfileScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [
-            Container(
-              padding: const EdgeInsets.all(7),
-              decoration: BoxDecoration(
-                color: GrowMateTheme.primaryGreen.withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(10),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: GrowMateTheme.primaryGreen.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: GrowMateTheme.primaryGreen, size: 18),
               ),
-              child: Icon(icon, color: GrowMateTheme.primaryGreen, size: 18),
-            ),
-            const SizedBox(width: 10),
-            Text(title,
+              const SizedBox(width: 10),
+              Text(
+                title,
                 style: const TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                   color: GrowMateTheme.textPrimary,
-                )),
-          ]),
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 16),
           ...children,
         ],
@@ -532,8 +570,8 @@ class _ProfileScreenState extends State<ProfileScreen>
           onTap: () async {
             final loc = await Navigator.of(context).push<LatLng>(
               MaterialPageRoute(
-                builder: (_) => LocationPickerScreen(
-                    initialLocation: _selectedLocation),
+                builder: (_) =>
+                    LocationPickerScreen(initialLocation: _selectedLocation),
               ),
             );
             if (loc != null && mounted) {
@@ -556,53 +594,60 @@ class _ProfileScreenState extends State<ProfileScreen>
                     : const Color(0xFFE8E8E8),
               ),
             ),
-            child: Row(children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color:
-                      GrowMateTheme.primaryGreen.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(10),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: GrowMateTheme.primaryGreen.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    Icons.map_outlined,
+                    color: GrowMateTheme.primaryGreen,
+                    size: 20,
+                  ),
                 ),
-                child: Icon(Icons.map_outlined,
-                    color: GrowMateTheme.primaryGreen, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      hasLoc
-                          ? L.tr('Location Set', 'ಸ್ಥಳ ಹೊಂದಿಸಲಾಗಿದೆ')
-                          : L.tr(
-                              'Set Farm Location', 'ಫಾರ್ಮ್ ಸ್ಥಳ ಹೊಂದಿಸಿ'),
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: hasLoc
-                            ? GrowMateTheme.primaryGreen
-                            : GrowMateTheme.textPrimary,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        hasLoc
+                            ? L.tr('Location Set', 'ಸ್ಥಳ ಹೊಂದಿಸಲಾಗಿದೆ')
+                            : L.tr('Set Farm Location', 'ಫಾರ್ಮ್ ಸ್ಥಳ ಹೊಂದಿಸಿ'),
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: hasLoc
+                              ? GrowMateTheme.primaryGreen
+                              : GrowMateTheme.textPrimary,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      hasLoc
-                          ? '${_selectedLocation!.latitude.toStringAsFixed(4)}, ${_selectedLocation!.longitude.toStringAsFixed(4)}'
-                          : L.tr('Tap to open map',
-                              'ನಕ್ಷೆ ತೆರೆಯಲು ಟ್ಯಾಪ್ ಮಾಡಿ'),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: GrowMateTheme.textSecondary,
+                      const SizedBox(height: 2),
+                      Text(
+                        hasLoc
+                            ? '${_selectedLocation!.latitude.toStringAsFixed(4)}, ${_selectedLocation!.longitude.toStringAsFixed(4)}'
+                            : L.tr(
+                                'Tap to open map',
+                                'ನಕ್ಷೆ ತೆರೆಯಲು ಟ್ಯಾಪ್ ಮಾಡಿ',
+                              ),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: GrowMateTheme.textSecondary,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              Icon(Icons.chevron_right_rounded,
-                  color: GrowMateTheme.textSecondary),
-            ]),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: GrowMateTheme.textSecondary,
+                ),
+              ],
+            ),
           ),
         ),
       ],
@@ -627,24 +672,31 @@ class _ProfileScreenState extends State<ProfileScreen>
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: const Color(0xFFE8E8E8)),
               ),
-              child: Row(children: [
-                Icon(Icons.lock_outline,
-                    color: GrowMateTheme.harvestOrange, size: 20),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    L.tr('Change PIN', 'ಪಿನ್ ಬದಲಾಯಿಸಿ'),
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: GrowMateTheme.textPrimary,
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.lock_outline,
+                    color: GrowMateTheme.harvestOrange,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      L.tr('Change PIN', 'ಪಿನ್ ಬದಲಾಯಿಸಿ'),
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: GrowMateTheme.textPrimary,
+                      ),
                     ),
                   ),
-                ),
-                Icon(Icons.chevron_right_rounded,
-                    color: GrowMateTheme.textSecondary),
-              ]),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: GrowMateTheme.textSecondary,
+                  ),
+                ],
+              ),
             ),
           )
         else ...[
@@ -677,55 +729,73 @@ class _ProfileScreenState extends State<ProfileScreen>
           ),
           if (_pinError != null) ...[
             const SizedBox(height: 8),
-            Text(_pinError!,
-                style:
-                    TextStyle(fontSize: 12, color: GrowMateTheme.harvestOrange)),
+            Text(
+              _pinError!,
+              style: TextStyle(
+                fontSize: 12,
+                color: GrowMateTheme.harvestOrange,
+              ),
+            ),
           ],
           const SizedBox(height: 14),
-          Row(children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => setState(() {
-                  _showPinSection = false;
-                  _pinError = null;
-                  _newPinCtrl.clear();
-                  _confirmPinCtrl.clear();
-                  _currentPinCtrl.clear();
-                }),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  side: BorderSide(color: GrowMateTheme.textSecondary.withValues(alpha: 0.3)),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => setState(() {
+                    _showPinSection = false;
+                    _pinError = null;
+                    _newPinCtrl.clear();
+                    _confirmPinCtrl.clear();
+                    _currentPinCtrl.clear();
+                  }),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    side: BorderSide(
+                      color: GrowMateTheme.textSecondary.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Text(
+                    L.tr('Cancel', 'ರದ್ದುಮಾಡಿ'),
+                    style: TextStyle(color: GrowMateTheme.textSecondary),
+                  ),
                 ),
-                child: Text(L.tr('Cancel', 'ರದ್ದುಮಾಡಿ'),
-                    style: TextStyle(color: GrowMateTheme.textSecondary)),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: _savingPin ? null : _changePin,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: GrowMateTheme.harvestOrange,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  elevation: 0,
-                ),
-                child: _savingPin
-                    ? SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                            color: Colors.white, strokeWidth: 2))
-                    : Text(L.tr('Update', 'ನವೀಕರಿಸಿ'),
-                        style: TextStyle(
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _savingPin ? null : _changePin,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: GrowMateTheme.harvestOrange,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: _savingPin
+                      ? SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
                             color: Colors.white,
-                            fontWeight: FontWeight.w600)),
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Text(
+                          L.tr('Update', 'ನವೀಕರಿಸಿ'),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                ),
               ),
-            ),
-          ]),
+            ],
+          ),
         ],
       ],
     );
@@ -745,57 +815,70 @@ class _ProfileScreenState extends State<ProfileScreen>
               color: GrowMateTheme.primaryGreen.withValues(alpha: 0.04),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                  color:
-                      GrowMateTheme.primaryGreen.withValues(alpha: 0.18)),
-            ),
-            child: Row(children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color:
-                      GrowMateTheme.primaryGreen.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(Icons.eco_outlined,
-                    color: GrowMateTheme.primaryGreen, size: 20),
+                color: GrowMateTheme.primaryGreen.withValues(alpha: 0.18),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(L.tr('Active Crop', 'ಸಕ್ರಿಯ ಬೆಳೆ'),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: GrowMateTheme.primaryGreen.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    Icons.eco_outlined,
+                    color: GrowMateTheme.primaryGreen,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        L.tr('Active Crop', 'ಸಕ್ರಿಯ ಬೆಳೆ'),
                         style: TextStyle(
-                            fontSize: 11,
-                            color: GrowMateTheme.textSecondary)),
-                    Text(_profile!.activeCrop!,
+                          fontSize: 11,
+                          color: GrowMateTheme.textSecondary,
+                        ),
+                      ),
+                      Text(
+                        _profile!.activeCrop!,
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
                           color: GrowMateTheme.textPrimary,
-                        )),
-                  ],
-                ),
-              ),
-              GestureDetector(
-                onTap: () => AppShell.switchTab(0),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color:
-                        GrowMateTheme.primaryGreen.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ],
                   ),
-                  child: Text(L.tr('Change', 'ಬದಲಾಯಿಸಿ'),
-                      style: TextStyle(
-                          fontSize: 12,
-                          color: GrowMateTheme.primaryGreen,
-                          fontWeight: FontWeight.w600)),
                 ),
-              ),
-            ]),
+                GestureDetector(
+                  onTap: () => AppShell.switchTab(0),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: GrowMateTheme.primaryGreen.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      L.tr('Change', 'ಬದಲಾಯಿಸಿ'),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: GrowMateTheme.primaryGreen,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 12),
         ],
@@ -805,13 +888,14 @@ class _ProfileScreenState extends State<ProfileScreen>
           child: OutlinedButton.icon(
             onPressed: () => AppShell.switchTab(0),
             icon: Icon(Icons.grass_outlined, size: 20),
-            label: Text(L.tr(
-                'Manage My Crops', 'ನನ್ನ ಬೆಳೆಗಳನ್ನು ನಿರ್ವಹಿಸಿ')),
+            label: Text(L.tr('Manage My Crops', 'ನನ್ನ ಬೆಳೆಗಳನ್ನು ನಿರ್ವಹಿಸಿ')),
             style: OutlinedButton.styleFrom(
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
               side: BorderSide(
-                  color: GrowMateTheme.primaryGreen.withValues(alpha: 0.4)),
+                color: GrowMateTheme.primaryGreen.withValues(alpha: 0.4),
+              ),
             ),
           ),
         ),
@@ -832,17 +916,24 @@ class _ProfileScreenState extends State<ProfileScreen>
                 width: 18,
                 height: 18,
                 child: CircularProgressIndicator(
-                    color: Colors.white, strokeWidth: 2))
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
             : Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
         label: Text(
           L.tr('Save Changes', 'ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಿ'),
           style: TextStyle(
-              fontSize: 15, fontWeight: FontWeight.w700, color: Colors.white),
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: GrowMateTheme.primaryGreen,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
           elevation: 0,
         ),
       ),
@@ -861,13 +952,17 @@ class _ProfileScreenState extends State<ProfileScreen>
         label: Text(
           L.tr('Sign Out', 'ಸೈನ್ ಔಟ್'),
           style: TextStyle(
-              color: GrowMateTheme.harvestOrange, fontWeight: FontWeight.w600),
+            color: GrowMateTheme.harvestOrange,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         style: OutlinedButton.styleFrom(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
           side: BorderSide(
-              color: GrowMateTheme.harvestOrange.withValues(alpha: 0.4)),
+            color: GrowMateTheme.harvestOrange.withValues(alpha: 0.4),
+          ),
         ),
       ),
     );
@@ -882,39 +977,53 @@ class _ProfileScreenState extends State<ProfileScreen>
         color: GrowMateTheme.harvestOrange.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-            color: GrowMateTheme.harvestOrange.withValues(alpha: 0.25)),
+          color: GrowMateTheme.harvestOrange.withValues(alpha: 0.25),
+        ),
       ),
-      child: Row(children: [
-        Icon(Icons.error_outline,
-            color: GrowMateTheme.harvestOrange, size: 18),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(_error!,
+      child: Row(
+        children: [
+          Icon(
+            Icons.error_outline,
+            color: GrowMateTheme.harvestOrange,
+            size: 18,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              _error!,
               style: TextStyle(
-                  color: GrowMateTheme.harvestOrange,
-                  fontSize: 12,
-                  fontFamily: 'Inter')),
-        ),
-        GestureDetector(
-          onTap: () => setState(() => _error = null),
-          child: Icon(Icons.close,
-              color: GrowMateTheme.harvestOrange, size: 16),
-        ),
-      ]),
+                color: GrowMateTheme.harvestOrange,
+                fontSize: 12,
+                fontFamily: 'Inter',
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () => setState(() => _error = null),
+            child: Icon(
+              Icons.close,
+              color: GrowMateTheme.harvestOrange,
+              size: 16,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   // ─── Reusable Widgets ─────────────────────────────────────────────────────
 
   Widget _label(String text) {
-    return Text(text,
-        style: TextStyle(
-          fontFamily: 'Inter',
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: GrowMateTheme.textSecondary,
-          letterSpacing: 0.3,
-        ));
+    return Text(
+      text,
+      style: TextStyle(
+        fontFamily: 'Inter',
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: GrowMateTheme.textSecondary,
+        letterSpacing: 0.3,
+      ),
+    );
   }
 
   Widget _premiumTextField({
@@ -944,13 +1053,17 @@ class _ProfileScreenState extends State<ProfileScreen>
       ),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: GrowMateTheme.textSecondary.withValues(alpha: 0.5)),
+        hintStyle: TextStyle(
+          color: GrowMateTheme.textSecondary.withValues(alpha: 0.5),
+        ),
         prefixIcon: Icon(icon, color: iconColor, size: 20),
         counterText: '',
         filled: true,
         fillColor: const Color(0xFFF8F9FC),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -977,12 +1090,17 @@ class _ProfileScreenState extends State<ProfileScreen>
         color: GrowMateTheme.textPrimary,
       ),
       decoration: InputDecoration(
-        prefixIcon: Icon(Icons.translate_outlined,
-            color: GrowMateTheme.primaryGreen, size: 20),
+        prefixIcon: Icon(
+          Icons.translate_outlined,
+          color: GrowMateTheme.primaryGreen,
+          size: 20,
+        ),
         filled: true,
         fillColor: const Color(0xFFF8F9FC),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,

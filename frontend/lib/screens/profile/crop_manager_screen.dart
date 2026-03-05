@@ -49,10 +49,19 @@ class _CropManagerScreenState extends State<CropManagerScreen>
       _staggerCtrl.forward(from: 0.0);
     } on ApiException catch (e) {
       debugPrint('API Error: ${e.detail}');
-      setState(() => _error = L.tr('Oops! Something went wrong. Let\'s try again.', 'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.'));
+      setState(
+        () => _error = L.tr(
+          'Oops! Something went wrong. Let\'s try again.',
+          'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+        ),
+      );
     } catch (_) {
-      setState(() => _error = L.tr('Could not load crops.',
-          'ಬೆಳೆಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.'));
+      setState(
+        () => _error = L.tr(
+          'Could not load crops.',
+          'ಬೆಳೆಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.',
+        ),
+      );
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -67,11 +76,17 @@ class _CropManagerScreenState extends State<CropManagerScreen>
         debugPrint('API Error: ${e.detail}');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(L.tr('Oops! Something went wrong. Let\'s try again.', 'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.')),
+            content: Text(
+              L.tr(
+                'Oops! Something went wrong. Let\'s try again.',
+                'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+              ),
+            ),
             backgroundColor: GrowMateTheme.harvestOrange,
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
@@ -82,33 +97,45 @@ class _CropManagerScreenState extends State<CropManagerScreen>
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(children: [
-          Icon(Icons.delete_outline, color: GrowMateTheme.harvestOrange, size: 22),
-          const SizedBox(width: 10),
-          Text(L.tr('Delete Crop?', 'ಬೆಳೆಯನ್ನು ಅಳಿಸುವುದೇ?'),
-              style:
-                  TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-        ]),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(
+              Icons.delete_outline,
+              color: GrowMateTheme.harvestOrange,
+              size: 22,
+            ),
+            const SizedBox(width: 10),
+            Text(
+              L.tr('Delete Crop?', 'ಬೆಳೆಯನ್ನು ಅಳಿಸುವುದೇ?'),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
         content: Text(
-          L.tr('This will remove the crop from your profile.',
-              'ಇದು ನಿಮ್ಮ ಪ್ರೊಫೈಲ್‌ನಿಂದ ಬೆಳೆಯನ್ನು ತೆಗೆದುಹಾಕುತ್ತದೆ.'),
+          L.tr(
+            'This will remove the crop from your profile.',
+            'ಇದು ನಿಮ್ಮ ಪ್ರೊಫೈಲ್‌ನಿಂದ ಬೆಳೆಯನ್ನು ತೆಗೆದುಹಾಕುತ್ತದೆ.',
+          ),
           style: const TextStyle(fontSize: 14, height: 1.5),
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text(L.tr('Cancel', 'ರದ್ದುಮಾಡಿ'))),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(L.tr('Cancel', 'ರದ್ದುಮಾಡಿ')),
+          ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: GrowMateTheme.harvestOrange,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-            child: Text(L.tr('Delete', 'ಅಳಿಸಿ'),
-                style: TextStyle(color: Colors.white)),
+            child: Text(
+              L.tr('Delete', 'ಅಳಿಸಿ'),
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -122,11 +149,17 @@ class _CropManagerScreenState extends State<CropManagerScreen>
           debugPrint('API Error: ${e.detail}');
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(L.tr('Oops! Something went wrong. Let\'s try again.', 'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.')),
+              content: Text(
+                L.tr(
+                  'Oops! Something went wrong. Let\'s try again.',
+                  'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+                ),
+              ),
               backgroundColor: GrowMateTheme.harvestOrange,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           );
         }
@@ -156,13 +189,17 @@ class _CropManagerScreenState extends State<CropManagerScreen>
               backgroundColor: GrowMateTheme.harvestOrange,
               elevation: 4,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
+                borderRadius: BorderRadius.circular(16),
+              ),
               icon: const Icon(Icons.add_rounded, color: Colors.white),
-              label: Text(L.tr('Add Crop', 'ಬೆಳೆ ಸೇರಿಸಿ'),
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontFamily: 'Inter')),
+              label: Text(
+                L.tr('Add Crop', 'ಬೆಳೆ ಸೇರಿಸಿ'),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontFamily: 'Inter',
+                ),
+              ),
             ),
     );
   }
@@ -220,8 +257,9 @@ class _CropManagerScreenState extends State<CropManagerScreen>
                     final interval = _crops.length > 1
                         ? i / _crops.length
                         : 0.0;
-                    final endInterval =
-                        _crops.length > 1 ? (i + 1) / _crops.length : 1.0;
+                    final endInterval = _crops.length > 1
+                        ? (i + 1) / _crops.length
+                        : 1.0;
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: _buildStaggeredCard(
@@ -266,7 +304,15 @@ class _CropManagerScreenState extends State<CropManagerScreen>
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
           child: Column(
             children: [
-              Icon(Icons.grass_rounded, color: Colors.white, size: 36),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(18),
+                child: Image.asset(
+                  'assets/icons/Crops_icon.png',
+                  width: 70,
+                  height: 70,
+                  fit: BoxFit.contain,
+                ),
+              ),
               const SizedBox(height: 8),
               Text(
                 L.tr('My Crops', 'ನನ್ನ ಬೆಳೆಗಳು'),
@@ -280,8 +326,9 @@ class _CropManagerScreenState extends State<CropManagerScreen>
               const SizedBox(height: 4),
               Text(
                 L.tr(
-                    'Manage your farm crops',
-                    'ನಿಮ್ಮ ಕೃಷಿ ಬೆಳೆಗಳನ್ನು ನಿರ್ವಹಿಸಿ'),
+                  'Manage your farm crops',
+                  'ನಿಮ್ಮ ಕೃಷಿ ಬೆಳೆಗಳನ್ನು ನಿರ್ವಹಿಸಿ',
+                ),
                 style: TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 13,
@@ -298,8 +345,7 @@ class _CropManagerScreenState extends State<CropManagerScreen>
   // ─── Summary Row ──────────────────────────────────────────────────────────
 
   Widget _buildSummaryRow() {
-    final primaryCrop =
-        _crops.where((c) => c.isPrimary).toList();
+    final primaryCrop = _crops.where((c) => c.isPrimary).toList();
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -329,9 +375,7 @@ class _CropManagerScreenState extends State<CropManagerScreen>
           ),
           _summaryChip(
             icon: Icons.star_rounded,
-            value: primaryCrop.isNotEmpty
-                ? primaryCrop.first.cropName
-                : '—',
+            value: primaryCrop.isNotEmpty ? primaryCrop.first.cropName : '—',
             label: L.tr('Primary', 'ಪ್ರಾಥಮಿಕ'),
             color: GrowMateTheme.harvestOrange,
           ),
@@ -362,12 +406,14 @@ class _CropManagerScreenState extends State<CropManagerScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label,
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 11,
-                      color: GrowMateTheme.textSecondary,
-                    )),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 11,
+                    color: GrowMateTheme.textSecondary,
+                  ),
+                ),
                 Text(
                   value,
                   style: TextStyle(
@@ -401,8 +447,11 @@ class _CropManagerScreenState extends State<CropManagerScreen>
                 color: GrowMateTheme.primaryGreen.withValues(alpha: 0.08),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.eco_outlined,
-                  size: 48, color: GrowMateTheme.primaryGreen),
+              child: Icon(
+                Icons.eco_outlined,
+                size: 48,
+                color: GrowMateTheme.primaryGreen,
+              ),
             ),
             const SizedBox(height: 20),
             Text(
@@ -416,8 +465,10 @@ class _CropManagerScreenState extends State<CropManagerScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              L.tr('Tap the button below to add your first crop',
-                  'ನಿಮ್ಮ ಮೊದಲ ಬೆಳೆಯನ್ನು ಸೇರಿಸಲು ಕೆಳಗಿನ ಬಟನ್ ಒತ್ತಿ'),
+              L.tr(
+                'Tap the button below to add your first crop',
+                'ನಿಮ್ಮ ಮೊದಲ ಬೆಳೆಯನ್ನು ಸೇರಿಸಲು ಕೆಳಗಿನ ಬಟನ್ ಒತ್ತಿ',
+              ),
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 13,
@@ -440,25 +491,37 @@ class _CropManagerScreenState extends State<CropManagerScreen>
         color: GrowMateTheme.harvestOrange.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-            color: GrowMateTheme.harvestOrange.withValues(alpha: 0.25)),
+          color: GrowMateTheme.harvestOrange.withValues(alpha: 0.25),
+        ),
       ),
-      child: Row(children: [
-        Icon(Icons.error_outline,
-            color: GrowMateTheme.harvestOrange, size: 18),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(_error!,
+      child: Row(
+        children: [
+          Icon(
+            Icons.error_outline,
+            color: GrowMateTheme.harvestOrange,
+            size: 18,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              _error!,
               style: TextStyle(
-                  color: GrowMateTheme.harvestOrange,
-                  fontSize: 12,
-                  fontFamily: 'Inter')),
-        ),
-        GestureDetector(
-          onTap: () => setState(() => _error = null),
-          child: Icon(Icons.close,
-              color: GrowMateTheme.harvestOrange, size: 16),
-        ),
-      ]),
+                color: GrowMateTheme.harvestOrange,
+                fontSize: 12,
+                fontFamily: 'Inter',
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () => setState(() => _error = null),
+            child: Icon(
+              Icons.close,
+              color: GrowMateTheme.harvestOrange,
+              size: 16,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -522,127 +585,162 @@ class _CropCard extends StatelessWidget {
         ],
         border: crop.isPrimary
             ? Border.all(
-                color:
-                    GrowMateTheme.primaryGreen.withValues(alpha: 0.4),
-                width: 1.5)
+                color: GrowMateTheme.primaryGreen.withValues(alpha: 0.4),
+                width: 1.5,
+              )
             : null,
       ),
       padding: const EdgeInsets.all(16),
-      child: Row(children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: crop.isPrimary
-                ? GrowMateTheme.primaryGreen.withValues(alpha: 0.10)
-                : const Color(0xFFF5F6FA),
-            borderRadius: BorderRadius.circular(12),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: crop.isPrimary
+                  ? GrowMateTheme.primaryGreen.withValues(alpha: 0.10)
+                  : const Color(0xFFF5F6FA),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: CropIcon(
+              icon: crop.icon,
+              color: crop.isPrimary
+                  ? GrowMateTheme.primaryGreen
+                  : GrowMateTheme.textSecondary,
+              size: 22,
+            ),
           ),
-          child: CropIcon(
-            icon: crop.icon,
-            color: crop.isPrimary
-                ? GrowMateTheme.primaryGreen
-                : GrowMateTheme.textSecondary,
-            size: 22,
-          ),
-        ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(children: [
-                Flexible(
-                  child: Text(crop.cropName,
-                      style: const TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: GrowMateTheme.textPrimary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
-                ),
-                if (crop.isPrimary) ...[
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: GrowMateTheme.primaryGreen
-                          .withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(L.tr('Primary', 'ಪ್ರಾಥಮಿಕ'),
-                        style: TextStyle(
-                          fontSize: 10,
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        crop.cropName,
+                        style: const TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 15,
                           fontWeight: FontWeight.w700,
-                          color: GrowMateTheme.primaryGreen,
-                        )),
-                  ),
-                ],
-              ]),
-              if (crop.variety != null) ...[
-                const SizedBox(height: 2),
-                Text(crop.variety!,
+                          color: GrowMateTheme.textPrimary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (crop.isPrimary) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: GrowMateTheme.primaryGreen.withValues(
+                            alpha: 0.10,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          L.tr('Primary', 'ಪ್ರಾಥಮಿಕ'),
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: GrowMateTheme.primaryGreen,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                if (crop.variety != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    crop.variety!,
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 12,
                       color: GrowMateTheme.textSecondary,
-                    )),
-              ],
-              if (crop.sowingDate != null) ...[
-                const SizedBox(height: 4),
-                Row(children: [
-                  Icon(Icons.calendar_today_outlined,
-                      size: 12, color: GrowMateTheme.textSecondary),
-                  const SizedBox(width: 4),
-                  Text(
-                    L.tr('Sown: ${crop.sowingDate}',
-                        'ಬಿತ್ತನೆ: ${crop.sowingDate}'),
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 11,
-                      color: GrowMateTheme.textSecondary,
                     ),
                   ),
-                ]),
+                ],
+                if (crop.sowingDate != null) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.calendar_today_outlined,
+                        size: 12,
+                        color: GrowMateTheme.textSecondary,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        L.tr(
+                          'Sown: ${crop.sowingDate}',
+                          'ಬಿತ್ತನೆ: ${crop.sowingDate}',
+                        ),
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 11,
+                          color: GrowMateTheme.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
+            ),
+          ),
+          PopupMenuButton<String>(
+            onSelected: (v) {
+              if (v == 'primary') onSetPrimary();
+              if (v == 'delete') onDelete();
+            },
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            icon: Icon(
+              Icons.more_vert_rounded,
+              color: GrowMateTheme.textSecondary,
+            ),
+            itemBuilder: (_) => [
+              if (!crop.isPrimary)
+                PopupMenuItem(
+                  value: 'primary',
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.star_rounded,
+                        size: 18,
+                        color: GrowMateTheme.harvestOrange,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(L.tr('Set as Primary', 'ಪ್ರಾಥಮಿಕವಾಗಿ ಹೊಂದಿಸಿ')),
+                    ],
+                  ),
+                ),
+              PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.delete_outline,
+                      size: 18,
+                      color: GrowMateTheme.harvestOrange,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      L.tr('Delete', 'ಅಳಿಸಿ'),
+                      style: TextStyle(color: GrowMateTheme.harvestOrange),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
-        ),
-        PopupMenuButton<String>(
-          onSelected: (v) {
-            if (v == 'primary') onSetPrimary();
-            if (v == 'delete') onDelete();
-          },
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          icon: Icon(Icons.more_vert_rounded,
-              color: GrowMateTheme.textSecondary),
-          itemBuilder: (_) => [
-            if (!crop.isPrimary)
-              PopupMenuItem(
-                value: 'primary',
-                child: Row(children: [
-                  Icon(Icons.star_rounded,
-                      size: 18, color: GrowMateTheme.harvestOrange),
-                  const SizedBox(width: 8),
-                  Text(L.tr('Set as Primary', 'ಪ್ರಾಥಮಿಕವಾಗಿ ಹೊಂದಿಸಿ')),
-                ]),
-              ),
-            PopupMenuItem(
-              value: 'delete',
-              child: Row(children: [
-                Icon(Icons.delete_outline,
-                    size: 18, color: GrowMateTheme.harvestOrange),
-                const SizedBox(width: 8),
-                Text(L.tr('Delete', 'ಅಳಿಸಿ'),
-                    style: TextStyle(color: GrowMateTheme.harvestOrange)),
-              ]),
-            ),
-          ],
-        ),
-      ]),
+        ],
+      ),
     );
   }
 }
@@ -713,11 +811,9 @@ class _AddCropSheetState extends State<_AddCropSheet> {
         final List<dynamic> crops = group['crops'] ?? [];
         for (var c in crops) {
           final identity = c['identity'] as Map<String, dynamic>?;
-          final cName = identity?['crop_name']?.toString() ??
-              c['name']?.toString() ??
-              '';
-          final cVariety =
-              identity?['variety_name']?.toString() ?? 'General';
+          final cName =
+              identity?['crop_name']?.toString() ?? c['name']?.toString() ?? '';
+          final cVariety = identity?['variety_name']?.toString() ?? 'General';
           final uniqueKey = '$cName-$cVariety';
           if (!existingNames.contains(uniqueKey)) {
             flattened.add(c as Map<String, dynamic>);
@@ -735,8 +831,9 @@ class _AddCropSheetState extends State<_AddCropSheet> {
       if (mounted) {
         setState(() {
           _error = L.tr(
-              'Discovery taking longer than expected. Please wait and retry.',
-              'ಅನ್ವೇಷಣೆಗೆ ಹೆಚ್ಚು ಸಮಯ ತೆಗೆದುಕೊಳ್ಳುತ್ತಿದೆ. ದಯವಿಟ್ಟು ಕಾಯಿರಿ ಮತ್ತು ಮರುಪ್ರಯತ್ನಿಸಿ.');
+            'Discovery taking longer than expected. Please wait and retry.',
+            'ಅನ್ವೇಷಣೆಗೆ ಹೆಚ್ಚು ಸಮಯ ತೆಗೆದುಕೊಳ್ಳುತ್ತಿದೆ. ದಯವಿಟ್ಟು ಕಾಯಿರಿ ಮತ್ತು ಮರುಪ್ರಯತ್ನಿಸಿ.',
+          );
           _loadingCrops = false;
         });
       }
@@ -756,10 +853,10 @@ class _AddCropSheetState extends State<_AddCropSheet> {
       _error = null;
     });
     try {
-      final identity =
-          _selectedCropData?['identity'] as Map<String, dynamic>?;
+      final identity = _selectedCropData?['identity'] as Map<String, dynamic>?;
       await ApiService.instance.addCrop(
-        cropName: identity?['crop_name']?.toString() ??
+        cropName:
+            identity?['crop_name']?.toString() ??
             _selectedCropData?['name']?.toString() ??
             'Unknown',
         variety: identity?['variety_name']?.toString(),
@@ -772,10 +869,14 @@ class _AddCropSheetState extends State<_AddCropSheet> {
       if (mounted) Navigator.of(context).pop();
     } on ApiException catch (e) {
       debugPrint('API Error: ${e.detail}');
-      setState(() => _error = L.tr('Oops! Something went wrong. Let\'s try again.', 'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.'));
-    } catch (_) {
       setState(
-          () => _error = L.tr('Save failed.', 'ಉಳಿಸಲು ವಿಫಲವಾಗಿದೆ.'));
+        () => _error = L.tr(
+          'Oops! Something went wrong. Let\'s try again.',
+          'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+        ),
+      );
+    } catch (_) {
+      setState(() => _error = L.tr('Save failed.', 'ಉಳಿಸಲು ವಿಫಲವಾಗಿದೆ.'));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -784,8 +885,7 @@ class _AddCropSheetState extends State<_AddCropSheet> {
   Color _parseColor(String? colorStr, Color fallback) {
     if (colorStr == null || !colorStr.startsWith('#')) return fallback;
     try {
-      return Color(
-          int.parse(colorStr.substring(1, 7), radix: 16) + 0xFF000000);
+      return Color(int.parse(colorStr.substring(1, 7), radix: 16) + 0xFF000000);
     } catch (_) {
       return fallback;
     }
@@ -818,8 +918,10 @@ class _AddCropSheetState extends State<_AddCropSheet> {
           ),
           if (_selectedCropData == null) ...[
             Text(
-              L.tr('Discover Verified Crops',
-                  'ಪರಿಶೀಲಿಸಿದ ಬೆಳೆಗಳನ್ನು ಅನ್ವೇಷಿಸಿ'),
+              L.tr(
+                'Discover Verified Crops',
+                'ಪರಿಶೀಲಿಸಿದ ಬೆಳೆಗಳನ್ನು ಅನ್ವೇಷಿಸಿ',
+              ),
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 20,
@@ -831,34 +933,44 @@ class _AddCropSheetState extends State<_AddCropSheet> {
             if (_detectedPlace != null) ...[
               Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 12),
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
-                  color: GrowMateTheme.primaryGreen
-                      .withValues(alpha: 0.05),
+                  color: GrowMateTheme.primaryGreen.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: GrowMateTheme.primaryGreen
-                        .withValues(alpha: 0.2),
+                    color: GrowMateTheme.primaryGreen.withValues(alpha: 0.2),
                   ),
                 ),
-                child: Row(children: [
-                  Icon(Icons.location_on,
-                      color: GrowMateTheme.primaryGreen, size: 20),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      L.tr('Location: $_detectedPlace',
-                          'ಸ್ಥಳ: $_detectedPlace'),
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w600,
-                        color: GrowMateTheme.textPrimary,
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.location_on,
+                      color: GrowMateTheme.primaryGreen,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        L.tr(
+                          'Location: $_detectedPlace',
+                          'ಸ್ಥಳ: $_detectedPlace',
+                        ),
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w600,
+                          color: GrowMateTheme.textPrimary,
+                        ),
                       ),
                     ),
-                  ),
-                  Icon(Icons.verified,
-                      color: GrowMateTheme.primaryGreen, size: 18),
-                ]),
+                    Icon(
+                      Icons.verified,
+                      color: GrowMateTheme.primaryGreen,
+                      size: 18,
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 16),
             ],
@@ -866,20 +978,23 @@ class _AddCropSheetState extends State<_AddCropSheet> {
               child: _loadingCrops
                   ? _buildSheetLoading()
                   : _error != null
-                      ? Center(
-                          child: Text(_error!,
-                              style: TextStyle(
-                                  color: GrowMateTheme.harvestOrange)))
-                      : _allCropsData.isEmpty
-                          ? Center(
-                              child: Text(
-                                L.tr('No crops found for this region.',
-                                    'ಈ ಪ್ರದೇಶಕ್ಕೆ ಯಾವುದೇ ಬೆಳೆಗಳು ಕಂಡುಬಂದಿಲ್ಲ.'),
-                                style: TextStyle(
-                                    color: GrowMateTheme.textSecondary),
-                              ),
-                            )
-                          : _buildCropList(),
+                  ? Center(
+                      child: Text(
+                        _error!,
+                        style: TextStyle(color: GrowMateTheme.harvestOrange),
+                      ),
+                    )
+                  : _allCropsData.isEmpty
+                  ? Center(
+                      child: Text(
+                        L.tr(
+                          'No crops found for this region.',
+                          'ಈ ಪ್ರದೇಶಕ್ಕೆ ಯಾವುದೇ ಬೆಳೆಗಳು ಕಂಡುಬಂದಿಲ್ಲ.',
+                        ),
+                        style: TextStyle(color: GrowMateTheme.textSecondary),
+                      ),
+                    )
+                  : _buildCropList(),
             ),
           ] else
             Expanded(child: _buildCropDetails()),
@@ -896,13 +1011,16 @@ class _AddCropSheetState extends State<_AddCropSheet> {
           width: 40,
           height: 40,
           child: CircularProgressIndicator(
-              color: GrowMateTheme.primaryGreen, strokeWidth: 3),
+            color: GrowMateTheme.primaryGreen,
+            strokeWidth: 3,
+          ),
         ),
         const SizedBox(height: 20),
         Text(
           L.tr(
-              'Analyzing soil & weather for ${_detectedPlace ?? "your area"}...',
-              '${_detectedPlace ?? "ನಿಮ್ಮ ಪ್ರದೇಶಕ್ಕೆ"} ಮಣ್ಣು ಮತ್ತು ಹವಾಮಾನ ವಿಶ್ಲೇಷಣೆ...'),
+            'Analyzing soil & weather for ${_detectedPlace ?? "your area"}...',
+            '${_detectedPlace ?? "ನಿಮ್ಮ ಪ್ರದೇಶಕ್ಕೆ"} ಮಣ್ಣು ಮತ್ತು ಹವಾಮಾನ ವಿಶ್ಲೇಷಣೆ...',
+          ),
           style: TextStyle(
             fontFamily: 'Inter',
             fontSize: 14,
@@ -922,21 +1040,20 @@ class _AddCropSheetState extends State<_AddCropSheet> {
       itemBuilder: (ctx, i) {
         final c = _allCropsData[i];
         final identity = c['identity'] as Map<String, dynamic>?;
-        final cropName = identity?['crop_name']?.toString() ??
+        final cropName =
+            identity?['crop_name']?.toString() ??
             c['name']?.toString() ??
             'Crop';
-        final variety =
-            identity?['variety_name']?.toString() ?? 'General';
-        final category =
-            identity?['crop_category']?.toString() ?? '';
+        final variety = identity?['variety_name']?.toString() ?? 'General';
+        final category = identity?['crop_category']?.toString() ?? '';
         final statusColor = _parseColor(
-            c['status_color']?.toString(), GrowMateTheme.primaryGreen);
-        final market =
-            c['financial_intelligence'] as Map<String, dynamic>?;
+          c['status_color']?.toString(),
+          GrowMateTheme.primaryGreen,
+        );
+        final market = c['financial_intelligence'] as Map<String, dynamic>?;
         final price = market?['modal_price']?.toString();
         final tags = c['ui_tags'] as List<dynamic>? ?? [];
-        final showPrice =
-            price != null && price != 'N/A' && price.isNotEmpty;
+        final showPrice = price != null && price != 'N/A' && price.isNotEmpty;
 
         return TweenAnimationBuilder<double>(
           tween: Tween(begin: 0.0, end: 1.0),
@@ -981,35 +1098,37 @@ class _AddCropSheetState extends State<_AddCropSheet> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: CropIcon(
-                            icon: c['icon']?.toString(),
-                            color: statusColor,
-                            size: 22),
+                          icon: c['icon']?.toString(),
+                          color: statusColor,
+                          size: 22,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('$cropName - $variety',
-                                style: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  color: GrowMateTheme.textPrimary,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis),
+                            Text(
+                              '$cropName - $variety',
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: GrowMateTheme.textPrimary,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                             if (category.isNotEmpty)
                               Padding(
-                                padding:
-                                    const EdgeInsets.only(top: 2),
-                                child: Text(category,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: GrowMateTheme
-                                          .textSecondary,
-                                    )),
+                                padding: const EdgeInsets.only(top: 2),
+                                child: Text(
+                                  category,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: GrowMateTheme.textSecondary,
+                                  ),
+                                ),
                               ),
                             const SizedBox(height: 6),
                             Wrap(
@@ -1017,19 +1136,16 @@ class _AddCropSheetState extends State<_AddCropSheet> {
                               runSpacing: 4,
                               children: [
                                 Container(
-                                  padding:
-                                      const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 3),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: statusColor.withValues(
-                                        alpha: 0.15),
-                                    borderRadius:
-                                        BorderRadius.circular(6),
+                                    color: statusColor.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
-                                    c['status_label']?.toString() ??
-                                        'Verified',
+                                    c['status_label']?.toString() ?? 'Verified',
                                     style: TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w600,
@@ -1039,23 +1155,22 @@ class _AddCropSheetState extends State<_AddCropSheet> {
                                 ),
                                 if (showPrice)
                                   Container(
-                                    padding:
-                                        const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 3),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 3,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF8B5CF6)
-                                          .withValues(alpha: 0.15),
-                                      borderRadius:
-                                          BorderRadius.circular(6),
+                                      color: const Color(
+                                        0xFF8B5CF6,
+                                      ).withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: Text(
                                       'Price: $price',
                                       style: TextStyle(
                                         fontSize: 10,
                                         fontWeight: FontWeight.w600,
-                                        color:
-                                            const Color(0xFF8B5CF6),
+                                        color: const Color(0xFF8B5CF6),
                                       ),
                                     ),
                                   ),
@@ -1064,9 +1179,11 @@ class _AddCropSheetState extends State<_AddCropSheet> {
                           ],
                         ),
                       ),
-                      Icon(Icons.chevron_right_rounded,
-                          color: GrowMateTheme.textSecondary,
-                          size: 20),
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        color: GrowMateTheme.textSecondary,
+                        size: 20,
+                      ),
                     ],
                   ),
                   if (tags.isNotEmpty) ...[
@@ -1075,24 +1192,26 @@ class _AddCropSheetState extends State<_AddCropSheet> {
                       spacing: 6,
                       runSpacing: 4,
                       children: tags.map((t) {
-                        final tagText =
-                            t['text']?.toString() ?? '';
+                        final tagText = t['text']?.toString() ?? '';
                         final tColor = _parseColor(
-                            t['color']?.toString(),
-                            GrowMateTheme.textSecondary);
+                          t['color']?.toString(),
+                          GrowMateTheme.textSecondary,
+                        );
                         return Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             border: Border.all(
-                                color: tColor.withValues(
-                                    alpha: 0.3)),
-                            borderRadius:
-                                BorderRadius.circular(12),
+                              color: tColor.withValues(alpha: 0.3),
+                            ),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Text(tagText,
-                              style: TextStyle(
-                                  fontSize: 10, color: tColor)),
+                          child: Text(
+                            tagText,
+                            style: TextStyle(fontSize: 10, color: tColor),
+                          ),
                         );
                       }).toList(),
                     ),
@@ -1109,83 +1228,109 @@ class _AddCropSheetState extends State<_AddCropSheet> {
   Widget _buildCropDetails() {
     final c = _selectedCropData!;
     final identity = c['identity'] as Map<String, dynamic>?;
-    final cropName = identity?['crop_name']?.toString() ??
-        c['name']?.toString() ??
-        'Crop';
-    final variety =
-        identity?['variety_name']?.toString() ?? 'General';
+    final cropName =
+        identity?['crop_name']?.toString() ?? c['name']?.toString() ?? 'Crop';
+    final variety = identity?['variety_name']?.toString() ?? 'General';
     final statusColor = _parseColor(
-        c['status_color']?.toString(), GrowMateTheme.primaryGreen);
+      c['status_color']?.toString(),
+      GrowMateTheme.primaryGreen,
+    );
     final desc = c['description']?.toString() ?? '';
 
-    final yieldPot =
-        c['yield_potential'] as Map<String, dynamic>?;
-    final avgYield =
-        yieldPot?['average_yield_per_acre']?.toString();
+    final yieldPot = c['yield_potential'] as Map<String, dynamic>?;
+    final avgYield = yieldPot?['average_yield_per_acre']?.toString();
 
-    final morph = c['morphological_characteristics']
-        as Map<String, dynamic>?;
+    final morph = c['morphological_characteristics'] as Map<String, dynamic>?;
     final duration = morph?['maturity_duration_range']?.toString();
 
-    final agroInfo =
-        c['agro_climatic_suitability'] as Map<String, dynamic>?;
-    final tempRange =
-        agroInfo?['suitable_temperature_range']?.toString();
-    final rainRange =
-        agroInfo?['suitable_rainfall_range']?.toString();
-    final soilType =
-        agroInfo?['suitable_soil_types']?.toString();
+    final agroInfo = c['agro_climatic_suitability'] as Map<String, dynamic>?;
+    final tempRange = agroInfo?['suitable_temperature_range']?.toString();
+    final rainRange = agroInfo?['suitable_rainfall_range']?.toString();
+    final soilType = agroInfo?['suitable_soil_types']?.toString();
 
-    final seedSpecs =
-        c['seed_specifications'] as Map<String, dynamic>?;
-    final seedRate =
-        seedSpecs?['seed_rate_per_acre']?.toString();
-    final germination =
-        seedSpecs?['germination_period']?.toString();
+    final seedSpecs = c['seed_specifications'] as Map<String, dynamic>?;
+    final seedRate = seedSpecs?['seed_rate_per_acre']?.toString();
+    final germination = seedSpecs?['germination_period']?.toString();
 
-    final market =
-        c['financial_intelligence'] as Map<String, dynamic>?;
+    final market = c['financial_intelligence'] as Map<String, dynamic>?;
     final marketName = market?['market_name']?.toString();
     final minPrice = market?['min_price']?.toString();
     final maxPrice = market?['max_price']?.toString();
 
-    bool isValid(String? val) =>
-        val != null && val != 'N/A' && val.isNotEmpty;
+    bool isValid(String? val) => val != null && val != 'N/A' && val.isNotEmpty;
 
     final metricCards = <Widget>[];
     if (isValid(avgYield))
       metricCards.add(
-          _buildMetricCard(Icons.agriculture, L.tr('Yield/Acre', 'ಇಳುವರಿ/ಎಕರೆ'), avgYield!));
+        _buildMetricCard(
+          Icons.agriculture,
+          L.tr('Yield/Acre', 'ಇಳುವರಿ/ಎಕರೆ'),
+          avgYield!,
+        ),
+      );
     if (isValid(duration))
       metricCards.add(
-          _buildMetricCard(Icons.timer_outlined, L.tr('Duration', 'ಅವಧಿ'), duration!));
+        _buildMetricCard(
+          Icons.timer_outlined,
+          L.tr('Duration', 'ಅವಧಿ'),
+          duration!,
+        ),
+      );
     if (isValid(tempRange))
-      metricCards.add(_buildMetricCard(
-          Icons.thermostat_outlined, L.tr('Temp Range', 'ತಾಪಮಾನ'), tempRange!));
+      metricCards.add(
+        _buildMetricCard(
+          Icons.thermostat_outlined,
+          L.tr('Temp Range', 'ತಾಪಮಾನ'),
+          tempRange!,
+        ),
+      );
     if (isValid(rainRange))
-      metricCards.add(_buildMetricCard(
-          Icons.water_drop_outlined, L.tr('Rainfall', 'ಮಳೆ'), rainRange!));
+      metricCards.add(
+        _buildMetricCard(
+          Icons.water_drop_outlined,
+          L.tr('Rainfall', 'ಮಳೆ'),
+          rainRange!,
+        ),
+      );
     if (isValid(seedRate))
       metricCards.add(
-          _buildMetricCard(Icons.eco_outlined, L.tr('Seed Rate', 'ಬೀಜ ದರ'), seedRate!));
+        _buildMetricCard(
+          Icons.eco_outlined,
+          L.tr('Seed Rate', 'ಬೀಜ ದರ'),
+          seedRate!,
+        ),
+      );
     if (isValid(germination))
-      metricCards.add(_buildMetricCard(
-          Icons.grass, L.tr('Germination', 'ಮೊಳಕೆಯೊಡೆಯುವಿಕೆ'), germination!));
+      metricCards.add(
+        _buildMetricCard(
+          Icons.grass,
+          L.tr('Germination', 'ಮೊಳಕೆಯೊಡೆಯುವಿಕೆ'),
+          germination!,
+        ),
+      );
 
     final metricRows = <Widget>[];
     for (int i = 0; i < metricCards.length; i += 2) {
       if (i + 1 < metricCards.length) {
-        metricRows.add(Row(children: [
-          metricCards[i],
-          const SizedBox(width: 12),
-          metricCards[i + 1]
-        ]));
+        metricRows.add(
+          Row(
+            children: [
+              metricCards[i],
+              const SizedBox(width: 12),
+              metricCards[i + 1],
+            ],
+          ),
+        );
       } else {
-        metricRows.add(Row(children: [
-          metricCards[i],
-          const SizedBox(width: 12),
-          const Expanded(child: SizedBox.shrink())
-        ]));
+        metricRows.add(
+          Row(
+            children: [
+              metricCards[i],
+              const SizedBox(width: 12),
+              const Expanded(child: SizedBox.shrink()),
+            ],
+          ),
+        );
       }
       metricRows.add(const SizedBox(height: 12));
     }
@@ -1198,27 +1343,28 @@ class _AddCropSheetState extends State<_AddCropSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(children: [
-            IconButton(
-              icon: Icon(Icons.arrow_back_rounded),
-              onPressed: () =>
-                  setState(() => _selectedCropData = null),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                '$cropName ($variety)',
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: GrowMateTheme.textPrimary,
+          Row(
+            children: [
+              IconButton(
+                icon: Icon(Icons.arrow_back_rounded),
+                onPressed: () => setState(() => _selectedCropData = null),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  '$cropName ($variety)',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: GrowMateTheme.textPrimary,
+                  ),
                 ),
               ),
-            ),
-          ]),
+            ],
+          ),
           const SizedBox(height: 16),
           Expanded(
             child: SingleChildScrollView(
@@ -1234,17 +1380,14 @@ class _AddCropSheetState extends State<_AddCropSheet> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.info_outline,
-                            color: statusColor, size: 20),
+                        Icon(Icons.info_outline, color: statusColor, size: 20),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                c['status_label']?.toString() ??
-                                    'Notice',
+                                c['status_label']?.toString() ?? 'Notice',
                                 style: TextStyle(
                                   fontFamily: 'Inter',
                                   fontWeight: FontWeight.w700,
@@ -1252,12 +1395,14 @@ class _AddCropSheetState extends State<_AddCropSheet> {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              Text(desc,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    height: 1.4,
-                                    color: GrowMateTheme.textPrimary,
-                                  )),
+                              Text(
+                                desc,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  height: 1.4,
+                                  color: GrowMateTheme.textPrimary,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -1271,42 +1416,46 @@ class _AddCropSheetState extends State<_AddCropSheet> {
                       decoration: BoxDecoration(
                         color: const Color(0xFFF3E8FF),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                            color: const Color(0xFFD8B4FE)),
+                        border: Border.all(color: const Color(0xFFD8B4FE)),
                       ),
-                      child: Row(children: [
-                        const Icon(Icons.storefront,
-                            color: Color(0xFF9333EA)),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                L.tr('Local Market Pricing',
-                                    'ಸ್ಥಳೀಯ ಮಾರುಕಟ್ಟೆ ಬೆಲೆ'),
-                                style: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF9333EA),
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                '$marketName: $minPrice - $maxPrice',
-                                style: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: GrowMateTheme.textPrimary,
-                                ),
-                              ),
-                            ],
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.storefront,
+                            color: Color(0xFF9333EA),
                           ),
-                        ),
-                      ]),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  L.tr(
+                                    'Local Market Pricing',
+                                    'ಸ್ಥಳೀಯ ಮಾರುಕಟ್ಟೆ ಬೆಲೆ',
+                                  ),
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF9333EA),
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '$marketName: $minPrice - $maxPrice',
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: GrowMateTheme.textPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 16),
                   ],
@@ -1317,30 +1466,37 @@ class _AddCropSheetState extends State<_AddCropSheet> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                            color: const Color(0xFFE8E8E8)),
+                        border: Border.all(color: const Color(0xFFE8E8E8)),
                       ),
-                      child: Row(children: [
-                        Icon(Icons.layers_outlined,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.layers_outlined,
                             size: 20,
-                            color: GrowMateTheme.textSecondary),
-                        const SizedBox(width: 12),
-                        Text(L.tr('Ideal Soil:', 'ಮಣ್ಣಿನ ಪ್ರಕಾರ:'),
+                            color: GrowMateTheme.textSecondary,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            L.tr('Ideal Soil:', 'ಮಣ್ಣಿನ ಪ್ರಕಾರ:'),
                             style: TextStyle(
                               fontSize: 12,
                               color: GrowMateTheme.textSecondary,
-                            )),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(soilType!,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              soilType!,
                               style: TextStyle(
                                 fontFamily: 'Inter',
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
                                 color: GrowMateTheme.textPrimary,
-                              )),
-                        ),
-                      ]),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 20),
                   ],
@@ -1374,8 +1530,11 @@ class _AddCropSheetState extends State<_AddCropSheet> {
                         ),
                       );
                       if (date != null && mounted) {
-                        setState(() => _sowingCtrl.text =
-                            date.toIso8601String().split('T')[0]);
+                        setState(
+                          () => _sowingCtrl.text = date.toIso8601String().split(
+                            'T',
+                          )[0],
+                        );
                       }
                     },
                     style: TextStyle(
@@ -1384,12 +1543,12 @@ class _AddCropSheetState extends State<_AddCropSheet> {
                       fontWeight: FontWeight.w500,
                     ),
                     decoration: InputDecoration(
-                      labelText:
-                          L.tr('Sowing Date *', 'ಬಿತ್ತನೆ ದಿನಾಂಕ *'),
-                      hintText: L.tr('Select when you plan to sow',
-                          'ಬಿತ್ತನೆ ದಿನಾಂಕ ಆಯ್ಕೆಮಾಡಿ'),
-                      prefixIcon:
-                          const Icon(Icons.calendar_today_outlined),
+                      labelText: L.tr('Sowing Date *', 'ಬಿತ್ತನೆ ದಿನಾಂಕ *'),
+                      hintText: L.tr(
+                        'Select when you plan to sow',
+                        'ಬಿತ್ತನೆ ದಿನಾಂಕ ಆಯ್ಕೆಮಾಡಿ',
+                      ),
+                      prefixIcon: const Icon(Icons.calendar_today_outlined),
                       filled: true,
                       fillColor: const Color(0xFFF8F9FC),
                       border: OutlineInputBorder(
@@ -1398,33 +1557,30 @@ class _AddCropSheetState extends State<_AddCropSheet> {
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                            color: const Color(0xFFE8E8E8)),
+                        borderSide: BorderSide(color: const Color(0xFFE8E8E8)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
-                            color: GrowMateTheme.primaryGreen,
-                            width: 1.5),
+                          color: GrowMateTheme.primaryGreen,
+                          width: 1.5,
+                        ),
                       ),
                     ),
                     validator: (v) => (v == null || v.isEmpty)
-                        ? L.tr('Sowing date is mandatory',
-                            'ಬಿತ್ತನೆ ದಿನಾಂಕ ಕಡ್ಡಾಯವಾಗಿದೆ')
+                        ? L.tr(
+                            'Sowing date is mandatory',
+                            'ಬಿತ್ತನೆ ದಿನಾಂಕ ಕಡ್ಡಾಯವಾಗಿದೆ',
+                          )
                         : null,
                   ),
                   const SizedBox(height: 16),
                   SwitchListTile.adaptive(
                     value: _isPrimary,
-                    onChanged: (v) =>
-                        setState(() => _isPrimary = v),
+                    onChanged: (v) => setState(() => _isPrimary = v),
                     title: Text(
-                      L.tr('Set as Primary Crop',
-                          'ಪ್ರಾಥಮಿಕ ಬೆಳೆಯಾಗಿ ಹೊಂದಿಸಿ'),
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 14,
-                      ),
+                      L.tr('Set as Primary Crop', 'ಪ್ರಾಥಮಿಕ ಬೆಳೆಯಾಗಿ ಹೊಂದಿಸಿ'),
+                      style: TextStyle(fontFamily: 'Inter', fontSize: 14),
                     ),
                     activeThumbColor: GrowMateTheme.primaryGreen,
                     contentPadding: EdgeInsets.zero,
@@ -1436,10 +1592,13 @@ class _AddCropSheetState extends State<_AddCropSheet> {
           if (_error != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
-              child: Text(_error!,
-                  style: TextStyle(
-                      color: GrowMateTheme.harvestOrange,
-                      fontSize: 13)),
+              child: Text(
+                _error!,
+                style: TextStyle(
+                  color: GrowMateTheme.harvestOrange,
+                  fontSize: 13,
+                ),
+              ),
             ),
           SizedBox(
             height: 52,
@@ -1448,7 +1607,8 @@ class _AddCropSheetState extends State<_AddCropSheet> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: GrowMateTheme.harvestOrange,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
+                  borderRadius: BorderRadius.circular(14),
+                ),
                 elevation: 0,
               ),
               child: _saving
@@ -1456,10 +1616,12 @@ class _AddCropSheetState extends State<_AddCropSheet> {
                       width: 22,
                       height: 22,
                       child: CircularProgressIndicator(
-                          color: Colors.white, strokeWidth: 2.5))
+                        color: Colors.white,
+                        strokeWidth: 2.5,
+                      ),
+                    )
                   : Text(
-                      L.tr('Add to My Farm',
-                          'ನನ್ನ ಫಾರ್ಮ್‌ಗೆ ಸೇರಿಸಿ'),
+                      L.tr('Add to My Farm', 'ನನ್ನ ಫಾರ್ಮ್‌ಗೆ ಸೇರಿಸಿ'),
                       style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 16,
@@ -1488,20 +1650,24 @@ class _AddCropSheetState extends State<_AddCropSheet> {
           children: [
             Icon(icon, size: 20, color: GrowMateTheme.textSecondary),
             const SizedBox(height: 8),
-            Text(title,
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 12,
-                  color: GrowMateTheme.textSecondary,
-                )),
+            Text(
+              title,
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 12,
+                color: GrowMateTheme.textSecondary,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text(value,
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: GrowMateTheme.textPrimary,
-                )),
+            Text(
+              value,
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: GrowMateTheme.textPrimary,
+              ),
+            ),
           ],
         ),
       ),
