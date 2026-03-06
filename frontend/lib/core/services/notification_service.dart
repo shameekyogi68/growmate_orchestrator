@@ -42,7 +42,7 @@ class NotificationService {
 
       // 3. Initialize Local Notifications (Wait for explicit Android 13 grant)
       const initializationSettings = InitializationSettings(
-        android: AndroidInitializationSettings('ic_launcher'),
+        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
         iOS: DarwinInitializationSettings(),
       );
 
@@ -138,33 +138,39 @@ class NotificationService {
     Map<String, dynamic> data = message.data;
 
     if (notification != null) {
-      _localNotifications.show(
-        notification.hashCode,
-        notification.title,
-        notification.body,
-        NotificationDetails(
-          android: AndroidNotificationDetails(
-            data['priority'] == 'HIGH' ? _channel.id : 'engagement_channel',
-            data['priority'] == 'HIGH' ? _channel.name : 'Farm Tips',
-            channelDescription: _channel.description,
-            icon: 'ic_launcher',
-            styleInformation: BigTextStyleInformation(notification.body ?? ''),
-            actions: [
-              if (data['priority'] == 'HIGH')
-                const AndroidNotificationAction(
-                  'view_advisory',
-                  'View Advisory',
-                ),
-            ],
+      try {
+        _localNotifications.show(
+          notification.hashCode,
+          notification.title,
+          notification.body,
+          NotificationDetails(
+            android: AndroidNotificationDetails(
+              data['priority'] == 'HIGH' ? _channel.id : 'engagement_channel',
+              data['priority'] == 'HIGH' ? _channel.name : 'Farm Tips',
+              channelDescription: _channel.description,
+              icon: '@mipmap/ic_launcher',
+              styleInformation: BigTextStyleInformation(
+                notification.body ?? '',
+              ),
+              actions: [
+                if (data['priority'] == 'HIGH')
+                  const AndroidNotificationAction(
+                    'view_advisory',
+                    'View Advisory',
+                  ),
+              ],
+            ),
+            iOS: const DarwinNotificationDetails(
+              presentAlert: true,
+              presentBadge: true,
+              presentSound: true,
+            ),
           ),
-          iOS: const DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-          ),
-        ),
-        payload: data['route'],
-      );
+          payload: data['route'],
+        );
+      } catch (e) {
+        debugPrint('Error showing local notification: $e');
+      }
     }
   }
 
