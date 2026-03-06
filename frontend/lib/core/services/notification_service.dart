@@ -27,92 +27,103 @@ class NotificationService {
   );
 
   Future<void> initialize() async {
-    // 1. Initialize Firebase if not already initialized
-    // Note: ensure Firebase.initializeApp() is called in main.dart before this if possible
+    try {
+      // 1. Request Permissions (FCM Side)
+      await _requestPermissions();
 
-    // 2. Request Permissions (iOS/Android 13+)
-    await _requestPermissions();
+      // 2. Initialize Timezone for Scheduling (Wrap in try because TZ often fails on emulators/certain devices)
+      try {
+        tz.initializeTimeZones();
+        final String timeZoneName = await FlutterTimezone.getLocalTimezone();
+        tz.setLocalLocation(tz.getLocation(timeZoneName));
+      } catch (e) {
+        debugPrint('Timezone initialization failed: $e');
+      }
 
-    // 3. Initialize Timezone for Scheduling
-    tz.initializeTimeZones();
-    final String timeZoneName = await FlutterTimezone.getLocalTimezone();
-    tz.setLocalLocation(tz.getLocation(timeZoneName));
-
-    // 4. Initialize Local Notifications for Foreground
-    const initializationSettings = InitializationSettings(
-      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-      iOS: DarwinInitializationSettings(),
-    );
-
-    await _localNotifications.initialize(
-      initializationSettings,
-      onDidReceiveNotificationResponse: (details) {
-        _handleNotificationAction(details.payload, details.actionId);
-      },
-    );
-
-    // 4. Create Android Channels (Separated by Importance)
-    if (Platform.isAndroid) {
-      final androidPlugin = _localNotifications
-          .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin
-          >();
-
-      await androidPlugin?.createNotificationChannel(_channel);
-
-      // Marketing/Engagement Channel (Lower priority/optional)
-      await androidPlugin?.createNotificationChannel(
-        const AndroidNotificationChannel(
-          'engagement_channel',
-          'Farm Tips & Updates',
-          description: 'Non-critical daily tips and market updates.',
-          importance: Importance.defaultImportance,
-        ),
+      // 3. Initialize Local Notifications (Wait for explicit Android 13 grant)
+      const initializationSettings = InitializationSettings(
+        android: AndroidInitializationSettings('ic_launcher'),
+        iOS: DarwinInitializationSettings(),
       );
+
+      bool? initialized = await _localNotifications.initialize(
+        initializationSettings,
+        onDidReceiveNotificationResponse: (details) {
+          _handleNotificationAction(details.payload, details.actionId);
+        },
+      );
+      debugPrint('Local Notifications initialized: $initialized');
+
+      // 4. Create Android Channels
+      if (Platform.isAndroid) {
+        final androidPlugin = _localNotifications
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
+
+        // Android 13+ requires explicit request for this plugin too
+        await androidPlugin?.requestNotificationsPermission();
+
+        await androidPlugin?.createNotificationChannel(_channel);
+        await androidPlugin?.createNotificationChannel(
+          const AndroidNotificationChannel(
+            'engagement_channel',
+            'Farm Tips & Updates',
+            description: 'Non-critical daily tips and market updates.',
+            importance: Importance.defaultImportance,
+          ),
+        );
+      }
+
+      // 5. Setup Listeners
+      FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+      FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
+
+      RemoteMessage? initialMessage = await _fcm.getInitialMessage();
+      if (initialMessage != null) {
+        _handleMessageOpenedApp(initialMessage);
+      }
+
+      FirebaseMessaging.onBackgroundMessage(
+        _firebaseMessagingBackgroundHandler,
+      );
+    } catch (e) {
+      debugPrint('CRITICAL: Notification Service failed to initialize: $e');
     }
-
-    // 5. Setup Listeners
-    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
-
-    // Check if app was opened FROM a notification (System reboot/Kill state)
-    RemoteMessage? initialMessage = await _fcm.getInitialMessage();
-    if (initialMessage != null) {
-      _handleMessageOpenedApp(initialMessage);
-    }
-
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   }
 
   void _handleNotificationAction(String? payload, String? actionId) {
-    print('Notification Action: $actionId, Payload: $payload');
-    // Implementation of deep linking logic based on payload JSON
-    if (payload != null) {
-      // In a real app, use a Navigation Key or Event Bus to trigger UI changes
-      // Example: Navigator.of(context).pushNamed(route)
-    }
+    debugPrint('Notification Action: $actionId, Payload: $payload');
   }
 
   Future<void> _requestPermissions() async {
-    NotificationSettings settings = await _fcm.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-      criticalAlert: true, // For extreme weather alerts
-    );
-    print('User granted permission: ${settings.authorizationStatus}');
+    try {
+      NotificationSettings settings = await _fcm.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+        criticalAlert: true,
+      );
+      debugPrint('FCM Permission status: ${settings.authorizationStatus}');
+    } catch (e) {
+      debugPrint('FCM Permission request error: $e');
+    }
   }
 
   Future<String?> getToken() async {
     try {
-      // Industry Standard: APNS token check for iOS
       if (Platform.isIOS) {
         String? apnsToken = await _fcm.getAPNSToken();
-        if (apnsToken == null) return null;
+        if (apnsToken == null) {
+          debugPrint('APNS Token is null (iOS)');
+          return null;
+        }
       }
-      return await _fcm.getToken();
+      final token = await _fcm.getToken();
+      debugPrint('FCM Token Generated: ${token?.substring(0, 10)}...');
+      return token;
     } catch (e) {
-      print('Error getting FCM token: $e');
+      debugPrint('Error getting FCM token: $e');
       return null;
     }
   }

@@ -8,6 +8,8 @@ import '../../core/models/api_models.dart';
 import '../../shared/location_picker_screen.dart';
 import '../shell/app_shell.dart';
 import 'package:growmate_frontend/core/localization/app_locale.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import '../../core/services/notification_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -41,6 +43,10 @@ class _ProfileScreenState extends State<ProfileScreen>
   // Staggered animation
   late AnimationController _staggerCtrl;
 
+  // Diagnostics
+  String? _diagToken;
+  String? _diagPerms;
+
   @override
   void initState() {
     super.initState();
@@ -51,6 +57,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       duration: const Duration(milliseconds: 800),
     );
     _loadProfile();
+    _checkDiagnostics();
   }
 
   @override
@@ -114,6 +121,22 @@ class _ProfileScreenState extends State<ProfileScreen>
       }
     } finally {
       if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _checkDiagnostics() async {
+    try {
+      final token = await NotificationService().getToken();
+      final settings = await FirebaseMessaging.instance
+          .getNotificationSettings();
+      if (mounted) {
+        setState(() {
+          _diagToken = token;
+          _diagPerms = settings.authorizationStatus.name;
+        });
+      }
+    } catch (e) {
+      debugPrint('Diag check failed: $e');
     }
   }
 
@@ -361,6 +384,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                           0.5,
                           0.8,
                           _buildNotificationSection(),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildStaggeredCard(
+                          0.55,
+                          0.85,
+                          _buildDiagnosticSection(),
                         ),
                         const SizedBox(height: 16),
                         // Save button
@@ -982,6 +1011,65 @@ class _ProfileScreenState extends State<ProfileScreen>
               ),
               elevation: 0,
             ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDiagnosticSection() {
+    if (_diagToken == null && _diagPerms == null)
+      return const SizedBox.shrink();
+
+    return _sectionCard(
+      icon: Icons.bug_report_outlined,
+      title: L.tr('Connection Health', 'ಸಂಪರ್ಕ ಸ್ಥಿತಿ'),
+      children: [
+        _diagRow(
+          L.tr('Token', 'ಟೋಕನ್'),
+          _diagToken != null ? '✅ Live' : '❌ Missing',
+        ),
+        const SizedBox(height: 8),
+        _diagRow(L.tr('Permissions', 'ಅನುಮತಿಗಳು'), _diagPerms ?? 'Unknown'),
+        if (_diagToken != null) ...[
+          const SizedBox(height: 12),
+          Text(
+            L.tr(
+              'Your phone is registered with GrowMate Cloud.',
+              'ನಿಮ್ಮ ಫೋನ್ ಗ್ರೋಮೇಟ್ ಸರ್ವರ್‌ನಲ್ಲಿ ನೋಂದಾಯಿಸಲ್ಪಟ್ಟಿದೆ.',
+            ),
+            style: const TextStyle(fontSize: 11, color: Colors.grey),
+          ),
+        ] else ...[
+          const SizedBox(height: 12),
+          Text(
+            L.tr(
+              'Critical: No token found. Notifications will not work.',
+              'ಗಮನಿಸಿ: ಟೋಕನ್ ಸಿಕ್ಕಿಲ್ಲ. ಅಧಿಸೂಚನೆಗಳು ಕೆಲಸ ಮಾಡುವುದಿಲ್ಲ.',
+            ),
+            style: TextStyle(fontSize: 11, color: GrowMateTheme.harvestOrange),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _diagRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 13,
+            color: value.contains('✅') || value == 'authorized'
+                ? Colors.green
+                : Colors.red,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],
