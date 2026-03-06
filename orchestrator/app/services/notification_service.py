@@ -44,6 +44,8 @@ async def send_push_notification(token: str, title: str, body: str, data: dict =
                 priority='high',
                 default_sound=True,
                 default_vibrate_timings=True,
+                click_action='FLUTTER_NOTIFICATION_CLICK',
+                icon='ic_launcher'
             )
         )
         
@@ -54,6 +56,7 @@ async def send_push_notification(token: str, title: str, body: str, data: dict =
                     sound='default',
                     badge=1,
                     mutable_content=True,
+                    category='high_importance',
                 )
             )
         )

@@ -207,16 +207,19 @@ class _SplashScreenState extends State<SplashScreen>
 
     final hasToken = results[1] as bool;
 
-    // Industry Standard: Refresh FCM token on every app launch if authenticated
+    // Industry Standard: Refresh FCM token on every app launch for high reliability
     if (hasToken) {
       try {
         final fcmToken = await NotificationService().getToken();
         if (fcmToken != null) {
+          // Always update - ensures backend is never out of sync with device ID
           await ApiService.instance.updateFcmToken(fcmToken);
-          debugPrint('FCM token refreshed successfully');
+          debugPrint('FCM Sync: ✅ Successfully linked device ID to server');
+        } else {
+          debugPrint('FCM Sync: ⚠️ Could not retrieve token from system');
         }
       } catch (e) {
-        debugPrint('Failed to refresh FCM token: $e');
+        debugPrint('FCM Sync Error: $e');
       }
     }
 

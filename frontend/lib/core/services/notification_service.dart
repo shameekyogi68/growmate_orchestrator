@@ -75,7 +75,12 @@ class NotificationService {
         );
       }
 
-      // 5. Setup Listeners
+      // 5. Listen for token refreshes automatically (Ensures high reliability)
+      FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+        debugPrint('FCM Token Refreshed (system triggered): $newToken');
+      });
+
+      // 6. Setup Listeners
       FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
       FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
 
@@ -130,7 +135,6 @@ class NotificationService {
 
   void _handleForegroundMessage(RemoteMessage message) {
     RemoteNotification? notification = message.notification;
-    AndroidNotification? android = message.notification?.android;
     Map<String, dynamic> data = message.data;
 
     if (notification != null) {
@@ -143,7 +147,7 @@ class NotificationService {
             data['priority'] == 'HIGH' ? _channel.id : 'engagement_channel',
             data['priority'] == 'HIGH' ? _channel.name : 'Farm Tips',
             channelDescription: _channel.description,
-            icon: android?.smallIcon ?? '@mipmap/ic_launcher',
+            icon: 'ic_launcher',
             styleInformation: BigTextStyleInformation(notification.body ?? ''),
             actions: [
               if (data['priority'] == 'HIGH')
