@@ -355,6 +355,13 @@ class _ProfileScreenState extends State<ProfileScreen>
                         const SizedBox(height: 12),
                         // Farm / Crops
                         _buildStaggeredCard(0.45, 0.75, _buildFarmSection()),
+                        const SizedBox(height: 12),
+                        // Notifications (Industry Test Section)
+                        _buildStaggeredCard(
+                          0.5,
+                          0.8,
+                          _buildNotificationSection(),
+                        ),
                         const SizedBox(height: 16),
                         // Save button
                         if (_hasUnsavedChanges)
@@ -456,6 +463,15 @@ class _ProfileScreenState extends State<ProfileScreen>
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                L.tr('Manage your profile', 'ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಅನ್ನು ನಿರ್ವಹಿಸಿ'),
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 13,
+                  color: Colors.white.withValues(alpha: 0.7),
                 ),
               ),
             ],
@@ -896,6 +912,75 @@ class _ProfileScreenState extends State<ProfileScreen>
               side: BorderSide(
                 color: GrowMateTheme.primaryGreen.withValues(alpha: 0.4),
               ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNotificationSection() {
+    return _sectionCard(
+      icon: Icons.notifications_active_outlined,
+      title: L.tr('Notifications', 'ಅಧಿಸೂಚನೆಗಳು'),
+      children: [
+        Text(
+          L.tr(
+            'Test your notification connection to ensure you receive urgent weather and pest alerts.',
+            'ತುರ್ತು ಹವಾಮಾನ ಮತ್ತು ಕೀಟಗಳ ಎಚ್ಚರಿಕೆಗಳನ್ನು ಸ್ವೀಕರಿಸಲು ನಿಮ್ಮ ಅಧಿಸೂಚನೆ ಸಂಪರ್ಕವನ್ನು ಪರೀಕ್ಷಿಸಿ.',
+          ),
+          style: TextStyle(fontSize: 12, color: GrowMateTheme.textSecondary),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          height: 46,
+          child: ElevatedButton.icon(
+            onPressed: () async {
+              try {
+                await ApiService.instance.sendTestNotification();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        L.tr(
+                          '🔔 Test push sent!',
+                          '🔔 ಪರೀಕ್ಷಾ ಸೂಚನೆ ಕಳುಹಿಸಲಾಗಿದೆ!',
+                        ),
+                      ),
+                      backgroundColor: GrowMateTheme.primaryGreen,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        L.tr(
+                          '❌ Test failed. Check settings.',
+                          '❌ ಪರೀಕ್ಷೆ ವಿಫಲವಾಗಿದೆ. ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.',
+                        ),
+                      ),
+                      backgroundColor: GrowMateTheme.harvestOrange,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              }
+            },
+            icon: Icon(Icons.send_rounded, size: 18, color: Colors.white),
+            label: Text(
+              L.tr('Send Test Notification', 'ಪರೀಕ್ಷಾ ಅಧಿಸೂಚನೆ ಕಳುಹಿಸಿ'),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: GrowMateTheme.primaryGreen,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 0,
             ),
           ),
         ),

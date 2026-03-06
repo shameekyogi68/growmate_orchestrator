@@ -17,6 +17,10 @@ class ProfileUpdate(BaseModel):
     quick_pin: Optional[str] = None
 
 
+class FcmTokenUpdate(BaseModel):
+    fcm_token: str
+
+
 class RegisterRequest(BaseModel):
     phone_number: str
     password: Optional[str] = None
@@ -422,3 +426,44 @@ async def quick_login(req: PinLoginRequest):
         "token": token,
         "profile": {"full_name": user["full_name"], "language": user["language"]},
     }
+
+
+@router.patch("/fcm-token")
+async def update_fcm_token(req: FcmTokenUpdate, token_data: dict = Depends(verify_token)):
+    """Updates the user's Firebase Cloud Messaging token."""
+    user_id = token_data.get("sub")
+    if not user_id or user_id == "local-user":
+        return {"status": "success (DB-less)"}
+
+    from app.utils.database import execute
+    await execute("UPDATE users SET fcm_token = $1 WHERE id = $2", req.fcm_token, int(user_id))
+    logger.info(f"FCM token updated for user {user_id}")
+    return {"status": "success"}
+
+
+@router.delete("/fcm-token")
+async def clear_fcm_token(token_data: dict = Depends(verify_token)):
+    """Removes the user's Firebase Cloud Messaging token (on logout)."""
+    from app.utils.database import execute
+    await execute("UPDATE users SET fcm_token = NULL WHERE id = $1", int(user_id))
+    logger.info(f"FCM token cleared for user {user_id}")
+    return {"status": "success"}
+
+@router.post("/test-notification")
+async def send_test_notification(token_data: dict = Depends(verify_token)):
+    """Triggers a test push notification to the current user."""
+    from app.services.notification_service import notify_user
+    user_id = token_data.get("sub")
+    if not user_id or user_id == "local-user":
+        raise HTTPException(status_code=400, detail="Cannot send notification in DB-less mode")
+        
+    success = await notify_user(
+        int(user_id),
+        title="GrowMate Test Alert 🚀",
+        body="This is a test notification to verify your industry-standard Firebase setup is working perfectly!",
+        data={"route": "/profile", "priority": "HIGH"}
+    )
+    if not success:
+        return {"status": "failed", "detail": "FCM token not found for this user. Try logging out and in again."}
+        
+    return {"status": "sent"}

@@ -27,6 +27,8 @@ services:
         sync: false # Set in Render Settings
       - key: INDIA_DATA_API_KEY
         sync: false # Set in Render Settings
+      - key: FIREBASE_SERVICE_ACCOUNT_PATH
+        value: ./firebase-service-account.json
 
   - type: redis
     name: growmate-redis

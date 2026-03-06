@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/services/api_service.dart';
+import '../../core/services/notification_service.dart';
 import '../../core/theme/growmate_theme.dart';
 import '../../core/localization/app_locale.dart';
 
@@ -41,12 +42,36 @@ class _SplashScreenState extends State<SplashScreen>
   // ─── Status text carousel ─────────────────────────────────────────────────
   int _currentTextIndex = 0;
   final List<_StatusLine> _statusLines = const [
-    _StatusLine(Icons.cloud_sync_outlined, 'Waking up the farm brain…', 'ಕೃಷಿ ತಂತ್ರಜ್ಞಾನ ಸಿದ್ಧವಾಗುತ್ತಿದೆ…'),
-    _StatusLine(Icons.satellite_alt_outlined, 'Fetching weather data…', 'ಹವಾಮಾನ ಮಾಹಿತಿ ಪಡೆಯಲಾಗುತ್ತಿದೆ…'),
-    _StatusLine(Icons.eco_outlined, 'Preparing crop intelligence…', 'ಬೆಳೆ ಮಾಹಿತಿ ಸಿದ್ಧಪಡಿಸಲಾಗುತ್ತಿದೆ…'),
-    _StatusLine(Icons.water_drop_outlined, 'Analyzing soil & rainfall…', 'ಮಣ್ಣು ಮತ್ತು ಮಳೆಯ ವಿಶ್ಲೇಷಣೆ…'),
-    _StatusLine(Icons.auto_graph_outlined, 'Loading market prices…', 'ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳನ್ನು ಪಡೆಯಲಾಗುತ್ತಿದೆ…'),
-    _StatusLine(Icons.tips_and_updates_outlined, 'Building your advisory…', 'ನಿಮ್ಮ ಸಲಹೆಗಳನ್ನು ಸಿದ್ಧಪಡಿಸಲಾಗುತ್ತಿದೆ…'),
+    _StatusLine(
+      Icons.cloud_sync_outlined,
+      'Waking up the farm brain…',
+      'ಕೃಷಿ ತಂತ್ರಜ್ಞಾನ ಸಿದ್ಧವಾಗುತ್ತಿದೆ…',
+    ),
+    _StatusLine(
+      Icons.satellite_alt_outlined,
+      'Fetching weather data…',
+      'ಹವಾಮಾನ ಮಾಹಿತಿ ಪಡೆಯಲಾಗುತ್ತಿದೆ…',
+    ),
+    _StatusLine(
+      Icons.eco_outlined,
+      'Preparing crop intelligence…',
+      'ಬೆಳೆ ಮಾಹಿತಿ ಸಿದ್ಧಪಡಿಸಲಾಗುತ್ತಿದೆ…',
+    ),
+    _StatusLine(
+      Icons.water_drop_outlined,
+      'Analyzing soil & rainfall…',
+      'ಮಣ್ಣು ಮತ್ತು ಮಳೆಯ ವಿಶ್ಲೇಷಣೆ…',
+    ),
+    _StatusLine(
+      Icons.auto_graph_outlined,
+      'Loading market prices…',
+      'ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳನ್ನು ಪಡೆಯಲಾಗುತ್ತಿದೆ…',
+    ),
+    _StatusLine(
+      Icons.tips_and_updates_outlined,
+      'Building your advisory…',
+      'ನಿಮ್ಮ ಸಲಹೆಗಳನ್ನು ಸಿದ್ಧಪಡಿಸಲಾಗುತ್ತಿದೆ…',
+    ),
   ];
 
   bool _serverReady = false;
@@ -55,11 +80,13 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-      systemNavigationBarColor: Color(0xFF0A3D0A),
-    ));
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Color(0xFF0A3D0A),
+      ),
+    );
     _initAnimations();
     _warmUpAndNavigate();
   }
@@ -70,9 +97,10 @@ class _SplashScreenState extends State<SplashScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     );
-    _logoScale = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _logoCtrl, curve: Curves.elasticOut),
-    );
+    _logoScale = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _logoCtrl, curve: Curves.elasticOut));
     _logoOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _logoCtrl,
@@ -82,21 +110,21 @@ class _SplashScreenState extends State<SplashScreen>
     _logoSlide = Tween<Offset>(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _logoCtrl, curve: Curves.easeOutCubic),
-    );
+    ).animate(CurvedAnimation(parent: _logoCtrl, curve: Curves.easeOutCubic));
 
     // 2. Pulse ring behind logo
     _pulseCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2000),
     )..repeat();
-    _pulseScale = Tween<double>(begin: 0.8, end: 1.6).animate(
-      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeOut),
-    );
-    _pulseOpacity = Tween<double>(begin: 0.5, end: 0.0).animate(
-      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeOut),
-    );
+    _pulseScale = Tween<double>(
+      begin: 0.8,
+      end: 1.6,
+    ).animate(CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeOut));
+    _pulseOpacity = Tween<double>(
+      begin: 0.5,
+      end: 0.0,
+    ).animate(CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeOut));
 
     // 3. Particle background (floating leaves / dots)
     _particleCtrl = AnimationController(
@@ -109,27 +137,30 @@ class _SplashScreenState extends State<SplashScreen>
       vsync: this,
       duration: const Duration(seconds: 6),
     );
-    _progressValue = Tween<double>(begin: 0.0, end: 0.85).animate(
-      CurvedAnimation(parent: _progressCtrl, curve: Curves.easeInOut),
-    );
+    _progressValue = Tween<double>(
+      begin: 0.0,
+      end: 0.85,
+    ).animate(CurvedAnimation(parent: _progressCtrl, curve: Curves.easeInOut));
 
     // 5. Fade out
     _fadeOutCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-    _fadeOutOpacity = Tween<double>(begin: 1.0, end: 0.0).animate(
-      CurvedAnimation(parent: _fadeOutCtrl, curve: Curves.easeInCubic),
-    );
+    _fadeOutOpacity = Tween<double>(
+      begin: 1.0,
+      end: 0.0,
+    ).animate(CurvedAnimation(parent: _fadeOutCtrl, curve: Curves.easeInCubic));
 
     // 6. Text cycle
     _textCycleCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
-    _textOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _textCycleCtrl, curve: Curves.easeInOut),
-    );
+    _textOpacity = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _textCycleCtrl, curve: Curves.easeInOut));
 
     // 7. Spinning leaf accent
     _leafCtrl = AnimationController(
@@ -152,8 +183,7 @@ class _SplashScreenState extends State<SplashScreen>
       _textCycleCtrl.reverse().then((_) {
         if (!mounted || _navigating) return;
         setState(() {
-          _currentTextIndex =
-              (_currentTextIndex + 1) % _statusLines.length;
+          _currentTextIndex = (_currentTextIndex + 1) % _statusLines.length;
         });
         _textCycleCtrl.forward().then((_) => _startTextCycle());
       });
@@ -176,6 +206,26 @@ class _SplashScreenState extends State<SplashScreen>
     _serverReady = true;
 
     final hasToken = results[1] as bool;
+
+    // Industry Standard: Refresh FCM token on every app launch if authenticated
+    if (hasToken) {
+      try {
+        final fcmToken = await NotificationService().getToken();
+        if (fcmToken != null) {
+          await ApiService.instance.updateFcmToken(fcmToken);
+          debugPrint('FCM token refreshed successfully');
+        }
+      } catch (e) {
+        debugPrint('Failed to refresh FCM token: $e');
+      }
+    }
+
+    // Schedule the 2-hour engagement notifications for the day
+    try {
+      await NotificationService().scheduleTwoHourCycle();
+    } catch (e) {
+      debugPrint('Error starting notification cycle: $e');
+    }
 
     // Complete the progress bar to 100%
     if (mounted) {
@@ -213,7 +263,7 @@ class _SplashScreenState extends State<SplashScreen>
         'https://rainfall-advisory-api-1.onrender.com/docs',
         'https://crop-calendar-api-tq0m.onrender.com/docs',
       ];
-      
+
       for (final url in urls) {
         // We use catchError so individual failures don't crash the warmup
         http.get(Uri.parse(url)).catchError((_) => http.Response('', 500));
@@ -255,10 +305,8 @@ class _SplashScreenState extends State<SplashScreen>
     return Scaffold(
       body: AnimatedBuilder(
         animation: _fadeOutOpacity,
-        builder: (context, child) => Opacity(
-          opacity: _fadeOutOpacity.value,
-          child: child,
-        ),
+        builder: (context, child) =>
+            Opacity(opacity: _fadeOutOpacity.value, child: child),
         child: Container(
           width: size.width,
           height: size.height,
@@ -445,11 +493,7 @@ class _SplashScreenState extends State<SplashScreen>
         // Tagline shimmer
         ShaderMask(
           shaderCallback: (bounds) => const LinearGradient(
-            colors: [
-              Color(0xFFA5D6A7),
-              Color(0xFFFFF176),
-              Color(0xFFA5D6A7),
-            ],
+            colors: [Color(0xFFA5D6A7), Color(0xFFFFF176), Color(0xFFA5D6A7)],
           ).createShader(bounds),
           child: const Text(
             'Intelligent Farming Platform',
@@ -563,7 +607,12 @@ class _SplashScreenState extends State<SplashScreen>
             ),
             const SizedBox(width: 6),
             Text(
-              _serverReady ? L.tr('Connected', 'ಸಂಪರ್ಕಿಸಲಾಗಿದೆ') : L.tr('Connecting to server…', 'ಸರ್ವರ್‌ಗೆ ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ…'),
+              _serverReady
+                  ? L.tr('Connected', 'ಸಂಪರ್ಕಿಸಲಾಗಿದೆ')
+                  : L.tr(
+                      'Connecting to server…',
+                      'ಸರ್ವರ್‌ಗೆ ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ…',
+                    ),
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 11,

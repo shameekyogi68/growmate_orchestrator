@@ -16,6 +16,7 @@ from app.services.mandi_tracker import get_mandi_arrivals
 from app.services.seed_scanner_service import verify_seed_authenticity
 from app.services.recommendation_service import get_crop_recommendations
 from app.services.advisory_fusion_service import fuse_advisory
+from app.services.notification_service import notify_user
 
 
 async def orchestrate_farmer_advisory(req_data: dict):
@@ -106,6 +107,16 @@ async def orchestrate_farmer_advisory(req_data: dict):
     # 5. Fusion
     fused = fuse_advisory(raw_results, language=language)
     fused["transition_view"] = transition_view
+
+    # 6. Push Notification for High Priority Alerts (Async/Background)
+    if str(user_id).isdigit():
+        import asyncio
+        for alert in fused.get("alerts", []):
+            if alert.get("priority_level") == "HIGH" and alert.get("should_notify"):
+                title = "GrowMate Alert" if language == "en" else "ಗ್ರೋಮೇಟ್ ಎಚ್ಚರಿಕೆ"
+                body = alert.get("message", "High risk detected in your farm area.")
+                asyncio.create_task(notify_user(int(user_id), title, body, data={"alert_source": alert.get("source")}))
+                break # Only send one notification per advisory check
 
     # Cache successfully fused results
     await cache_client.set_cached_advisory(user_id, fused, ttl_seconds=600)

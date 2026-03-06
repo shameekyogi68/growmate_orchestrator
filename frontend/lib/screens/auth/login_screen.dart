@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/growmate_theme.dart';
 import '../../core/services/api_service.dart';
+import '../../core/services/notification_service.dart';
 import '../../core/localization/app_locale.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -26,7 +27,9 @@ class _LoginScreenState extends State<LoginScreen>
   void initState() {
     super.initState();
     _fadeCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 600));
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
     _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut);
     _fadeCtrl.forward();
   }
@@ -50,17 +53,31 @@ class _LoginScreenState extends State<LoginScreen>
         phoneNumber: _phoneCtrl.text.trim(),
         pin: _pinCtrl.text.trim(),
       );
+
+      // Update FCM token immediately after login
+      final fcmToken = await NotificationService().getToken();
+      if (fcmToken != null) {
+        await ApiService.instance.updateFcmToken(fcmToken);
+      }
+
       if (mounted) {
         Navigator.of(context).pushReplacementNamed('/home');
       }
     } on ApiException catch (e) {
       debugPrint('API Error: ${e.detail}');
-      setState(() => _errorMessage = L.tr(
+      setState(
+        () => _errorMessage = L.tr(
           'Oops! Something went wrong. Let\'s try again.',
-          'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.'));
+          'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+        ),
+      );
     } catch (_) {
-      setState(() => _errorMessage = L.tr('Connection failed. Check your network.',
-          'ಸಂಪರ್ಕ ವಿಫಲವಾಗಿದೆ. ನಿಮ್ಮ ನೆಟ್‌ವರ್ಕ್ ಪರಿಶೀಲಿಸಿ.'));
+      setState(
+        () => _errorMessage = L.tr(
+          'Connection failed. Check your network.',
+          'ಸಂಪರ್ಕ ವಿಫಲವಾಗಿದೆ. ನಿಮ್ಮ ನೆಟ್‌ವರ್ಕ್ ಪರಿಶೀಲಿಸಿ.',
+        ),
+      );
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -97,8 +114,11 @@ class _LoginScreenState extends State<LoginScreen>
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(12),
-                              child: Image.asset('assets/icons/logo.png',
-                                  width: 48, height: 48),
+                              child: Image.asset(
+                                'assets/icons/logo.png',
+                                width: 48,
+                                height: 48,
+                              ),
                             ),
                             const SizedBox(height: 12),
                             const Text(
@@ -113,8 +133,10 @@ class _LoginScreenState extends State<LoginScreen>
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              L.tr('Intelligent Farming Platform',
-                                  'ಬುದ್ಧಿವಂತ ಕೃಷಿ ವೇದಿಕೆ'),
+                              L.tr(
+                                'Intelligent Farming Platform',
+                                'ಬುದ್ಧಿವಂತ ಕೃಷಿ ವೇದಿಕೆ',
+                              ),
                               style: TextStyle(
                                 fontFamily: 'Inter',
                                 fontSize: 14,
@@ -156,8 +178,10 @@ class _LoginScreenState extends State<LoginScreen>
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  L.tr('Sign in to your farm dashboard',
-                                      'ನಿಮ್ಮ ಕೃಷಿ ಖಾತೆಗೆ ಲಾಗಿನ್ ಆಗಿ'),
+                                  L.tr(
+                                    'Sign in to your farm dashboard',
+                                    'ನಿಮ್ಮ ಕೃಷಿ ಖಾತೆಗೆ ಲಾಗಿನ್ ಆಗಿ',
+                                  ),
                                   style: const TextStyle(
                                     fontFamily: 'Inter',
                                     fontSize: 13,
@@ -172,11 +196,13 @@ class _LoginScreenState extends State<LoginScreen>
                                   keyboardType: TextInputType.phone,
                                   maxLength: 10,
                                   inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly
+                                    FilteringTextInputFormatter.digitsOnly,
                                   ],
                                   validator: (v) => (v == null || v.length < 10)
-                                      ? L.tr('Enter valid phone number',
-                                          'ಮಾನ್ಯವಾದ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ')
+                                      ? L.tr(
+                                          'Enter valid phone number',
+                                          'ಮಾನ್ಯವಾದ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ',
+                                        )
                                       : null,
                                 ),
                                 const SizedBox(height: 16),
@@ -188,7 +214,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   keyboardType: TextInputType.number,
                                   maxLength: 4,
                                   inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly
+                                    FilteringTextInputFormatter.digitsOnly,
                                   ],
                                   suffixIcon: IconButton(
                                     icon: Icon(
@@ -199,11 +225,14 @@ class _LoginScreenState extends State<LoginScreen>
                                       size: 20,
                                     ),
                                     onPressed: () => setState(
-                                        () => _obscurePin = !_obscurePin),
+                                      () => _obscurePin = !_obscurePin,
+                                    ),
                                   ),
                                   validator: (v) => (v == null || v.length != 4)
-                                      ? L.tr('Enter 4-digit PIN',
-                                          '4-ಅಂಕಿಯ ಪಿನ್ ನಮೂದಿಸಿ')
+                                      ? L.tr(
+                                          'Enter 4-digit PIN',
+                                          '4-ಅಂಕಿಯ ಪಿನ್ ನಮೂದಿಸಿ',
+                                        )
                                       : null,
                                 ),
                                 if (_errorMessage != null) ...[
@@ -219,8 +248,8 @@ class _LoginScreenState extends State<LoginScreen>
                                       backgroundColor:
                                           GrowMateTheme.harvestOrange,
                                       shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(14)),
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
                                       elevation: 0,
                                     ),
                                     child: _loading
@@ -228,8 +257,9 @@ class _LoginScreenState extends State<LoginScreen>
                                             width: 20,
                                             height: 20,
                                             child: CircularProgressIndicator(
-                                                color: Colors.white,
-                                                strokeWidth: 2),
+                                              color: Colors.white,
+                                              strokeWidth: 2,
+                                            ),
                                           )
                                         : Text(
                                             L.tr('Sign In', 'ಸೈನ್ ಇನ್'),
@@ -247,8 +277,10 @@ class _LoginScreenState extends State<LoginScreen>
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
-                                      L.tr("Don't have an account? ",
-                                          "ಖಾತೆ ಇಲ್ಲವೇ? "),
+                                      L.tr(
+                                        "Don't have an account? ",
+                                        "ಖಾತೆ ಇಲ್ಲವೇ? ",
+                                      ),
                                       style: const TextStyle(
                                         fontFamily: 'Inter',
                                         fontSize: 13,
@@ -256,8 +288,9 @@ class _LoginScreenState extends State<LoginScreen>
                                       ),
                                     ),
                                     GestureDetector(
-                                      onTap: () => Navigator.of(context)
-                                          .pushNamed('/register'),
+                                      onTap: () => Navigator.of(
+                                        context,
+                                      ).pushNamed('/register'),
                                       child: Text(
                                         L.tr('Register', 'ನೋಂದಣಿ'),
                                         style: const TextStyle(
@@ -313,15 +346,19 @@ class _LoginScreenState extends State<LoginScreen>
       ),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle:
-            TextStyle(fontFamily: 'Inter', color: GrowMateTheme.textSecondary),
+        labelStyle: TextStyle(
+          fontFamily: 'Inter',
+          color: GrowMateTheme.textSecondary,
+        ),
         prefixIcon: Icon(icon, color: GrowMateTheme.primaryGreen, size: 20),
         suffixIcon: suffixIcon,
         counterText: '',
         filled: true,
         fillColor: const Color(0xFFF8F9FC),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -332,8 +369,7 @@ class _LoginScreenState extends State<LoginScreen>
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide:
-              BorderSide(color: GrowMateTheme.primaryGreen, width: 1.5),
+          borderSide: BorderSide(color: GrowMateTheme.primaryGreen, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -356,12 +392,16 @@ class _ErrorBanner extends StatelessWidget {
         color: GrowMateTheme.harvestOrange.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-            color: GrowMateTheme.harvestOrange.withValues(alpha: 0.3)),
+          color: GrowMateTheme.harvestOrange.withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         children: [
-          Icon(Icons.info_outline,
-              color: GrowMateTheme.harvestOrange, size: 16),
+          Icon(
+            Icons.info_outline,
+            color: GrowMateTheme.harvestOrange,
+            size: 16,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(

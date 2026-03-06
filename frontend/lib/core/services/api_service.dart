@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/api_config.dart';
@@ -24,14 +25,25 @@ class ApiService {
     await prefs.setString('auth_token', auth.token);
     await prefs.setString('user_id', auth.userId);
     await prefs.setString('language', auth.profile.language);
-    if (auth.profile.activeCrop != null) await prefs.setString('active_crop', auth.profile.activeCrop!);
-    else await prefs.remove('active_crop');
-    if (auth.profile.activeSowingDate != null) await prefs.setString('active_sowing_date', auth.profile.activeSowingDate!);
-    else await prefs.remove('active_sowing_date');
-    if (auth.profile.latitude != null) await prefs.setDouble('latitude', auth.profile.latitude!);
-    else await prefs.remove('latitude');
-    if (auth.profile.longitude != null) await prefs.setDouble('longitude', auth.profile.longitude!);
-    else await prefs.remove('longitude');
+    if (auth.profile.activeCrop != null)
+      await prefs.setString('active_crop', auth.profile.activeCrop!);
+    else
+      await prefs.remove('active_crop');
+    if (auth.profile.activeSowingDate != null)
+      await prefs.setString(
+        'active_sowing_date',
+        auth.profile.activeSowingDate!,
+      );
+    else
+      await prefs.remove('active_sowing_date');
+    if (auth.profile.latitude != null)
+      await prefs.setDouble('latitude', auth.profile.latitude!);
+    else
+      await prefs.remove('latitude');
+    if (auth.profile.longitude != null)
+      await prefs.setDouble('longitude', auth.profile.longitude!);
+    else
+      await prefs.remove('longitude');
   }
 
   Future<String?> _loadToken() async {
@@ -40,6 +52,7 @@ class ApiService {
   }
 
   Future<void> clearAuthData() async {
+    await clearFcmToken();
     _token = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token');
@@ -72,7 +85,9 @@ class ApiService {
     if (res.statusCode >= 200 && res.statusCode < 300) {
       return body as Map<String, dynamic>;
     }
-    final detail = (body is Map) ? (body['detail'] ?? res.reasonPhrase) : res.reasonPhrase;
+    final detail = (body is Map)
+        ? (body['detail'] ?? res.reasonPhrase)
+        : res.reasonPhrase;
     throw ApiException(statusCode: res.statusCode, detail: detail.toString());
   }
 
@@ -99,7 +114,8 @@ class ApiService {
             if (latitude != null) 'latitude': latitude,
             if (longitude != null) 'longitude': longitude,
             if (activeCrop != null) 'active_crop': activeCrop,
-            if (activeSowingDate != null) 'active_sowing_date': activeSowingDate,
+            if (activeSowingDate != null)
+              'active_sowing_date': activeSowingDate,
             if (quickPin != null) 'quick_pin': quickPin,
           }),
         )
@@ -143,7 +159,10 @@ class ApiService {
   Future<UserProfile> getProfile() async {
     final token = await _authToken;
     final res = await http
-        .get(_uri(ApiConfig.profile), headers: _headers(requiresAuth: true, token: token))
+        .get(
+          _uri(ApiConfig.profile),
+          headers: _headers(requiresAuth: true, token: token),
+        )
         .timeout(ApiConfig.receiveTimeout);
     final data = await _handleResponse(res);
     return UserProfile.fromJson(data);
@@ -174,15 +193,60 @@ class ApiService {
     await _handleResponse(res);
   }
 
+  Future<void> updateFcmToken(String fcmToken) async {
+    final authToken = await _authToken;
+    final res = await http
+        .patch(
+          _uri(ApiConfig.fcmToken),
+          headers: _headers(requiresAuth: true, token: authToken),
+          body: jsonEncode({'fcm_token': fcmToken}),
+        )
+        .timeout(ApiConfig.receiveTimeout);
+    await _handleResponse(res);
+  }
+
+  Future<void> clearFcmToken() async {
+    final authToken = await _authToken;
+    if (authToken == null) return;
+    try {
+      final res = await http
+          .delete(
+            _uri(ApiConfig.fcmToken),
+            headers: _headers(requiresAuth: true, token: authToken),
+          )
+          .timeout(ApiConfig.receiveTimeout);
+      await _handleResponse(res);
+    } catch (e) {
+      debugPrint('Failed to clear FCM token: $e');
+    }
+  }
+
+  Future<void> sendTestNotification() async {
+    final authToken = await _authToken;
+    final res = await http
+        .post(
+          _uri(ApiConfig.testNotification),
+          headers: _headers(requiresAuth: true, token: authToken),
+        )
+        .timeout(ApiConfig.receiveTimeout);
+    await _handleResponse(res);
+  }
+
   // ─── Crop Endpoints ───────────────────────────────────────────────────────
 
   Future<List<UserCrop>> getCrops() async {
     final token = await _authToken;
     final res = await http
-        .get(_uri(ApiConfig.crops), headers: _headers(requiresAuth: true, token: token))
+        .get(
+          _uri(ApiConfig.crops),
+          headers: _headers(requiresAuth: true, token: token),
+        )
         .timeout(ApiConfig.receiveTimeout);
     final raw = await http
-        .get(_uri(ApiConfig.crops), headers: _headers(requiresAuth: true, token: token))
+        .get(
+          _uri(ApiConfig.crops),
+          headers: _headers(requiresAuth: true, token: token),
+        )
         .timeout(ApiConfig.receiveTimeout);
     if (raw.statusCode >= 200 && raw.statusCode < 300) {
       final list = jsonDecode(raw.body) as List<dynamic>;
@@ -192,8 +256,9 @@ class ApiService {
     }
     final body = jsonDecode(raw.body);
     throw ApiException(
-        statusCode: raw.statusCode,
-        detail: (body['detail'] ?? 'Failed to fetch crops').toString());
+      statusCode: raw.statusCode,
+      detail: (body['detail'] ?? 'Failed to fetch crops').toString(),
+    );
   }
 
   Future<int> addCrop({

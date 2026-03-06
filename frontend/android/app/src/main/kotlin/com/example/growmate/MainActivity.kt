@@ -1,4 +1,4 @@
-package com.example.growmate_frontend
+package com.example.growmate
 
 import io.flutter.embedding.android.FlutterActivity
 

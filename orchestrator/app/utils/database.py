@@ -35,11 +35,13 @@ async def init_db():
                     active_crop VARCHAR(100),
                     active_sowing_date DATE,
                     quick_pin VARCHAR(4),
+                    fcm_token TEXT,
                     created_at TIMESTAMPTZ DEFAULT NOW()
                 );
             """)
             # MIGRATION: Ensure password_hash is nullable and add index for quick_pin
             await conn.execute("ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;")
+            await conn.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS fcm_token TEXT;")
             await conn.execute("CREATE INDEX IF NOT EXISTS idx_users_quick_pin ON users (quick_pin);")
             await conn.execute("""
                 CREATE TABLE IF NOT EXISTS user_crops (

@@ -10,6 +10,7 @@ from app.controllers import advisory_controller, user_controller, rainfall_contr
 from app.utils.logger import logger
 from app.utils.config import get_settings
 from app.utils.database import init_db, close_db, get_pool
+from app.services.notification_service import init_firebase
 from app.utils.cache import cache_client
 from app.utils.scheduler import start_scheduler, stop_scheduler
 
@@ -27,6 +28,7 @@ async def lifespan(app: FastAPI):
 
     # Startup
     await init_db()
+    init_firebase()
     await start_scheduler()
     logger.info("Application startup complete.")
 

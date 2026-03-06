@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/growmate_theme.dart';
 import '../../core/services/api_service.dart';
+import '../../core/services/notification_service.dart';
 import '../../shared/location_picker_screen.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:growmate_frontend/core/localization/app_locale.dart';
@@ -31,7 +32,9 @@ class _RegisterScreenState extends State<RegisterScreen>
   void initState() {
     super.initState();
     _fadeCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 600));
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
     _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut);
     _fadeCtrl.forward();
   }
@@ -48,9 +51,12 @@ class _RegisterScreenState extends State<RegisterScreen>
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedLocation == null) {
-      setState(() => _errorMessage = L.tr(
+      setState(
+        () => _errorMessage = L.tr(
           'Please set your farm location within Udupi District.',
-          'ದಯವಿಟ್ಟು ಉಡುಪಿ ಜಿಲ್ಲೆಯೊಳಗೆ ನಿಮ್ಮ ಫಾರ್ಮ್ ಸ್ಥಳವನ್ನು ಹೊಂದಿಸಿ.'));
+          'ದಯವಿಟ್ಟು ಉಡುಪಿ ಜಿಲ್ಲೆಯೊಳಗೆ ನಿಮ್ಮ ಫಾರ್ಮ್ ಸ್ಥಳವನ್ನು ಹೊಂದಿಸಿ.',
+        ),
+      );
       return;
     }
     setState(() {
@@ -66,16 +72,29 @@ class _RegisterScreenState extends State<RegisterScreen>
         longitude: _selectedLocation?.longitude,
         quickPin: _pinCtrl.text.trim(),
       );
+
+      // Update FCM token immediately after registration
+      final fcmToken = await NotificationService().getToken();
+      if (fcmToken != null) {
+        await ApiService.instance.updateFcmToken(fcmToken);
+      }
+
       if (mounted) Navigator.of(context).pushReplacementNamed('/home');
     } on ApiException catch (e) {
       debugPrint('API Error: ${e.detail}');
-      setState(() => _errorMessage = L.tr(
+      setState(
+        () => _errorMessage = L.tr(
           'Oops! Something went wrong. Let\'s try again.',
-          'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.'));
+          'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+        ),
+      );
     } catch (_) {
-      setState(() => _errorMessage = L.tr(
+      setState(
+        () => _errorMessage = L.tr(
           'Connection failed. Check your network.',
-          'ಸಂಪರ್ಕ ವಿಫಲವಾಗಿದೆ. ನಿಮ್ಮ ನೆಟ್‌ವರ್ಕ್ ಪರಿಶೀಲಿಸಿ.'));
+          'ಸಂಪರ್ಕ ವಿಫಲವಾಗಿದೆ. ನಿಮ್ಮ ನೆಟ್‌ವರ್ಕ್ ಪರಿಶೀಲಿಸಿ.',
+        ),
+      );
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -112,16 +131,22 @@ class _RegisterScreenState extends State<RegisterScreen>
                             const Spacer(),
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8),
-                              child: Image.asset('assets/icons/logo.png',
-                                  width: 28, height: 28),
+                              child: Image.asset(
+                                'assets/icons/logo.png',
+                                width: 28,
+                                height: 28,
+                              ),
                             ),
                             const SizedBox(width: 8),
-                            const Text('GrowMate',
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontFamily: 'Inter',
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w700)),
+                            const Text(
+                              'GrowMate',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontFamily: 'Inter',
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                             const Spacer(),
                             const SizedBox(width: 48),
                           ],
@@ -147,36 +172,45 @@ class _RegisterScreenState extends State<RegisterScreen>
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 Text(
-                                    L.tr('Create Account', 'ಖಾತೆ ತೆರೆಯಿರಿ'),
-                                    style: TextStyle(
-                                        fontFamily: 'Inter',
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.w700,
-                                        color: GrowMateTheme.textPrimary)),
+                                  L.tr('Create Account', 'ಖಾತೆ ತೆರೆಯಿರಿ'),
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w700,
+                                    color: GrowMateTheme.textPrimary,
+                                  ),
+                                ),
                                 const SizedBox(height: 4),
                                 Text(
-                                    L.tr('Set up your farmer profile',
-                                        'ನಿಮ್ಮ ರೈತ ಪ್ರೊಫೈಲ್ ಅನ್ನು ಹೊಂದಿಸಿ'),
-                                    style: TextStyle(
-                                        fontFamily: 'Inter',
-                                        fontSize: 13,
-                                        color: GrowMateTheme.textSecondary)),
+                                  L.tr(
+                                    'Set up your farmer profile',
+                                    'ನಿಮ್ಮ ರೈತ ಪ್ರೊಫೈಲ್ ಅನ್ನು ಹೊಂದಿಸಿ',
+                                  ),
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 13,
+                                    color: GrowMateTheme.textSecondary,
+                                  ),
+                                ),
                                 const SizedBox(height: 24),
                                 _premiumField(
                                   controller: _phoneCtrl,
                                   label: L.tr(
-                                      'Phone Number *', 'ದೂರವಾಣಿ ಸಂಖ್ಯೆ *'),
+                                    'Phone Number *',
+                                    'ದೂರವಾಣಿ ಸಂಖ್ಯೆ *',
+                                  ),
                                   icon: Icons.phone_outlined,
                                   keyboardType: TextInputType.phone,
                                   maxLength: 10,
                                   inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly
+                                    FilteringTextInputFormatter.digitsOnly,
                                   ],
-                                  validator: (v) =>
-                                      (v == null || v.length < 10)
-                                          ? L.tr('Enter valid phone number',
-                                              'ಮಾನ್ಯವಾದ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ')
-                                          : null,
+                                  validator: (v) => (v == null || v.length < 10)
+                                      ? L.tr(
+                                          'Enter valid phone number',
+                                          'ಮಾನ್ಯವಾದ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ',
+                                        )
+                                      : null,
                                 ),
                                 const SizedBox(height: 14),
                                 _premiumField(
@@ -188,13 +222,15 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 _premiumField(
                                   controller: _pinCtrl,
                                   label: L.tr(
-                                      '4-Digit PIN *', '4-ಅಂಕಿಯ ಪಿನ್ *'),
+                                    '4-Digit PIN *',
+                                    '4-ಅಂಕಿಯ ಪಿನ್ *',
+                                  ),
                                   icon: Icons.lock_outline,
                                   obscure: _obscurePin,
                                   keyboardType: TextInputType.number,
                                   maxLength: 4,
                                   inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly
+                                    FilteringTextInputFormatter.digitsOnly,
                                   ],
                                   suffixIcon: IconButton(
                                     icon: Icon(
@@ -205,40 +241,42 @@ class _RegisterScreenState extends State<RegisterScreen>
                                       size: 20,
                                     ),
                                     onPressed: () => setState(
-                                        () => _obscurePin = !_obscurePin),
+                                      () => _obscurePin = !_obscurePin,
+                                    ),
                                   ),
-                                  validator: (v) =>
-                                      (v == null || v.length != 4)
-                                          ? L.tr(
-                                              'PIN must be exactly 4 digits',
-                                              'ಪಿನ್ ಸರಿಯಾಗಿ 4 ಅಂಕಿಗಳಿರಬೇಕು')
-                                          : null,
+                                  validator: (v) => (v == null || v.length != 4)
+                                      ? L.tr(
+                                          'PIN must be exactly 4 digits',
+                                          'ಪಿನ್ ಸರಿಯಾಗಿ 4 ಅಂಕಿಗಳಿರಬೇಕು',
+                                        )
+                                      : null,
                                 ),
                                 const SizedBox(height: 14),
                                 // Language dropdown
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 12),
+                                    horizontal: 12,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFF8F9FC),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                        color: const Color(0xFFE8E8E8)),
+                                      color: const Color(0xFFE8E8E8),
+                                    ),
                                   ),
                                   child: DropdownButtonFormField<String>(
                                     value: _language,
                                     decoration: InputDecoration(
-                                      labelText:
-                                          L.tr('Language', 'ಭಾಷೆ'),
+                                      labelText: L.tr('Language', 'ಭಾಷೆ'),
                                       labelStyle: TextStyle(
-                                          fontFamily: 'Inter',
-                                          color:
-                                              GrowMateTheme.textSecondary),
+                                        fontFamily: 'Inter',
+                                        color: GrowMateTheme.textSecondary,
+                                      ),
                                       prefixIcon: Icon(
-                                          Icons.translate_outlined,
-                                          color:
-                                              GrowMateTheme.primaryGreen,
-                                          size: 20),
+                                        Icons.translate_outlined,
+                                        color: GrowMateTheme.primaryGreen,
+                                        size: 20,
+                                      ),
                                       border: InputBorder.none,
                                       enabledBorder: InputBorder.none,
                                       focusedBorder: InputBorder.none,
@@ -251,14 +289,16 @@ class _RegisterScreenState extends State<RegisterScreen>
                                     ),
                                     items: const [
                                       DropdownMenuItem(
-                                          value: 'en',
-                                          child: Text('English')),
+                                        value: 'en',
+                                        child: Text('English'),
+                                      ),
                                       DropdownMenuItem(
-                                          value: 'kn',
-                                          child: Text('ಕನ್ನಡ')),
+                                        value: 'kn',
+                                        child: Text('ಕನ್ನಡ'),
+                                      ),
                                     ],
-                                    onChanged: (v) => setState(
-                                        () => _language = v ?? 'en'),
+                                    onChanged: (v) =>
+                                        setState(() => _language = v ?? 'en'),
                                   ),
                                 ),
                                 const SizedBox(height: 14),
@@ -267,45 +307,46 @@ class _RegisterScreenState extends State<RegisterScreen>
                                   onTap: () async {
                                     final loc = await Navigator.of(context)
                                         .push<LatLng>(
-                                      MaterialPageRoute(
-                                          builder: (_) =>
-                                              LocationPickerScreen(
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                LocationPickerScreen(
                                                   initialLocation:
-                                                      _selectedLocation)),
-                                    );
+                                                      _selectedLocation,
+                                                ),
+                                          ),
+                                        );
                                     if (loc != null) {
-                                      setState(
-                                          () => _selectedLocation = loc);
+                                      setState(() => _selectedLocation = loc);
                                     }
                                   },
                                   child: Container(
                                     padding: const EdgeInsets.all(14),
                                     decoration: BoxDecoration(
                                       color: const Color(0xFFF8F9FC),
-                                      borderRadius:
-                                          BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                          color: _selectedLocation != null
-                                              ? GrowMateTheme.primaryGreen
+                                        color: _selectedLocation != null
+                                            ? GrowMateTheme.primaryGreen
                                                   .withValues(alpha: 0.5)
-                                              : const Color(0xFFE8E8E8)),
+                                            : const Color(0xFFE8E8E8),
+                                      ),
                                     ),
                                     child: Row(
                                       children: [
                                         Container(
                                           padding: const EdgeInsets.all(8),
                                           decoration: BoxDecoration(
-                                            color: GrowMateTheme
-                                                .primaryGreen
+                                            color: GrowMateTheme.primaryGreen
                                                 .withValues(alpha: 0.1),
-                                            borderRadius:
-                                                BorderRadius.circular(10),
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
                                           ),
                                           child: Icon(
-                                              Icons.location_on_outlined,
-                                              color: GrowMateTheme
-                                                  .primaryGreen,
-                                              size: 20),
+                                            Icons.location_on_outlined,
+                                            color: GrowMateTheme.primaryGreen,
+                                            size: 20,
+                                          ),
                                         ),
                                         const SizedBox(width: 12),
                                         Expanded(
@@ -317,21 +358,22 @@ class _RegisterScreenState extends State<RegisterScreen>
                                                 _selectedLocation == null
                                                     ? L.tr(
                                                         'Set Farm Location *',
-                                                        'ಫಾರ್ಮ್ ಸ್ಥಳವನ್ನು ಹೊಂದಿಸಿ *')
+                                                        'ಫಾರ್ಮ್ ಸ್ಥಳವನ್ನು ಹೊಂದಿಸಿ *',
+                                                      )
                                                     : L.tr(
                                                         'Location Selected ✓',
-                                                        'ಸ್ಥಳವನ್ನು ಆಯ್ಕೆ ✓'),
+                                                        'ಸ್ಥಳವನ್ನು ಆಯ್ಕೆ ✓',
+                                                      ),
                                                 style: TextStyle(
                                                   fontFamily: 'Inter',
-                                                  fontWeight:
-                                                      FontWeight.w600,
+                                                  fontWeight: FontWeight.w600,
                                                   fontSize: 14,
-                                                  color: _selectedLocation !=
-                                                          null
+                                                  color:
+                                                      _selectedLocation != null
                                                       ? GrowMateTheme
-                                                          .primaryGreen
+                                                            .primaryGreen
                                                       : GrowMateTheme
-                                                          .textPrimary,
+                                                            .textPrimary,
                                                 ),
                                               ),
                                               const SizedBox(height: 2),
@@ -340,20 +382,23 @@ class _RegisterScreenState extends State<RegisterScreen>
                                                     ? '${_selectedLocation!.latitude.toStringAsFixed(4)}, ${_selectedLocation!.longitude.toStringAsFixed(4)}'
                                                     : L.tr(
                                                         'Tap to open map',
-                                                        'ನಕ್ಷೆಯನ್ನು ತೆರೆಯಲು ಟ್ಯಾಪ್ ಮಾಡಿ'),
+                                                        'ನಕ್ಷೆಯನ್ನು ತೆರೆಯಲು ಟ್ಯಾಪ್ ಮಾಡಿ',
+                                                      ),
                                                 style: TextStyle(
-                                                    fontFamily: 'Inter',
-                                                    fontSize: 12,
-                                                    color: GrowMateTheme
-                                                        .textSecondary),
+                                                  fontFamily: 'Inter',
+                                                  fontSize: 12,
+                                                  color: GrowMateTheme
+                                                      .textSecondary,
+                                                ),
                                               ),
                                             ],
                                           ),
                                         ),
-                                        Icon(Icons.chevron_right_rounded,
-                                            color:
-                                                GrowMateTheme.textSecondary,
-                                            size: 20),
+                                        Icon(
+                                          Icons.chevron_right_rounded,
+                                          color: GrowMateTheme.textSecondary,
+                                          size: 20,
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -362,63 +407,68 @@ class _RegisterScreenState extends State<RegisterScreen>
                                   const SizedBox(height: 14),
                                   Container(
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 14, vertical: 10),
+                                      horizontal: 14,
+                                      vertical: 10,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: GrowMateTheme.harvestOrange
                                           .withValues(alpha: 0.08),
-                                      borderRadius:
-                                          BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                          color: GrowMateTheme
-                                              .harvestOrange
-                                              .withValues(alpha: 0.3)),
+                                        color: GrowMateTheme.harvestOrange
+                                            .withValues(alpha: 0.3),
+                                      ),
                                     ),
-                                    child: Row(children: [
-                                      Icon(Icons.info_outline,
-                                          color: GrowMateTheme
-                                              .harvestOrange,
-                                          size: 16),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          _errorMessage!,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: GrowMateTheme
-                                                .harvestOrange,
-                                            fontFamily: 'Inter',
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.info_outline,
+                                          color: GrowMateTheme.harvestOrange,
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            _errorMessage!,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color:
+                                                  GrowMateTheme.harvestOrange,
+                                              fontFamily: 'Inter',
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ]),
+                                      ],
+                                    ),
                                   ),
                                 ],
                                 const SizedBox(height: 24),
                                 SizedBox(
                                   height: 52,
                                   child: ElevatedButton(
-                                    onPressed:
-                                        _loading ? null : _register,
+                                    onPressed: _loading ? null : _register,
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor:
                                           GrowMateTheme.harvestOrange,
                                       shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(14)),
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
                                       elevation: 0,
                                     ),
                                     child: _loading
                                         ? const SizedBox(
                                             width: 20,
                                             height: 20,
-                                            child:
-                                                CircularProgressIndicator(
-                                                    color: Colors.white,
-                                                    strokeWidth: 2),
+                                            child: CircularProgressIndicator(
+                                              color: Colors.white,
+                                              strokeWidth: 2,
+                                            ),
                                           )
                                         : Text(
-                                            L.tr('Create Account',
-                                                'ಖಾತೆ ತೆರೆಯಿರಿ'),
+                                            L.tr(
+                                              'Create Account',
+                                              'ಖಾತೆ ತೆರೆಯಿರಿ',
+                                            ),
                                             style: TextStyle(
                                               fontFamily: 'Inter',
                                               fontSize: 15,
@@ -430,31 +480,30 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 ),
                                 const SizedBox(height: 16),
                                 Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
-                                        L.tr(
-                                            'Already have an account? ',
-                                            'ಈಗಾಗಲೇ ಖಾತೆ ಹೊಂದಿದ್ದೀರಾ? '),
-                                        style: TextStyle(
-                                            fontFamily: 'Inter',
-                                            fontSize: 13,
-                                            color: GrowMateTheme
-                                                .textSecondary)),
+                                      L.tr(
+                                        'Already have an account? ',
+                                        'ಈಗಾಗಲೇ ಖಾತೆ ಹೊಂದಿದ್ದೀರಾ? ',
+                                      ),
+                                      style: TextStyle(
+                                        fontFamily: 'Inter',
+                                        fontSize: 13,
+                                        color: GrowMateTheme.textSecondary,
+                                      ),
+                                    ),
                                     GestureDetector(
-                                      onTap: () =>
-                                          Navigator.of(context).pop(),
+                                      onTap: () => Navigator.of(context).pop(),
                                       child: Text(
-                                          L.tr(
-                                              'Sign In', 'ಸೈನ್ ಇನ್'),
-                                          style: TextStyle(
-                                              fontFamily: 'Inter',
-                                              fontSize: 13,
-                                              fontWeight:
-                                                  FontWeight.w600,
-                                              color: GrowMateTheme
-                                                  .primaryGreen)),
+                                        L.tr('Sign In', 'ಸೈನ್ ಇನ್'),
+                                        style: TextStyle(
+                                          fontFamily: 'Inter',
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: GrowMateTheme.primaryGreen,
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -484,8 +533,11 @@ class _RegisterScreenState extends State<RegisterScreen>
           color: Colors.white.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(10),
         ),
-        child: const Icon(Icons.arrow_back_ios_new,
-            color: Colors.white, size: 18),
+        child: const Icon(
+          Icons.arrow_back_ios_new,
+          color: Colors.white,
+          size: 18,
+        ),
       ),
     );
   }
@@ -516,15 +568,19 @@ class _RegisterScreenState extends State<RegisterScreen>
       ),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle:
-            TextStyle(fontFamily: 'Inter', color: GrowMateTheme.textSecondary),
+        labelStyle: TextStyle(
+          fontFamily: 'Inter',
+          color: GrowMateTheme.textSecondary,
+        ),
         prefixIcon: Icon(icon, color: GrowMateTheme.primaryGreen, size: 20),
         suffixIcon: suffixIcon,
         counterText: '',
         filled: true,
         fillColor: const Color(0xFFF8F9FC),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -535,8 +591,7 @@ class _RegisterScreenState extends State<RegisterScreen>
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide:
-              BorderSide(color: GrowMateTheme.primaryGreen, width: 1.5),
+          borderSide: BorderSide(color: GrowMateTheme.primaryGreen, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

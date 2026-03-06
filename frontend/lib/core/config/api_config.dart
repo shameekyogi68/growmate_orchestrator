@@ -19,18 +19,20 @@ class ApiConfig {
   static const String tokenMissingDetail = 'Invalid or missing token';
 
   // ─── User Endpoints ────────────────────────────────────────────────────────
-  static const String register   = '/user/register';
-  static const String login      = '/user/login';
+  static const String register = '/user/register';
+  static const String login = '/user/login';
   static const String quickLogin = '/user/quick-login';
-  static const String profile    = '/user/profile';
-  static const String crops      = '/user/crops';
+  static const String profile = '/user/profile';
+  static const String crops = '/user/crops';
+  static const String fcmToken = '/user/fcm-token';
+  static const String testNotification = '/user/test-notification';
   static String cropSetPrimary(int cropId) => '/user/crops/$cropId/set-primary';
-  static String cropDelete(int cropId)     => '/user/crops/$cropId';
+  static String cropDelete(int cropId) => '/user/crops/$cropId';
 
   // ─── Advisory Endpoints ───────────────────────────────────────────────────
   static const String farmerAdvisory = '/farmer-advisory';
   static const String supportedCrops = '/supported-crops';
-  static const String health          = '/health';
+  static const String health = '/health';
 
   // ─── Rate Limit Status Codes ──────────────────────────────────────────────
   static const int rateLimitStatusCode = 429;
