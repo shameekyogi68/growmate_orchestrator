@@ -34,6 +34,20 @@ async def queue_scheduled_notification(
     )
 
 
+async def notify_user_safe(user_id: int, title: str, body: str, data: dict = None):
+    """
+    Industry Standard: Safe Notification Wrapper.
+    Ensures that background notifications (Login alerts, Welcome messages) 
+    never block the main execution or crash the request.
+    """
+    from app.services.notification_service import notify_user
+
+    try:
+        await notify_user(user_id, title, body, data)
+    except Exception as e:
+        logger.error(f"[Scheduler] [SafeNotif] Error: {e}")
+
+
 async def process_scheduled_queue():
     """
     Industry Standard: Queue Processor.
