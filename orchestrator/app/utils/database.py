@@ -83,6 +83,24 @@ async def init_db():
                 CREATE INDEX IF NOT EXISTS idx_advisory_user
                 ON advisory_history(user_id, created_at DESC);
             """)
+            await conn.execute("""
+                CREATE TABLE IF NOT EXISTS scheduled_notifications (
+                    id SERIAL PRIMARY KEY,
+                    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                    title TEXT NOT NULL,
+                    body TEXT NOT NULL,
+                    data JSONB,
+                    scheduled_at TIMESTAMPTZ NOT NULL,
+                    status VARCHAR(20) DEFAULT 'pending', -- pending, sent, failed
+                    attempts INTEGER DEFAULT 0,
+                    last_attempt TIMESTAMPTZ,
+                    created_at TIMESTAMPTZ DEFAULT NOW()
+                );
+            """)
+            await conn.execute("""
+                CREATE INDEX IF NOT EXISTS idx_scheduled_notifications_status_time 
+                ON scheduled_notifications (status, scheduled_at ASC);
+            """)
         logger.info("Database tables verified/created.")
     except Exception as e:
         logger.error(f"Database initialization failed: {e}. Running in DB-less mode.")
