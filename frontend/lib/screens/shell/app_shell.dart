@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../profile/crop_manager_screen.dart';
 import '../profile/profile_screen.dart';
+import '../advisory/advisory_screen.dart';
+import '../advisory/crop_calendar_screen.dart';
 import '../../core/theme/growmate_theme.dart';
 import '../../core/localization/app_locale.dart';
 
@@ -25,6 +27,8 @@ class AppShellState extends State<AppShell> with TickerProviderStateMixin {
   late AnimationController _fadeCtrl;
 
   final List<Widget> _screens = const [
+    AdvisoryScreen(),
+    CropCalendarScreen(),
     CropManagerScreen(),
     ProfileScreen(),
   ];
@@ -60,10 +64,7 @@ class AppShellState extends State<AppShell> with TickerProviderStateMixin {
     return Scaffold(
       body: FadeTransition(
         opacity: CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeInOut),
-        child: IndexedStack(
-          index: _currentIndex,
-          children: _screens,
-        ),
+        child: IndexedStack(index: _currentIndex, children: _screens),
       ),
       bottomNavigationBar: _PremiumNavBar(
         currentIndex: _currentIndex,
@@ -103,13 +104,29 @@ class _PremiumNavBar extends StatelessWidget {
               _NavTab(
                 index: 0,
                 currentIndex: currentIndex,
-                icon: Icons.grass_outlined,
-                activeIcon: Icons.grass_rounded,
-                label: L.tr('My Crops', 'ನನ್ನ ಬೆಳೆ'),
+                icon: Icons.dashboard_outlined,
+                activeIcon: Icons.dashboard_rounded,
+                label: L.tr('Advisory', 'ಸಲಹೆ'),
                 onTap: onTap,
               ),
               _NavTab(
                 index: 1,
+                currentIndex: currentIndex,
+                icon: Icons.calendar_today_outlined,
+                activeIcon: Icons.calendar_today_rounded,
+                label: L.tr('Planner', 'ಯೋಜನೆ'),
+                onTap: onTap,
+              ),
+              _NavTab(
+                index: 2,
+                currentIndex: currentIndex,
+                icon: Icons.grass_outlined,
+                activeIcon: Icons.grass_rounded,
+                label: L.tr('My Farm', 'ನನ್ನ ಫಾರ್ಮ್'),
+                onTap: onTap,
+              ),
+              _NavTab(
+                index: 3,
                 currentIndex: currentIndex,
                 icon: Icons.person_outline_rounded,
                 activeIcon: Icons.person_rounded,

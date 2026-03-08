@@ -368,6 +368,34 @@ class ApiService {
         .timeout(ApiConfig.connectTimeout);
     return await _handleResponse(res);
   }
+
+  Future<CropCalendarResponse> getCropCalendar({
+    required String crop,
+    required String sowingDate,
+    String language = 'en',
+    String? variety,
+  }) async {
+    final token = await _authToken;
+    final params = {
+      'crop': crop,
+      'sowing_date': sowingDate,
+      'language': language,
+      if (variety != null) 'variety': variety,
+      'date': DateTime.now().toIsoformat(),
+    };
+    final res = await http
+        .get(
+          _uri(ApiConfig.cropCalendar, params),
+          headers: _headers(requiresAuth: true, token: token),
+        )
+        .timeout(ApiConfig.receiveTimeout);
+    final data = await _handleResponse(res);
+    return CropCalendarResponse.fromJson(data);
+  }
+}
+
+extension DateTimeIso on DateTime {
+  String toIsoformat() => toIso8601String().split('T')[0];
 }
 
 /// Thrown when the backend returns a non-2xx status.

@@ -31,6 +31,7 @@ class ApiConfig {
 
   // ─── Advisory Endpoints ───────────────────────────────────────────────────
   static const String farmerAdvisory = '/farmer-advisory';
+  static const String cropCalendar = '/farmer-advisory/calendar';
   static const String supportedCrops = '/supported-crops';
   static const String health = '/health';
 

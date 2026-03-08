@@ -44,7 +44,8 @@ class AdvisoryResponse {
       status: json['status'] as String? ?? 'unknown',
       confidenceScore: (json['confidence_score'] as num?)?.toDouble() ?? 1.0,
       mainStatus: MainStatus.fromJson(
-          json['main_status'] as Map<String, dynamic>? ?? {}),
+        json['main_status'] as Map<String, dynamic>? ?? {},
+      ),
       rainfall: json['rainfall'] as Map<String, dynamic>? ?? {},
       soil: json['soil'] as Map<String, dynamic>? ?? {},
       pest: json['pest'] as Map<String, dynamic>? ?? {},
@@ -58,26 +59,110 @@ class AdvisoryResponse {
           .map((a) => AdvisoryAlert.fromJson(a as Map<String, dynamic>))
           .toList(),
       partialData: json['partial_data'] as bool? ?? false,
-      serviceHealth:
-          (json['service_health'] as Map<String, dynamic>? ?? {}).map(
-        (k, v) => MapEntry(k, v.toString()),
-      ),
+      serviceHealth: (json['service_health'] as Map<String, dynamic>? ?? {})
+          .map((k, v) => MapEntry(k, v.toString())),
       lastUpdated: json['last_updated'] as String? ?? '',
       uiConfig: json['ui_config'] as Map<String, dynamic>?,
     );
   }
 
   /// Returns true if any sub-service is in DEGRADED state
-  bool get isRainfallDegraded =>
-      rainfall['status'] == 'DEGRADED';
+  bool get isRainfallDegraded => rainfall['status'] == 'DEGRADED';
+}
+
+/// CropCalendar Models — matches GET /farmer-advisory/calendar.
+class CropCalendarResponse {
+  final List<CalendarMonth> timeline;
+  final CalendarProgress progress;
+
+  const CropCalendarResponse({required this.timeline, required this.progress});
+
+  factory CropCalendarResponse.fromJson(Map<String, dynamic> json) {
+    return CropCalendarResponse(
+      timeline: (json['timeline'] as List<dynamic>? ?? [])
+          .map((m) => CalendarMonth.fromJson(m as Map<String, dynamic>))
+          .toList(),
+      progress: CalendarProgress.fromJson(
+        json['progress'] as Map<String, dynamic>? ?? {},
+      ),
+    );
+  }
+}
+
+class CalendarMonth {
+  final String month;
+  final List<CalendarWeek> weeks;
+
+  const CalendarMonth({required this.month, required this.weeks});
+
+  factory CalendarMonth.fromJson(Map<String, dynamic> json) {
+    return CalendarMonth(
+      month: json['month'] as String? ?? 'Month',
+      weeks: (json['weeks'] as List<dynamic>? ?? [])
+          .map((w) => CalendarWeek.fromJson(w as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
+class CalendarWeek {
+  final int weekNumber;
+  final String fieldOperation;
+  final String stage;
+  final String? irrigation;
+  final String? fertilizer;
+  final String? weedManagement;
+  final String? protection;
+
+  const CalendarWeek({
+    required this.weekNumber,
+    required this.fieldOperation,
+    required this.stage,
+    this.irrigation,
+    this.fertilizer,
+    this.weedManagement,
+    this.protection,
+  });
+
+  factory CalendarWeek.fromJson(Map<String, dynamic> json) {
+    return CalendarWeek(
+      weekNumber: json['week_number'] as int? ?? 0,
+      fieldOperation: json['field_operation'] as String? ?? '',
+      stage: json['stage'] as String? ?? 'Development',
+      irrigation: json['irrigation'] as String?,
+      fertilizer: json['fertilizer'] as String?,
+      weedManagement: json['weed_management'] as String?,
+      protection: json['protection'] as String?,
+    );
+  }
+}
+
+class CalendarProgress {
+  final int currentWeek;
+  final String? currentPhase;
+  final String? upcomingOperation;
+
+  const CalendarProgress({
+    required this.currentWeek,
+    this.currentPhase,
+    this.upcomingOperation,
+  });
+
+  factory CalendarProgress.fromJson(Map<String, dynamic> json) {
+    return CalendarProgress(
+      currentWeek: json['current_week'] as int? ?? 0,
+      currentPhase: json['current_phase'] as String?,
+      upcomingOperation: json['upcoming_operation'] as String?,
+    );
+  }
 }
 
 /// Matches backend main_status object exactly.
 class MainStatus {
-  final String riskLevel;  // "HIGH" | "MEDIUM" | "LOW"
+  final String riskLevel; // "HIGH" | "MEDIUM" | "LOW"
   final String message;
   final String icon;
-  final String colorCode;  // hex e.g. "#EF4444"
+  final String colorCode; // hex e.g. "#EF4444"
   final String statusLabel; // "High Risk" | "Caution" | "Safe"
 
   const MainStatus({
@@ -89,19 +174,19 @@ class MainStatus {
   });
 
   factory MainStatus.fromJson(Map<String, dynamic> json) => MainStatus(
-        riskLevel: json['risk_level'] as String? ?? 'LOW',
-        message: json['message'] as String? ?? '',
-        icon: json['icon'] as String? ?? 'check_circle',
-        colorCode: json['color_code'] as String? ?? '#10B981',
-        statusLabel: json['status_label'] as String? ?? 'Safe',
-      );
+    riskLevel: json['risk_level'] as String? ?? 'LOW',
+    message: json['message'] as String? ?? '',
+    icon: json['icon'] as String? ?? 'check_circle',
+    colorCode: json['color_code'] as String? ?? '#10B981',
+    statusLabel: json['status_label'] as String? ?? 'Safe',
+  );
 }
 
 /// Matches backend alert schema exactly.
 class AdvisoryAlert {
-  final String priorityLevel;  // "CRITICAL" | "HIGH" | "MEDIUM" | "LOW"
+  final String priorityLevel; // "CRITICAL" | "HIGH" | "MEDIUM" | "LOW"
   final bool shouldNotify;
-  final String source;         // "rainfall" | "pest" | "soil" | "weather"
+  final String source; // "rainfall" | "pest" | "soil" | "weather"
   final String message;
   final String icon;
   final String colorCode;
@@ -118,14 +203,14 @@ class AdvisoryAlert {
   });
 
   factory AdvisoryAlert.fromJson(Map<String, dynamic> json) => AdvisoryAlert(
-        priorityLevel: json['priority_level'] as String? ?? 'LOW',
-        shouldNotify: json['should_notify'] as bool? ?? false,
-        source: json['source'] as String? ?? '',
-        message: json['message'] as String? ?? '',
-        icon: json['icon'] as String? ?? 'warning',
-        colorCode: json['color_code'] as String? ?? '#F59E0B',
-        actionText: json['action_text'] as String?,
-      );
+    priorityLevel: json['priority_level'] as String? ?? 'LOW',
+    shouldNotify: json['should_notify'] as bool? ?? false,
+    source: json['source'] as String? ?? '',
+    message: json['message'] as String? ?? '',
+    icon: json['icon'] as String? ?? 'warning',
+    colorCode: json['color_code'] as String? ?? '#F59E0B',
+    actionText: json['action_text'] as String?,
+  );
 }
 
 /// UserProfile — matches GET /user/profile response.
@@ -149,14 +234,14 @@ class UserProfile {
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) => UserProfile(
-        phoneNumber: json['phone_number'] as String?,
-        fullName: json['full_name'] as String?,
-        language: json['language'] as String? ?? 'en',
-        latitude: (json['latitude'] as num?)?.toDouble(),
-        longitude: (json['longitude'] as num?)?.toDouble(),
-        activeCrop: json['active_crop'] as String?,
-        activeSowingDate: json['active_sowing_date'] as String?,
-      );
+    phoneNumber: json['phone_number'] as String?,
+    fullName: json['full_name'] as String?,
+    language: json['language'] as String? ?? 'en',
+    latitude: (json['latitude'] as num?)?.toDouble(),
+    longitude: (json['longitude'] as num?)?.toDouble(),
+    activeCrop: json['active_crop'] as String?,
+    activeSowingDate: json['active_sowing_date'] as String?,
+  );
 }
 
 /// AuthResponse — matches POST /user/login and /user/register responses.
@@ -174,13 +259,13 @@ class AuthResponse {
   });
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) => AuthResponse(
-        status: json['status'] as String? ?? '',
-        userId: json['user_id'] as String? ?? '',
-        token: json['token'] as String? ?? '',
-        profile: UserProfile.fromJson(
-          json['profile'] as Map<String, dynamic>? ?? {},
-        ),
-      );
+    status: json['status'] as String? ?? '',
+    userId: json['user_id'] as String? ?? '',
+    token: json['token'] as String? ?? '',
+    profile: UserProfile.fromJson(
+      json['profile'] as Map<String, dynamic>? ?? {},
+    ),
+  );
 }
 
 /// UserCrop — matches GET /user/crops list items.
@@ -206,13 +291,13 @@ class UserCrop {
   });
 
   factory UserCrop.fromJson(Map<String, dynamic> json) => UserCrop(
-        id: json['id'] as int? ?? 0,
-        cropName: json['crop_name'] as String? ?? '',
-        variety: json['variety'] as String?,
-        sowingDate: json['sowing_date'] as String?,
-        latitude: (json['latitude'] as num?)?.toDouble(),
-        longitude: (json['longitude'] as num?)?.toDouble(),
-        icon: json['icon'] as String?,
-        isPrimary: json['is_primary'] as bool? ?? false,
-      );
+    id: json['id'] as int? ?? 0,
+    cropName: json['crop_name'] as String? ?? '',
+    variety: json['variety'] as String?,
+    sowingDate: json['sowing_date'] as String?,
+    latitude: (json['latitude'] as num?)?.toDouble(),
+    longitude: (json['longitude'] as num?)?.toDouble(),
+    icon: json['icon'] as String?,
+    isPrimary: json['is_primary'] as bool? ?? false,
+  );
 }
