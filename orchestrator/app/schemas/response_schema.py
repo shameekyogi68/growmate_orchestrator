@@ -28,7 +28,7 @@ class CropListResponse(BaseModel):
     render_hints: Optional[Dict[str, Any]] = {
         "layout": "grid",
         "theme": "premium_glass",
-        "animations": True
+        "animations": True,
     }
 
 
@@ -50,5 +50,5 @@ class AdvisoryResponse(BaseModel):
     last_updated: str
     ui_config: Optional[Dict[str, Any]] = {
         "header_blur": True,
-        "primary_gradient": ["#3B82F6", "#1D4ED8"]
+        "primary_gradient": ["#3B82F6", "#1D4ED8"],
     }

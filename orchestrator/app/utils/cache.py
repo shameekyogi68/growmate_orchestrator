@@ -14,11 +14,11 @@ class RedisCache:
         if self._redis is None:
             settings = get_settings()
             kwargs = {"decode_responses": True}
-            
+
             # Required for Render Managed Redis connections using TLS (rediss://)
             if settings.redis_url.startswith("rediss://"):
                 kwargs["ssl_cert_reqs"] = "none"
-                
+
             self._redis = redis.from_url(settings.redis_url, **kwargs)
         return self._redis
 
@@ -32,9 +32,7 @@ class RedisCache:
             logger.error(f"Redis get error: {e}")
             return None
 
-    async def set_cached_advisory(
-        self, key: str, data: dict, ttl_seconds: int = 600
-    ):
+    async def set_cached_advisory(self, key: str, data: dict, ttl_seconds: int = 600):
         try:
             await self._get_client().set(
                 f"advisory:{key}", json.dumps(data), ex=ttl_seconds

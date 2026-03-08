@@ -103,13 +103,14 @@ class _ProfileScreenState extends State<ProfileScreen>
         return;
       }
       debugPrint('API Error: ${e.detail}');
-      if (mounted)
+      if (mounted) {
         setState(
           () => _error = L.tr(
             'Oops! Something went wrong. Let\'s try again.',
             'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
           ),
         );
+      }
     } catch (_) {
       if (mounted) {
         setState(
@@ -190,13 +191,14 @@ class _ProfileScreenState extends State<ProfileScreen>
       }
     } on ApiException catch (e) {
       debugPrint('API Error: ${e.detail}');
-      if (mounted)
+      if (mounted) {
         setState(
           () => _error = L.tr(
             'Oops! Something went wrong. Let\'s try again.',
             'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
           ),
         );
+      }
     } catch (_) {
       if (mounted) {
         setState(
@@ -263,13 +265,14 @@ class _ProfileScreenState extends State<ProfileScreen>
       }
     } on ApiException catch (e) {
       debugPrint('API Error: ${e.detail}');
-      if (mounted)
+      if (mounted) {
         setState(
           () => _pinError = L.tr(
             'Oops! Something went wrong. Let\'s try again.',
             'ಕ್ಷಮಿಸಿ! ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
           ),
         );
+      }
     } catch (_) {
       if (mounted) {
         setState(
@@ -1018,8 +1021,9 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Widget _buildDiagnosticSection() {
-    if (_diagToken == null && _diagPerms == null)
+    if (_diagToken == null && _diagPerms == null) {
       return const SizedBox.shrink();
+    }
 
     return _sectionCard(
       icon: Icons.bug_report_outlined,
@@ -1255,7 +1259,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   Widget _premiumDropdown() {
     return DropdownButtonFormField<String>(
-      value: _language,
+      initialValue: _language,
       style: TextStyle(
         fontFamily: 'Inter',
         fontSize: 15,

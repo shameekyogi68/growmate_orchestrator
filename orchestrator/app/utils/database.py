@@ -18,10 +18,10 @@ async def init_db():
     try:
         # Scaled for production concurrency
         _pool = await asyncpg.create_pool(
-            settings.database_url, 
-            min_size=5, 
+            settings.database_url,
+            min_size=5,
             max_size=20,
-            statement_cache_size=0  # Required for Supabase Transaction Pooler (Port 6543)
+            statement_cache_size=0,  # Required for Supabase Transaction Pooler (Port 6543)
         )
         logger.info("Database connection pool created.")
 
@@ -43,9 +43,15 @@ async def init_db():
                 );
             """)
             # MIGRATION: Ensure password_hash is nullable and add index for quick_pin
-            await conn.execute("ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;")
-            await conn.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS fcm_token TEXT;")
-            await conn.execute("CREATE INDEX IF NOT EXISTS idx_users_quick_pin ON users (quick_pin);")
+            await conn.execute(
+                "ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;"
+            )
+            await conn.execute(
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS fcm_token TEXT;"
+            )
+            await conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_users_quick_pin ON users (quick_pin);"
+            )
             await conn.execute("""
                 CREATE TABLE IF NOT EXISTS user_crops (
                     id SERIAL PRIMARY KEY,

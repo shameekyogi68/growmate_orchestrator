@@ -3,7 +3,6 @@ import httpx
 from app.utils.config import get_settings
 from app.utils.logger import logger
 from app.utils.cache import cache_client
-import json
 
 # --- Performance: Local process-level cache for when Redis is unavailable ---
 _LOCAL_MARKET_CACHE = {}
@@ -50,7 +49,7 @@ async def fetch_market_prices(
     # 2. Redis Cache Check
     cached_data = await cache_client.get_cached_advisory(cache_key)
     if cached_data:
-        _LOCAL_MARKET_CACHE[cache_key] = cached_data # Hydrate local
+        _LOCAL_MARKET_CACHE[cache_key] = cached_data  # Hydrate local
         return cached_data
 
     # 3. Discovery Optimization: Don't broaden search endlessly for discovery lists
@@ -77,7 +76,9 @@ async def fetch_market_prices(
                 # Phase 2: Broaden search if no records found
                 if not records:
                     # NFR: If in discovery, only try one broaden variation to save speed
-                    records = await _broaden_search(client, params, crop, limit=1 if is_discovery else None)
+                    records = await _broaden_search(
+                        client, params, crop, limit=1 if is_discovery else None
+                    )
 
                 if records:
                     formatted = _format_live_response(records[0], variety, language)
@@ -98,14 +99,16 @@ async def fetch_market_prices(
     return get_mock_market_prices(crop, language)
 
 
-async def _broaden_search(client: httpx.AsyncClient, params: dict, crop: str, limit: int | None = None) -> list:
+async def _broaden_search(
+    client: httpx.AsyncClient, params: dict, crop: str, limit: int | None = None
+) -> list:
     """Broadens the market search by removing variety filter and trying commodity name variations."""
     if "filters[variety]" in params:
         del params["filters[variety]"]
 
     settings = get_settings()
     crop_variations = [crop, f"{crop}(Common)", f"{crop}(Fine)", crop.capitalize()]
-    
+
     # If limit is set, slice the variations (Discovery Speed Optimization)
     if limit:
         crop_variations = crop_variations[:limit]

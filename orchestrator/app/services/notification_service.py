@@ -6,16 +6,19 @@ import os
 
 _initialized = False
 
+
 def init_firebase():
     """Initializes Firebase Admin SDK."""
     global _initialized
     if _initialized:
         return
 
-    settings = get_settings()
+    get_settings()
     # Path to service account JSON (from environment variable or default location)
-    cred_path = os.getenv("FIREBASE_SERVICE_ACCOUNT_PATH", "firebase-service-account.json")
-    
+    cred_path = os.getenv(
+        "FIREBASE_SERVICE_ACCOUNT_PATH", "firebase-service-account.json"
+    )
+
     try:
         if os.path.exists(cred_path):
             cred = credentials.Certificate(cred_path)
@@ -23,9 +26,12 @@ def init_firebase():
             _initialized = True
             logger.info("Firebase Admin initialized successfully.")
         else:
-            logger.warning(f"Firebase service account file not found at {cred_path}. Push notifications will be disabled.")
+            logger.warning(
+                f"Firebase service account file not found at {cred_path}. Push notifications will be disabled."
+            )
     except Exception as e:
         logger.error(f"Failed to initialize Firebase Admin: {e}")
+
 
 async def send_push_notification(token: str, title: str, body: str, data: dict = None):
     """Sends a push notification to a specific device token (async-safe)."""
@@ -34,29 +40,29 @@ async def send_push_notification(token: str, title: str, body: str, data: dict =
         return False
 
     import asyncio
-    
+
     def _send_sync():
         # Industry Standard: Add Platform-Specific Configs for Reliability
         android_config = messaging.AndroidConfig(
-            priority='high',
+            priority="high",
             notification=messaging.AndroidNotification(
-                channel_id='high_importance_channel',
-                priority='high',
+                channel_id="high_importance_channel",
+                priority="high",
                 default_sound=True,
                 default_vibrate_timings=True,
-                click_action='FLUTTER_NOTIFICATION_CLICK',
-                icon='ic_launcher'
-            )
+                click_action="FLUTTER_NOTIFICATION_CLICK",
+                icon="ic_launcher",
+            ),
         )
-        
+
         apns_config = messaging.APNSConfig(
             payload=messaging.APNSPayload(
                 aps=messaging.Aps(
                     alert=messaging.ApsAlert(title=title, body=body),
-                    sound='default',
+                    sound="default",
                     badge=1,
                     mutable_content=True,
-                    category='high_importance',
+                    category="high_importance",
                 )
             )
         )
@@ -69,7 +75,7 @@ async def send_push_notification(token: str, title: str, body: str, data: dict =
             data=data or {},
             token=token,
             android=android_config,
-            apns=apns_config
+            apns=apns_config,
         )
         return messaging.send(message)
 
@@ -81,16 +87,18 @@ async def send_push_notification(token: str, title: str, body: str, data: dict =
     except messaging.UnregisteredError:
         logger.warning(f"FCM token {token} is unregistered. Removing from DB.")
         from app.utils.database import execute
+
         await execute("UPDATE users SET fcm_token = NULL WHERE fcm_token = $1", token)
         return False
     except Exception as e:
         logger.error(f"Error sending push notification: {e}")
         return False
 
+
 async def notify_user(user_id: int, title: str, body: str, data: dict = None):
     """Fetches user FCM token from DB and sends a notification."""
     from app.utils.database import fetch_one
-    
+
     user = await fetch_one("SELECT fcm_token FROM users WHERE id = $1", user_id)
     if user and user["fcm_token"]:
         return await send_push_notification(user["fcm_token"], title, body, data)

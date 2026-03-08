@@ -9,26 +9,46 @@ import re
 
 # Visual Hints Mapping (Fusion Status)
 STATUS_UI_MAP = {
-    "Verified": {"color": "#10B981", "icon": "check_circle", "label": "Ideal", "label_kn": "ಸೂಕ್ತ"},
-    "Warning": {"color": "#F59E0B", "icon": "warning", "label": "Caution", "label_kn": "ಎಚ್ಚರಿಕೆ"},
-    "Critical": {"color": "#EF4444", "icon": "report_problem", "label": "Risk", "label_kn": "ಅಪಾಯ"},
+    "Verified": {
+        "color": "#10B981",
+        "icon": "check_circle",
+        "label": "Ideal",
+        "label_kn": "ಸೂಕ್ತ",
+    },
+    "Warning": {
+        "color": "#F59E0B",
+        "icon": "warning",
+        "label": "Caution",
+        "label_kn": "ಎಚ್ಚರಿಕೆ",
+    },
+    "Critical": {
+        "color": "#EF4444",
+        "icon": "report_problem",
+        "label": "Risk",
+        "label_kn": "ಅಪಾಯ",
+    },
 }
 
 RENDER_HINTS = {
     "layout": "grid",
     "card_style": "premium_glass",
     "animations": ["fade_in", "slide_up"],
-    "primary_gradient": ["#3B82F6", "#1D4ED8"]
+    "primary_gradient": ["#3B82F6", "#1D4ED8"],
 }
 
 
 def _get_location_name(lat: float, lon: float) -> str:
     """Returns a location name based on GPS coordinates for Udupi region."""
-    if 13.8 <= lat <= 14.1: return "Byndoor, Udupi"
-    if 13.6 <= lat < 13.8: return "Kundapur, Udupi"
-    if 13.4 <= lat < 13.6: return "Brahmavar, Udupi"
-    if 13.2 <= lat < 13.4: return "Udupi Town"
-    if 13.0 <= lat < 13.2: return "Kaup, Udupi"
+    if 13.8 <= lat <= 14.1:
+        return "Byndoor, Udupi"
+    if 13.6 <= lat < 13.8:
+        return "Kundapur, Udupi"
+    if 13.4 <= lat < 13.6:
+        return "Brahmavar, Udupi"
+    if 13.2 <= lat < 13.4:
+        return "Udupi Town"
+    if 13.0 <= lat < 13.2:
+        return "Kaup, Udupi"
     return f"Farming Zone ({lat:.2f}, {lon:.2f})"
 
 
@@ -39,14 +59,16 @@ async def get_intelligent_crops(
     language: str = "en",
 ) -> Dict:
     """
-    Consumes results from the Advisory Recommendation API and enriches them 
+    Consumes results from the Advisory Recommendation API and enriches them
     with live Weather, Soil, and Rainfall intelligence.
     """
     try:
         # 1. Fetch EVERYTHING in parallel (Fusion 2.0)
         # We call the Recommendation Service which hits https://crop-advisory-api.onrender.com/recommend
         raw_data, weather, rainfall, soil = await asyncio.gather(
-            get_crop_recommendations(latitude, longitude, request_date, language, lite=False),
+            get_crop_recommendations(
+                latitude, longitude, request_date, language, lite=False
+            ),
             fetch_weather_data(latitude, longitude, language, request_date),
             get_rainfall_advisory(latitude, longitude, request_date, language),
             get_soil_advisory(latitude, longitude, language),
@@ -78,14 +100,16 @@ async def get_intelligent_crops(
                 raw_data, weather, rainfall, soil, request_date, language
             )
             if fused_crops:
-                seasonal_groups.append({"category": "Recommended", "crops": fused_crops})
+                seasonal_groups.append(
+                    {"category": "Recommended", "crops": fused_crops}
+                )
 
         return {
             "status": "success",
             "location": location_name,
             "date": request_date,
             "seasonal_groups": seasonal_groups,
-            "render_hints": RENDER_HINTS
+            "render_hints": RENDER_HINTS,
         }
     except Exception as e:
         logger.error(f"Discovery Fusion Error: {e}")
@@ -94,15 +118,20 @@ async def get_intelligent_crops(
             "location": _get_location_name(latitude, longitude),
             "date": request_date,
             "seasonal_groups": [],
-            "message": f"Service update in progress. Please try again shortly."
+            "message": "Service update in progress. Please try again shortly.",
         }
 
 
 async def validate_crops(
-    crops: list, weather: dict, rainfall: dict, soil: dict, request_date: str, language: str
+    crops: list,
+    weather: dict,
+    rainfall: dict,
+    soil: dict,
+    request_date: str,
+    language: str,
 ) -> list:
     """
-    The True Fusion Layer: Filters for farmer-essential fields and injects 
+    The True Fusion Layer: Filters for farmer-essential fields and injects
     accuracy based on live environment sensors.
     """
     fused_crops = []
@@ -117,22 +146,25 @@ async def validate_crops(
 
         # Dedup check
         crop_key = f"{crop_name}_{variety}"
-        if crop_key in seen_crops: continue
+        if crop_key in seen_crops:
+            continue
 
         # 2. DYNAMIC FUSION (Accuracy Validation)
         fusion_status = "Verified"
         reason_en = "Ideal conditions detected for this variety."
         reason_kn = "ಈ ತಳಿಗೆ ಸೂಕ್ತವಾದ ವಾತಾವರಣ ಕಂಡುಬಂದಿದೆ."
-        
+
         agro_suitability = rec.get("agro_climatic_suitability", {})
-        
+
         # Rainfall Check
         rain_range = agro_suitability.get("suitable_rainfall_range", "")
         if rain_range and rainfall:
             status = rainfall.get("intelligence", {}).get("rainfall_status", "Normal")
             if "Drought" in status or "Stress" in status:
                 fusion_status = "Warning"
-                reason_en = f"Water stress detected in zone. Monitor irrigation for {variety}."
+                reason_en = (
+                    f"Water stress detected in zone. Monitor irrigation for {variety}."
+                )
                 reason_kn = f"ವಲಯದಲ್ಲಿ ನೀರಿನ ಕೊರತೆ ಕಂಡುಬಂದಿದೆ. {variety} ತಳಿಗೆ ನೀರಾವರಿಯನ್ನು ಗಮನಿಸಿ."
 
         # Temperature Check
@@ -154,22 +186,34 @@ async def validate_crops(
         ui_tags = []
         if "drought_sensitivity_level" in sensitivity:
             level = sensitivity["drought_sensitivity_level"]
-            col = "#10B981" if level == "Low" else ("#F59E0B" if level == "Medium" else "#EF4444")
+            col = (
+                "#10B981"
+                if level == "Low"
+                else ("#F59E0B" if level == "Medium" else "#EF4444")
+            )
             ui_tags.append({"text": f"Drought Risk: {level}", "color": col})
         if "waterlogging_sensitivity_level" in sensitivity:
             level = sensitivity["waterlogging_sensitivity_level"]
-            col = "#10B981" if level == "Low" else ("#F59E0B" if level == "Medium" else "#EF4444")
+            col = (
+                "#10B981"
+                if level == "Low"
+                else ("#F59E0B" if level == "Medium" else "#EF4444")
+            )
             ui_tags.append({"text": f"Waterlogging Risk: {level}", "color": col})
         if "heat_tolerance_level" in sensitivity:
             level = sensitivity["heat_tolerance_level"]
-            col = "#10B981" if level == "High" else ("#F59E0B" if level == "Medium" else "#EF4444")
+            col = (
+                "#10B981"
+                if level == "High"
+                else ("#F59E0B" if level == "Medium" else "#EF4444")
+            )
             ui_tags.append({"text": f"Heat Tolerance: {level}", "color": col})
 
         # FALLBACK IF EMPTY
         if not ui_tags:
             ui_tags = [
                 {"text": variety, "color": "#3B82F6"},
-                {"text": fusion_status, "color": ui_style["color"]}
+                {"text": fusion_status, "color": ui_style["color"]},
             ]
 
         farmer_data = {
@@ -178,33 +222,34 @@ async def validate_crops(
             "identity": {
                 "crop_name": crop_name,
                 "variety_name": variety,
-                "crop_category": category
+                "crop_category": category,
             },
             # FUSION STATUS (Injected Reality)
-            "status_label": ui_style["label"] if language == "en" else ui_style["label_kn"],
+            "status_label": ui_style["label"]
+            if language == "en"
+            else ui_style["label_kn"],
             "status_color": ui_style["color"],
             "status_icon": ui_style["icon"],
             "description": (reason_en if language == "en" else reason_kn),
-            
             # FINANCIAL INTELLIGENCE (Market Data)
             "financial_intelligence": {
                 "modal_price": market.get("modal_price", "N/A"),
                 "market_status": market.get("market_status", "Live"),
-                "market_name": market.get("market_name", "Local APMC")
+                "market_name": market.get("market_name", "Local APMC"),
             },
-            
             # MORPHOLOGICAL & YIELD (Farmer Metrics)
-            "morphological_characteristics": rec.get("morphological_characteristics", {}),
+            "morphological_characteristics": rec.get(
+                "morphological_characteristics", {}
+            ),
             "yield_potential": rec.get("yield_potential", {}),
             "agro_climatic_suitability": rec.get("agro_climatic_suitability", {}),
             "seed_specifications": rec.get("seed_specifications", {}),
-            
             # UI METADATA (Rich Aesthetics)
             "icon": "agriculture",
             "ui_tags": ui_tags,
-            "fusion_status": fusion_status
+            "fusion_status": fusion_status,
         }
-        
+
         fused_crops.append(farmer_data)
         seen_crops.add(crop_key)
 

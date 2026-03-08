@@ -73,9 +73,7 @@ async def get_pest_advisory(
             pests.append(
                 {
                     "name": (
-                        "Fruit Rot (Koleroga)"
-                        if language == "en"
-                        else "ಕೊಳೆ ರೋಗ (ಕೊಳರೋಗ)"
+                        "Fruit Rot (Koleroga)" if language == "en" else "ಕೊಳೆ ರೋಗ (ಕೊಳರೋಗ)"
                     ),
                     "risk": "Very High" if language == "en" else "ಬಹಳ ಹೆಚ್ಚು",
                     "action": (

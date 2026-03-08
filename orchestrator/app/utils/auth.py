@@ -17,20 +17,16 @@ def verify_password(password: str, stored_hash: str | None) -> bool:
     """Verifies a password against a stored bcrypt hash or legacy SHA256 hash."""
     if not stored_hash:
         return False
-    
+
     if ":" in stored_hash:
         try:
             salt, hashed = stored_hash.split(":")
-            return (
-                hashlib.sha256(f"{salt}{password}".encode()).hexdigest() == hashed
-            )
+            return hashlib.sha256(f"{salt}{password}".encode()).hexdigest() == hashed
         except ValueError:
             return False
 
     try:
-        return bcrypt.checkpw(
-            password.encode("utf-8"), stored_hash.encode("utf-8")
-        )
+        return bcrypt.checkpw(password.encode("utf-8"), stored_hash.encode("utf-8"))
     except Exception:
         return False
 

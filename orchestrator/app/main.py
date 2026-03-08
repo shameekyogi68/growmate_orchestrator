@@ -1,6 +1,5 @@
 from fastapi import FastAPI, Request
 import uuid
-import contextvars
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from starlette.middleware.gzip import GZipMiddleware
@@ -14,7 +13,7 @@ from app.services.notification_service import init_firebase
 from app.utils.cache import cache_client
 from app.utils.scheduler import start_scheduler, stop_scheduler
 
-from app.utils.logger import logger, request_id_ctx
+from app.utils.logger import request_id_ctx
 
 
 @asynccontextmanager
@@ -22,8 +21,7 @@ async def lifespan(app: FastAPI):
     """Application lifecycle: startup and shutdown hooks."""
     settings = get_settings()
     logger.info(
-        f"Starting {settings.app_name} v{settings.app_version} "
-        f"({settings.environment})"
+        f"Starting {settings.app_name} v{settings.app_version} ({settings.environment})"
     )
 
     # Startup
@@ -66,7 +64,7 @@ app.add_middleware(
 async def rate_limit_middleware(request: Request, call_next):
     ip = request.client.host if request.client else "unknown"
     client = cache_client._get_client()
-    
+
     if client:
         try:
             # IP Rate Limiting (100 per minute)
@@ -75,8 +73,10 @@ async def rate_limit_middleware(request: Request, call_next):
             if ip_count == 1:
                 await client.expire(ip_key, 60)
             elif ip_count > 100:
-                return JSONResponse(status_code=429, content={"detail": "Too many requests per IP"})
-                
+                return JSONResponse(
+                    status_code=429, content={"detail": "Too many requests per IP"}
+                )
+
             # User/Token Rate Limiting (30 per minute)
             auth_header = request.headers.get("Authorization")
             if auth_header and auth_header.startswith("Bearer "):
@@ -86,11 +86,14 @@ async def rate_limit_middleware(request: Request, call_next):
                 if user_count == 1:
                     await client.expire(user_key, 60)
                 elif user_count > 30:
-                    return JSONResponse(status_code=429, content={"detail": "Too many requests per user"})
+                    return JSONResponse(
+                        status_code=429,
+                        content={"detail": "Too many requests per user"},
+                    )
         except Exception as e:
             logger.error(f"Rate limiter error (failing open): {e}")
             pass
-            
+
     response = await call_next(request)
     return response
 

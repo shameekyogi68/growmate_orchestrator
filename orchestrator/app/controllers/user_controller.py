@@ -2,7 +2,12 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional
 from datetime import date
-from app.utils.auth import create_access_token, hash_password, verify_password, verify_token
+from app.utils.auth import (
+    create_access_token,
+    hash_password,
+    verify_password,
+    verify_token,
+)
 from app.utils.database import fetch_one, execute, fetch_all, get_pool
 from app.utils.logger import logger
 import asyncio
@@ -54,7 +59,6 @@ class PinLoginRequest(BaseModel):
     pin: str
 
 
-
 @router.post("/register")
 async def register(req: RegisterRequest):
     """Registers a new user and returns a signed JWT."""
@@ -77,7 +81,7 @@ async def register(req: RegisterRequest):
                 pw_hash = hash_password(req.password)
             else:
                 pw_hash = None
-            
+
             row = await fetch_one(
                 """INSERT INTO users (phone_number, password_hash, full_name, language, latitude, longitude, active_crop, active_sowing_date, quick_pin)
                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id""",
@@ -95,10 +99,14 @@ async def register(req: RegisterRequest):
             if row:
                 user_id = row["id"]
                 user_id_str = str(user_id)
-                
+
                 # SEEDING: If active_crop is provided, insert it into user_crops table
                 if req.active_crop:
-                    sowing_date = req.active_sowing_date if req.active_sowing_date else date.today()
+                    sowing_date = (
+                        req.active_sowing_date
+                        if req.active_sowing_date
+                        else date.today()
+                    )
                     await execute(
                         """INSERT INTO user_crops (user_id, crop_name, sowing_date, latitude, longitude, is_primary)
                            VALUES ($1, $2, $3, $4, $5, TRUE)""",
@@ -106,11 +114,14 @@ async def register(req: RegisterRequest):
                         req.active_crop,
                         sowing_date,
                         req.latitude,
-                        req.longitude
+                        req.longitude,
                     )
 
                 token = create_access_token(
-                    user_id_str, req.phone_number, req.active_crop, req.active_sowing_date
+                    user_id_str,
+                    req.phone_number,
+                    req.active_crop,
+                    req.active_sowing_date,
                 )
                 logger.info(f"User registered: {req.phone_number} (id={user_id_str})")
                 res = {
@@ -118,22 +129,24 @@ async def register(req: RegisterRequest):
                     "user_id": user_id_str,
                     "token": token,
                     "profile": {
-                        "full_name": req.full_name, 
+                        "full_name": req.full_name,
                         "language": req.language,
                         "latitude": req.latitude,
                         "longitude": req.longitude,
                         "active_crop": req.active_crop,
-                        "active_sowing_date": str(req.active_sowing_date) if req.active_sowing_date else None
+                        "active_sowing_date": str(req.active_sowing_date)
+                        if req.active_sowing_date
+                        else None,
                     },
                 }
-                
+
                 # Industry Standard: Welcome Notification (Non-blocking)
                 asyncio.create_task(
                     notify_user_safe(
                         int(user_id),
                         "Welcome to GrowMate! 🌾",
                         "Your account is ready. Explore localized advisories and market prices now.",
-                        {"route": "/dashboard"}
+                        {"route": "/dashboard"},
                     )
                 )
 
@@ -142,7 +155,9 @@ async def register(req: RegisterRequest):
             logger.error(f"Registration failed: {e}")
             if isinstance(e, HTTPException):
                 raise e
-            raise HTTPException(status_code=500, detail="Registration failed internally")
+            raise HTTPException(
+                status_code=500, detail="Registration failed internally"
+            )
 
     # Case B: DB-less mode (Database URL not set) - allow simulation
     token = create_access_token("local-user", req.phone_number)
@@ -152,12 +167,14 @@ async def register(req: RegisterRequest):
         "user_id": "local-user",
         "token": token,
         "profile": {
-            "full_name": req.full_name, 
+            "full_name": req.full_name,
             "language": req.language,
             "latitude": req.latitude,
             "longitude": req.longitude,
             "active_crop": req.active_crop,
-            "active_sowing_date": str(req.active_sowing_date) if req.active_sowing_date else None
+            "active_sowing_date": str(req.active_sowing_date)
+            if req.active_sowing_date
+            else None,
         },
     }
 
@@ -215,7 +232,7 @@ async def login(req: LoginRequest):
                     int(user["id"]),
                     "New Login Detected 🔐",
                     "Your GrowMate account was just accessed. If this wasn't you, please secure your account.",
-                    {"route": "/profile"}
+                    {"route": "/profile"},
                 )
             )
 
@@ -249,7 +266,12 @@ async def get_profile(token_data: dict = Depends(verify_token)):
     """Fetches the current user profile data."""
     user_id = token_data.get("sub")
     if not user_id or user_id == "local-user":
-        return {"full_name": "Mock User", "language": "en", "latitude": 13.8, "longitude": 74.6}
+        return {
+            "full_name": "Mock User",
+            "language": "en",
+            "latitude": 13.8,
+            "longitude": 74.6,
+        }
 
     user = await fetch_one(
         "SELECT phone_number, full_name, language, latitude, longitude, active_crop, active_sowing_date FROM users WHERE id = $1",
@@ -257,7 +279,7 @@ async def get_profile(token_data: dict = Depends(verify_token)):
     )
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     return dict(user)
 
 
@@ -272,21 +294,21 @@ async def update_profile(req: ProfileUpdate, token_data: dict = Depends(verify_t
     updates = []
     params = []
     if req.full_name is not None:
-        updates.append(f"full_name = ${len(params)+1}")
+        updates.append(f"full_name = ${len(params) + 1}")
         params.append(req.full_name)
     if req.language is not None:
-        updates.append(f"language = ${len(params)+1}")
+        updates.append(f"language = ${len(params) + 1}")
         params.append(req.language)
     if req.latitude is not None:
-        updates.append(f"latitude = ${len(params)+1}")
+        updates.append(f"latitude = ${len(params) + 1}")
         params.append(req.latitude)
     if req.longitude is not None:
-        updates.append(f"longitude = ${len(params)+1}")
+        updates.append(f"longitude = ${len(params) + 1}")
         params.append(req.longitude)
     if req.quick_pin is not None:
         if len(req.quick_pin) != 4 or not req.quick_pin.isdigit():
             raise HTTPException(status_code=422, detail="PIN must be exactly 4 digits")
-        updates.append(f"quick_pin = ${len(params)+1}")
+        updates.append(f"quick_pin = ${len(params) + 1}")
         params.append(req.quick_pin)
 
     if not updates:
@@ -294,10 +316,9 @@ async def update_profile(req: ProfileUpdate, token_data: dict = Depends(verify_t
 
     params.append(int(user_id))
     query = f"UPDATE users SET {', '.join(updates)} WHERE id = ${len(params)}"
-    
-    await execute(query, *params)
-    return {"status": "success", "updated_fields": [u.split(' = ')[0] for u in updates]}
 
+    await execute(query, *params)
+    return {"status": "success", "updated_fields": [u.split(" = ")[0] for u in updates]}
 
 
 @router.get("/crops")
@@ -400,17 +421,18 @@ async def set_primary_crop(crop_id: int, token_data: dict = Depends(verify_token
                     crop_id,
                     int(user_id),
                 )
-                
+
                 # CRITICAL SYNC: Update the main users table for fast dashboard lookups
                 crop_info = await conn.fetchrow(
-                    "SELECT crop_name, sowing_date FROM user_crops WHERE id = $1", crop_id
+                    "SELECT crop_name, sowing_date FROM user_crops WHERE id = $1",
+                    crop_id,
                 )
                 if crop_info:
                     await conn.execute(
                         "UPDATE users SET active_crop = $1, active_sowing_date = $2 WHERE id = $3",
                         crop_info["crop_name"],
                         crop_info["sowing_date"],
-                        int(user_id)
+                        int(user_id),
                     )
 
         return {"status": "success", "message": "Primary crop updated and synced"}
@@ -455,14 +477,19 @@ async def quick_login(req: PinLoginRequest):
 
 
 @router.patch("/fcm-token")
-async def update_fcm_token(req: FcmTokenUpdate, token_data: dict = Depends(verify_token)):
+async def update_fcm_token(
+    req: FcmTokenUpdate, token_data: dict = Depends(verify_token)
+):
     """Updates the user's Firebase Cloud Messaging token."""
     user_id = token_data.get("sub")
     if not user_id or user_id == "local-user":
         return {"status": "success (DB-less)"}
 
     from app.utils.database import execute
-    await execute("UPDATE users SET fcm_token = $1 WHERE id = $2", req.fcm_token, int(user_id))
+
+    await execute(
+        "UPDATE users SET fcm_token = $1 WHERE id = $2", req.fcm_token, int(user_id)
+    )
     logger.info(f"FCM token updated for user {user_id}")
     return {"status": "success"}
 
@@ -471,25 +498,33 @@ async def update_fcm_token(req: FcmTokenUpdate, token_data: dict = Depends(verif
 async def clear_fcm_token(token_data: dict = Depends(verify_token)):
     """Removes the user's Firebase Cloud Messaging token (on logout)."""
     from app.utils.database import execute
+
     await execute("UPDATE users SET fcm_token = NULL WHERE id = $1", int(user_id))
     logger.info(f"FCM token cleared for user {user_id}")
     return {"status": "success"}
+
 
 @router.post("/test-notification")
 async def send_test_notification(token_data: dict = Depends(verify_token)):
     """Triggers a test push notification to the current user."""
     from app.services.notification_service import notify_user
+
     user_id = token_data.get("sub")
     if not user_id or user_id == "local-user":
-        raise HTTPException(status_code=400, detail="Cannot send notification in DB-less mode")
-        
+        raise HTTPException(
+            status_code=400, detail="Cannot send notification in DB-less mode"
+        )
+
     success = await notify_user(
         int(user_id),
         title="GrowMate Test Alert 🚀",
         body="This is a test notification to verify your industry-standard Firebase setup is working perfectly!",
-        data={"route": "/profile", "priority": "HIGH"}
+        data={"route": "/profile", "priority": "HIGH"},
     )
     if not success:
-        return {"status": "failed", "detail": "FCM token not found for this user. Try logging out and in again."}
-        
+        return {
+            "status": "failed",
+            "detail": "FCM token not found for this user. Try logging out and in again.",
+        }
+
     return {"status": "sent"}

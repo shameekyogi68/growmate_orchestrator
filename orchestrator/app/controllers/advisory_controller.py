@@ -15,7 +15,9 @@ from app.services.calendar_service import get_calendar_advisory as raw_calendar_
 from app.services.pest_service import get_pest_advisory as raw_pest_advisory
 from app.external.weather_api import fetch_weather_data as raw_weather_api
 from app.external.market_api import fetch_market_prices as raw_market_api
-from app.services.recommendation_service import get_crop_recommendations as raw_recommendations
+from app.services.recommendation_service import (
+    get_crop_recommendations as raw_recommendations,
+)
 
 router = APIRouter(tags=["Advisory"])
 
@@ -36,61 +38,98 @@ async def get_supported_crops(
 
 @router.api_route("/farmer-advisory/rainfall", methods=["GET", "POST"])
 async def get_isolated_rainfall(
-    user_id: str, latitude: float, longitude: float, date: str, 
-    language: str = "en", token_data: dict = Depends(verify_token)
+    user_id: str,
+    latitude: float,
+    longitude: float,
+    date: str,
+    language: str = "en",
+    token_data: dict = Depends(verify_token),
 ):
     """Fetch only the rainfall intelligence stream."""
     return await raw_rainfall_advisory(latitude, longitude, date, language)
 
+
 @router.api_route("/farmer-advisory/soil", methods=["GET", "POST"])
 async def get_isolated_soil(
-    latitude: float, longitude: float, language: str = "en", 
-    crop: str = None, sowing_date: str = None, token_data: dict = Depends(verify_token)
+    latitude: float,
+    longitude: float,
+    language: str = "en",
+    crop: str = None,
+    sowing_date: str = None,
+    token_data: dict = Depends(verify_token),
 ):
     """Fetch only the soil intelligence stream."""
     return await raw_soil_advisory(latitude, longitude, language, crop, sowing_date)
 
+
 @router.api_route("/farmer-advisory/calendar", methods=["GET", "POST"])
 async def get_isolated_calendar(
-    date: str = None, crop: str = None, variety: str = None, 
-    language: str = "en", sowing_date: str = None, token_data: dict = Depends(verify_token)
+    date: str = None,
+    crop: str = None,
+    variety: str = None,
+    language: str = "en",
+    sowing_date: str = None,
+    token_data: dict = Depends(verify_token),
 ):
     """Fetch only the crop calendar schedule stream."""
     month = datetime.strptime(date, "%Y-%m-%d").month if date else datetime.now().month
-    season = "kharif" if month in [6, 7, 8, 9, 10] else ("rabi" if month in [11, 12, 1, 2] else "summer")
+    season = (
+        "kharif"
+        if month in [6, 7, 8, 9, 10]
+        else ("rabi" if month in [11, 12, 1, 2] else "summer")
+    )
     return await raw_calendar_advisory(season, crop, variety, language, sowing_date)
+
 
 @router.api_route("/farmer-advisory/pest", methods=["GET", "POST"])
 async def get_isolated_pest(
-    crop: str = None, variety: str = None, sowing_date: str = None, 
-    language: str = "en", date: str = None, token_data: dict = Depends(verify_token)
+    crop: str = None,
+    variety: str = None,
+    sowing_date: str = None,
+    language: str = "en",
+    date: str = None,
+    token_data: dict = Depends(verify_token),
 ):
     """Fetch only the pest intelligence stream."""
-    return await raw_pest_advisory(crop, variety, sowing_date, language, request_date=date)
+    return await raw_pest_advisory(
+        crop, variety, sowing_date, language, request_date=date
+    )
+
 
 @router.api_route("/farmer-advisory/weather", methods=["GET", "POST"])
 async def get_isolated_weather(
-    latitude: float, longitude: float, language: str = "en", 
-    date: str = None, token_data: dict = Depends(verify_token)
+    latitude: float,
+    longitude: float,
+    language: str = "en",
+    date: str = None,
+    token_data: dict = Depends(verify_token),
 ):
     """Fetch only live weather data stream."""
     return await raw_weather_api(latitude, longitude, language, request_date=date)
 
+
 @router.api_route("/farmer-advisory/market", methods=["GET", "POST"])
 async def get_isolated_market(
-    crop: str = None, variety: str = None, language: str = "en", 
-    token_data: dict = Depends(verify_token)
+    crop: str = None,
+    variety: str = None,
+    language: str = "en",
+    token_data: dict = Depends(verify_token),
 ):
     """Fetch only market prices stream."""
     return await raw_market_api(crop, variety, language=language)
 
+
 @router.api_route("/farmer-advisory/recommendations", methods=["GET", "POST"])
 async def get_isolated_recommendations(
-    latitude: float, longitude: float, date: str, 
-    language: str = "en", token_data: dict = Depends(verify_token)
+    latitude: float,
+    longitude: float,
+    date: str,
+    language: str = "en",
+    token_data: dict = Depends(verify_token),
 ):
     """Fetch isolated recommendations stream."""
     return await raw_recommendations(latitude, longitude, date, language)
+
 
 @router.post("/farmer-advisory", response_model=AdvisoryResponse)
 async def get_farmer_advisory(
@@ -104,22 +143,27 @@ async def get_farmer_advisory(
     # This solves the 'Stale JWT' problem where the token has old crop data.
     if str(req.user_id).isdigit():
         from app.utils.database import fetch_one
+
         latest = await fetch_one(
-            "SELECT active_crop, active_sowing_date, latitude, longitude, language FROM users WHERE id = $1", 
-            int(req.user_id)
+            "SELECT active_crop, active_sowing_date, latitude, longitude, language FROM users WHERE id = $1",
+            int(req.user_id),
         )
         if latest:
             # Only override if the request sent default/string placeholders
             if not req.crop or req.crop == "string":
                 req.crop = latest["active_crop"]
-                req.sowing_date = latest["active_sowing_date"].isoformat() if latest["active_sowing_date"] else None
-            
+                req.sowing_date = (
+                    latest["active_sowing_date"].isoformat()
+                    if latest["active_sowing_date"]
+                    else None
+                )
+
             # Location Sync: Always use profile location if request sent default 0.0 or 13.8/74.6
             if req.latitude in [0.0, 13.8] and latest["latitude"]:
                 req.latitude = latest["latitude"]
             if req.longitude in [0.0, 74.6] and latest["longitude"]:
                 req.longitude = latest["longitude"]
-            
+
             # Language Sync
             if req.language == "en" and latest["language"] == "kn":
                 req.language = "kn"
@@ -138,8 +182,8 @@ async def get_farmer_advisory(
     # PERSISTENCE: Save to advisory_history for the user
     from app.utils.database import execute, fetch_one
     import json
-    
-    # We use a non-blocking approach (don't await if we want speed, 
+
+    # We use a non-blocking approach (don't await if we want speed,
     # but here we await to ensure data is saved for this request context)
     try:
         if str(req.user_id).isdigit():
@@ -147,7 +191,7 @@ async def get_farmer_advisory(
             recent = await fetch_one(
                 "SELECT id FROM advisory_history WHERE user_id = $1 AND crop = $2 AND created_at >= NOW() - INTERVAL '2 minutes'",
                 int(req.user_id),
-                req.crop
+                req.crop,
             )
             if not recent:
                 await execute(
@@ -156,12 +200,17 @@ async def get_farmer_advisory(
                     int(req.user_id),
                     req.crop,
                     token_data.get("active_variety", "General"),
-                    datetime.strptime(req.date, "%Y-%m-%d").date() if req.date else datetime.now().date(),
-                    json.dumps(fused)
+                    datetime.strptime(req.date, "%Y-%m-%d").date()
+                    if req.date
+                    else datetime.now().date(),
+                    json.dumps(fused),
                 )
             else:
                 from app.utils.logger import logger
-                logger.info(f"Idempotency hit for user {req.user_id} and crop {req.crop}. Skipped DB insert.")
+
+                logger.info(
+                    f"Idempotency hit for user {req.user_id} and crop {req.crop}. Skipped DB insert."
+                )
     except Exception as e:
         logger.error(f"Failed to persist advisory history: {e}")
 
@@ -194,7 +243,7 @@ async def download_insurance_report(
     # Simulation: In a real system, this would query historical DB logs for the farmer
     report = f"""# GROW-MATE INSURANCE EVIDENCE REPORT
 **Farmer ID**: {user_id}
-**Report Generated**: {datetime.now().strftime('%Y-%m-%d')}
+**Report Generated**: {datetime.now().strftime("%Y-%m-%d")}
 **Verification Hash**: GROW-SECURE-{user_id[:4]}-2026
 
 ## 1. Monitoring Geo-Context

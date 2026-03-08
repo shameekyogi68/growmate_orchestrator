@@ -33,7 +33,7 @@ async def get_rainfall_advisory(
                 "status": "DEGRADED",
                 "message": f"Rainfall data unavailable: {str(e)}",
                 "confidence_score": 0.5,
-                "source": "rainfall"
+                "source": "rainfall",
             }
 
 

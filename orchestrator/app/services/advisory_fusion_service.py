@@ -54,10 +54,16 @@ def fuse_advisory(raw_results: dict, language: str = "en"):
         "message": msg,
         "icon": main_icon,
         "color_code": main_color,
-        "status_label": "High Risk" if highest_risk == "HIGH" else ("Caution" if highest_risk == "MEDIUM" else "Safe")
+        "status_label": "High Risk"
+        if highest_risk == "HIGH"
+        else ("Caution" if highest_risk == "MEDIUM" else "Safe"),
     }
     if language == "kn":
-        main_status["status_label"] = "ಅಪಾಯ" if highest_risk == "HIGH" else ("ಎಚ್ಚರಿಕೆ" if highest_risk == "MEDIUM" else "ಸುರಕ್ಷಿತ")
+        main_status["status_label"] = (
+            "ಅಪಾಯ"
+            if highest_risk == "HIGH"
+            else ("ಎಚ್ಚರಿಕೆ" if highest_risk == "MEDIUM" else "ಸುರಕ್ಷಿತ")
+        )
 
     # 4. Handle Recommendations (Flatten if dictionary/seasonal format)
     raw_recs = raw_results.get("recommendations")
@@ -73,7 +79,9 @@ def fuse_advisory(raw_results: dict, language: str = "en"):
     confidence_score = 1.0
     for key, result in raw_results.items():
         if isinstance(result, dict) and result.get("status") == "DEGRADED":
-            confidence_score = min(confidence_score, float(result.get("confidence_score", 0.9)))
+            confidence_score = min(
+                confidence_score, float(result.get("confidence_score", 0.9))
+            )
 
     return {
         "confidence_score": round(confidence_score, 2),
@@ -146,6 +154,6 @@ def fuse_advisory(raw_results: dict, language: str = "en"):
             "theme": "premium_glass",
             "header_blur": True,
             "primary_gradient": [main_color, "#1F2937"],
-            "dashboard_vfx": True
-        }
+            "dashboard_vfx": True,
+        },
     }

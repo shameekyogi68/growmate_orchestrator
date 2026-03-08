@@ -31,8 +31,8 @@ class Settings(BaseSettings):
     weather_api_key: str | None = Field(default=None, alias="WEATHER_API_KEY")
 
     # --- External API Base URLs ---
-    recommendation_api_url: str = 'https://crop-advisory-api.onrender.com'
-    discovery_api_url: str = 'https://crop-discovery-api.onrender.com'
+    recommendation_api_url: str = "https://crop-advisory-api.onrender.com"
+    discovery_api_url: str = "https://crop-discovery-api.onrender.com"
     soil_api_url: str = "https://soil-advisory-api.onrender.com"
     rainfall_api_url: str = "https://rainfall-advisory-api-1.onrender.com"
     calendar_api_url: str = "https://crop-calendar-api-tq0m.onrender.com"
@@ -40,9 +40,7 @@ class Settings(BaseSettings):
         "https://api.data.gov.in/resource/35985678-0d79-46b4-9ed6-6f13308a1d24"
     )
     ndvi_api_url: str = "http://api.agromonitoring.com/agro/1.0"
-    weather_api_url: str = (
-        "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline"
-    )
+    weather_api_url: str = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline"
 
     # --- Timeouts ---
     default_timeout_seconds: float = 30.0

@@ -91,9 +91,7 @@ def get_mock_ndvi_data(language: str, request_date: str | None = None):
         ndvi_score = 0.82
         condition_en, condition_kn = "Lush Green", "ಹಚ್ಚ ಹಸಿರು"
         msg_en = "Monsoon growth is excellent. High vegetation density detected."
-        msg_kn = (
-            "ಮುಂಗಾರು ಹಂಗಾಮಿನಲ್ಲಿ ಬೆಳೆ ಬೆಳೆವಣಿಗೆ ಉತ್ತಮವಾಗಿದೆ. ಸಸ್ಯಗಳ ದಟ್ಟಣೆ ಹೆಚ್ಚಾಗಿದೆ."
-        )
+        msg_kn = "ಮುಂಗಾರು ಹಂಗಾಮಿನಲ್ಲಿ ಬೆಳೆ ಬೆಳೆವಣಿಗೆ ಉತ್ತಮವಾಗಿದೆ. ಸಸ್ಯಗಳ ದಟ್ಟಣೆ ಹೆಚ್ಚಾಗಿದೆ."
     # Rabi (Oct-Jan): Moderate greenness
     elif month in [10, 11, 12, 1]:
         ndvi_score = 0.65

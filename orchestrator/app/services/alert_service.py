@@ -14,9 +14,7 @@ def generate_alerts(raw_results: dict, language: str = "en"):
 
     if rainfall_priority == "HIGH":
         if language == "kn":
-            msg = (
-                f"ಹೆಚ್ಚಿನ ಮಳೆ/ಹವಾಮಾನ ಅಪಾಯ: {main_status.get('message', 'ಜಾಗರೂಕರಾಗಿರಿ')}"
-            )
+            msg = f"ಹೆಚ್ಚಿನ ಮಳೆ/ಹವಾಮಾನ ಅಪಾಯ: {main_status.get('message', 'ಜಾಗರೂಕರಾಗಿರಿ')}"
         else:
             msg = f"High Weather Risk: {main_status.get('message', 'Take precautions')}"
 
@@ -128,17 +126,13 @@ def generate_alerts(raw_results: dict, language: str = "en"):
     has_spray = False
     if isinstance(pest_data, dict):
         for p in pest_data.get("monitored_pests", []):
-            if "spray" in p.get("action", "").lower() or "ಸಿಂಪಡಿಸಿ" in p.get(
-                "action", ""
-            ):
+            if "spray" in p.get("action", "").lower() or "ಸಿಂಪಡಿಸಿ" in p.get("action", ""):
                 has_spray = True
                 break
 
     if has_spray and wind_speed > 20:
         if language == "kn":
-            msg = (
-                "ಸಿಂಪಡಿಸುವುದನ್ನು ತಪ್ಪಿಸಿ: ಗಾಳಿಯ ವೇಗ ಹೆಚ್ಚಾಗಿದೆ, ಔಷಧಿಯು ವ್ಯರ್ಥವಾಗಬಹುದು."
-            )
+            msg = "ಸಿಂಪಡಿಸುವುದನ್ನು ತಪ್ಪಿಸಿ: ಗಾಳಿಯ ವೇಗ ಹೆಚ್ಚಾಗಿದೆ, ಔಷಧಿಯು ವ್ಯರ್ಥವಾಗಬಹುದು."
         else:
             msg = "Avoid Spraying: High wind speed detected (>20km/h). Spraying will be ineffective and lead to drift."
         alerts.append(
