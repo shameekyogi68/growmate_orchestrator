@@ -5,6 +5,8 @@ from datetime import date
 from app.utils.auth import create_access_token, hash_password, verify_password, verify_token
 from app.utils.database import fetch_one, execute, fetch_all, get_pool
 from app.utils.logger import logger
+import asyncio
+from app.utils.scheduler import notify_user_safe
 
 router = APIRouter(prefix="/user", tags=["User"])
 
@@ -111,7 +113,7 @@ async def register(req: RegisterRequest):
                     user_id_str, req.phone_number, req.active_crop, req.active_sowing_date
                 )
                 logger.info(f"User registered: {req.phone_number} (id={user_id_str})")
-                return {
+                res = {
                     "status": "registered",
                     "user_id": user_id_str,
                     "token": token,
@@ -124,6 +126,18 @@ async def register(req: RegisterRequest):
                         "active_sowing_date": str(req.active_sowing_date) if req.active_sowing_date else None
                     },
                 }
+                
+                # Industry Standard: Welcome Notification (Non-blocking)
+                asyncio.create_task(
+                    notify_user_safe(
+                        int(user_id),
+                        "Welcome to GrowMate! 🌾",
+                        "Your account is ready. Explore localized advisories and market prices now.",
+                        {"route": "/dashboard"}
+                    )
+                )
+
+                return res
         except Exception as e:
             logger.error(f"Registration failed: {e}")
             if isinstance(e, HTTPException):
@@ -177,7 +191,7 @@ async def login(req: LoginRequest):
                 user["active_sowing_date"],
             )
             logger.info(f"User logged in: {user['phone_number']}")
-            return {
+            res = {
                 "status": "authenticated",
                 "user_id": str(user["id"]),
                 "token": token,
@@ -194,6 +208,18 @@ async def login(req: LoginRequest):
                     ),
                 },
             }
+
+            # Industry Standard: Security Login Alert (Non-blocking)
+            asyncio.create_task(
+                notify_user_safe(
+                    int(user["id"]),
+                    "New Login Detected 🔐",
+                    "Your GrowMate account was just accessed. If this wasn't you, please secure your account.",
+                    {"route": "/profile"}
+                )
+            )
+
+            return res
         except Exception as e:
             logger.error(f"Login failed: {e}")
             if isinstance(e, HTTPException):

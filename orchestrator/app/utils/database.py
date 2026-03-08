@@ -18,7 +18,10 @@ async def init_db():
     try:
         # Scaled for production concurrency
         _pool = await asyncpg.create_pool(
-            settings.database_url, min_size=5, max_size=20
+            settings.database_url, 
+            min_size=5, 
+            max_size=20,
+            statement_cache_size=0  # Required for Supabase Transaction Pooler (Port 6543)
         )
         logger.info("Database connection pool created.")
 

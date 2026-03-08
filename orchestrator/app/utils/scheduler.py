@@ -1,11 +1,16 @@
 import asyncio
+from datetime import datetime
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.interval import IntervalTrigger
+from apscheduler.triggers.cron import CronTrigger
 from app.utils.config import get_settings
 from app.utils.logger import logger
 from app.external.market_api import fetch_market_prices
 from app.utils.cache import cache_client
+from app.utils.database import fetch_all
 
-# Background task handles for graceful shutdown
-_tasks: list[asyncio.Task] = []
+# Singleton scheduler instance
+scheduler = AsyncIOScheduler()
 
 # Top crops to pre-fetch prices for
 TOP_CROPS = [
@@ -14,92 +19,123 @@ TOP_CROPS = [
     ("Paddy", "Mahaveer"),
 ]
 
-
-async def _refresh_market_prices():
+async def refresh_market_prices():
     """Pre-fetches market prices for top crops and caches them in Redis."""
     settings = get_settings()
-    interval = settings.market_refresh_interval_minutes * 60
-
-    while True:
+    logger.info("[Scheduler] [Market] Starting market price refresh...")
+    
+    for crop, variety in TOP_CROPS:
         try:
-            logger.info("[Scheduler] Refreshing market prices for top crops...")
-            for crop, variety in TOP_CROPS:
-                try:
-                    data = await fetch_market_prices(
-                        crop, variety, language="en"
-                    )
-                    await cache_client.set_cached_advisory(
-                        f"market:{crop}:{variety}",
-                        data,
-                        ttl_seconds=interval + 300,
-                    )
-                    logger.info(
-                        f"[Scheduler] Cached price for {crop}/{variety}: "
-                        f"{data.get('modal_price', 'N/A')}"
-                    )
-                except Exception as e:
-                    logger.warning(
-                        f"[Scheduler] Failed to refresh {crop}/{variety}: {e}"
-                    )
-
-            logger.info(
-                f"[Scheduler] Market price refresh complete. "
-                f"Next in {settings.market_refresh_interval_minutes}m."
+            data = await fetch_market_prices(crop, variety, language="en")
+            # TTL: interval + 5 minutes buffer
+            ttl = (settings.market_refresh_interval_minutes * 60) + 300
+            await cache_client.set_cached_advisory(
+                f"market:{crop}:{variety}",
+                data,
+                ttl_seconds=ttl,
             )
+            logger.info(f"[Scheduler] [Market] Updated {crop}/{variety}: {data.get('modal_price', 'N/A')}")
         except Exception as e:
-            logger.error(f"[Scheduler] Market refresh cycle error: {e}")
+            logger.error(f"[Scheduler] [Market] Error refreshing {crop}/{variety}: {e}")
 
-        await asyncio.sleep(interval)
-
-
-async def _health_monitor():
-    """Periodically pings external APIs and logs their status."""
+async def monitor_external_services():
+    """Health monitor for ALL upstream microservices and third-party APIs."""
     import httpx
-
     settings = get_settings()
-    interval = settings.health_check_interval_minutes * 60
-
     endpoints = {
-        "Recommendation API": f"{settings.recommendation_api_url}/docs",
-        "Discovery API": f"{settings.discovery_api_url}/docs",
-        "Soil API": f"{settings.soil_api_url}/docs",
-        "Rainfall API": f"{settings.rainfall_api_url}/docs",
-        "Calendar API": f"{settings.calendar_api_url}/docs",
+        "Discovery": f"{settings.discovery_api_url}/health",
+        "Recommendation": f"{settings.recommendation_api_url}/health",
+        "Rainfall": f"{settings.rainfall_api_url}/health",
+        "Soil": f"{settings.soil_api_url}/health",
+        "Calendar": f"{settings.calendar_api_url}/health",
+        "Weather API": f"https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/Udupi?key={settings.weather_api_key}",
+        "Agro API": f"http://api.agromonitoring.com/agro/1.0/polygons?appid={settings.agro_api_key}"
     }
+    
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        for name, url in endpoints.items():
+            try:
+                # Some local services might use /health instead of /docs
+                resp = await client.get(url)
+                # Success for external APIs might be 200, for internal it depends
+                status = "✅" if resp.status_code < 400 else f"⚠️ {resp.status_code}"
+            except Exception as e:
+                status = f"❌ Error: {str(e)[:20]}"
+            logger.info(f"[Scheduler] [Health] {name} Service: {status}")
 
-    while True:
-        try:
-            # Render cold starts might take > 5s; using 30s timeout here
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                for name, url in endpoints.items():
-                    try:
-                        resp = await client.get(url)
-                        status = (
-                            "✅ UP"
-                            if resp.status_code < 500
-                            else f"⚠️ {resp.status_code}"
-                        )
-                    except Exception:
-                        status = "❌ DOWN"
-                    logger.info(f"[HealthMonitor] {name}: {status}")
-        except Exception as e:
-            logger.error(f"[HealthMonitor] Cycle error: {e}")
+async def localized_engagement_broadcast():
+    """
+    Broadcasts localized farming tips.
+    Runs daily or on interval to keep users engaged.
+    """
+    from app.services.notification_service import notify_user
+    
+    logger.info("[Scheduler] [Notify] Generating personalized engagement broadcast...")
+    try:
+        users = await fetch_all(
+            "SELECT id, full_name, language, active_crop FROM users WHERE fcm_token IS NOT NULL"
+        )
+        
+        for user in users:
+            uid = user['id']
+            lang = user.get('language', 'kn') # Default to Kannada given the context
+            name = user.get('full_name', 'Farming Partner')
+            crop = user.get('active_crop', 'crops') or "crops"
+            
+            if lang == 'kn':
+                title = "ಗ್ರೋಮೇಟ್ ಕೃಷಿ ಸಲಹೆ 🌾"
+                # The user's specific request: "ಇದ್ರೆ ಅವನಮ್ಮನ್ ನೆಮ್ಮದಿ ಆಗಿರಬೇಕು!" 
+                # Integrating it as a "Peace of mind" message for farmers
+                body = f"ನಮಸ್ಕಾರ {name}, {crop} ಬೆಳೆಗೆ ಸರಿಯಾದ ಸಮಯಕ್ಕೆ ನೀರು ಹಾಯಿಸಿ. ಕೃಷಿ ನೆಮ್ಮದಿಯಿಂದಿರಲಿ!"
+            else:
+                title = "GrowMate Farming Tip 🌾"
+                body = f"Hi {name}, ensure timely irrigation for your {crop}. Stay productive!"
 
-        await asyncio.sleep(interval)
-
+            # Async notification
+            asyncio.create_task(notify_user(uid, title, body, {"type": "daily_engagement"}))
+            
+        logger.info(f"[Scheduler] [Notify] Broadcast queued for {len(users)} users.")
+    except Exception as e:
+        logger.error(f"[Scheduler] [Notify] Broadcast failed: {e}")
 
 async def start_scheduler():
-    """Starts all background tasks and tracks their handles."""
-    logger.info("[Scheduler] Starting background tasks...")
-    _tasks.append(asyncio.create_task(_refresh_market_prices()))
-    _tasks.append(asyncio.create_task(_health_monitor()))
+    """Configure and start the background scheduler."""
+    settings = get_settings()
+    
+    if scheduler.running:
+        logger.warning("[Scheduler] Scheduler is already running.")
+        return
 
+    # 1. Market Price Refresh (Every X minutes)
+    scheduler.add_job(
+        refresh_market_prices,
+        trigger=IntervalTrigger(minutes=settings.market_refresh_interval_minutes),
+        id="market_refresh",
+        replace_existing=True,
+        next_run_time=datetime.now() # Run immediately on startup
+    )
+
+    # 2. Health Monitoring (Every 15 minutes)
+    scheduler.add_job(
+        monitor_external_services,
+        trigger=IntervalTrigger(minutes=15),
+        id="health_monitor",
+        replace_existing=True
+    )
+
+    # 3. Daily Broadcast (Every Morning at 8 AM)
+    scheduler.add_job(
+        localized_engagement_broadcast,
+        trigger=CronTrigger(hour=8, minute=0),
+        id="daily_engagement",
+        replace_existing=True
+    )
+
+    scheduler.start()
+    logger.info("[Scheduler] APScheduler started successfully.")
 
 async def stop_scheduler():
-    """Cancels all tracked background tasks for graceful shutdown."""
-    logger.info("[Scheduler] Cancelling background tasks...")
-    for task in _tasks:
-        task.cancel()
-    await asyncio.gather(*_tasks, return_exceptions=True)
-    _tasks.clear()
-    logger.info("[Scheduler] Background tasks stopped.")
+    """Gracefully shutdown the scheduler."""
+    if scheduler.running:
+        scheduler.shutdown()
+        logger.info("[Scheduler] APScheduler stopped.")

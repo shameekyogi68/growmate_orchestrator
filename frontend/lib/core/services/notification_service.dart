@@ -149,6 +149,12 @@ class NotificationService {
               data['priority'] == 'HIGH' ? _channel.name : 'Farm Tips',
               channelDescription: _channel.description,
               icon: '@mipmap/ic_launcher',
+              importance: Importance.max,
+              priority: Priority.high,
+              playSound: true,
+              enableVibration: true,
+              fullScreenIntent:
+                  true, // Force it to pop on top of the current screen
               styleInformation: BigTextStyleInformation(
                 notification.body ?? '',
               ),
